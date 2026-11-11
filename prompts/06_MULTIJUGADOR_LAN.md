@@ -1,0 +1,3 @@
+# Prompt 06 — Multijugador LAN
+
+Implementa servidor dedicado autoritativo según `docs/05_MULTIJUGADOR_Y_SERVIDOR.md`. Primero dos clientes, después party de cuatro. El servidor decide movimiento final, daño, inventario, loot, quest y moneda. Usar canales/transfer modes apropiados. Añadir validación de peer, rate limiting, límites de paquetes, ownership y anti-replay básico. Probar desconexión/reconexión, cliente malicioso simulado, pérdida de paquetes en pruebas cuando sea posible y consistencia de inventario. El modo solo debe conservar su guardado separado. No habilitar Online público todavía.

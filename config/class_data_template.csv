@@ -1,0 +1,7 @@
+class_id,name,resource,role,primary_damage,main_strength,main_weakness
+lightwarden,Paladín del Alba,Fe,protector,melee,supervivencia y apoyo,movilidad baja
+forge_berserker,Bárbaro de la Fragua,Furia,frontline,melee,daño de área,alcance bajo
+echo_sorceress,Hechicera de los Ecos,Maná,ranged_magic,elemental,control y daño a distancia,frágil
+veil_hunter,Cazador del Velo,Enfoque,ranged,physical,trampas y alcance,movilidad defensiva limitada
+umbra_necromancer,Nigromante del Umbral,Esencia,summoner,shadow,invocaciones y maldiciones,gestión de invocaciones
+shadow_assassin,Asesino de la Sombra,Concentración,assassin,physical,ráfagas y movilidad,frágil en combate prolongado
