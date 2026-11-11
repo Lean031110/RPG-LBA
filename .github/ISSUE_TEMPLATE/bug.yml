@@ -1,0 +1,36 @@
+name: Bug report
+description: Report a reproducible bug in RPG LBA
+title: "[BUG] "
+labels: [bug]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Game version / commit
+    validations:
+      required: true
+  - type: textarea
+    id: device
+    attributes:
+      label: Device, Android, renderer, quality profile
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshots / Actions run
+    validations:
+      required: false
