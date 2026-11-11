@@ -1,0 +1,86 @@
+name: RPG LBA - Android debug build
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  android-debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Android preset exists
+        id: preset
+        shell: bash
+        run: |
+          if [ -f export_presets.cfg ] && grep -q 'name="Android Debug"' export_presets.cfg; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Android Debug export preset is not configured yet. This is expected before the Android export phase."
+          fi
+
+      - name: Setup Java
+        if: steps.preset.outputs.ready == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        if: steps.preset.outputs.ready == 'true'
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android packages
+        if: steps.preset.outputs.ready == 'true'
+        run: |
+          sdkmanager --install \
+            "platform-tools" \
+            "build-tools;35.0.1" \
+            "platforms;android-35" \
+            "cmdline-tools;latest" \
+            "cmake;3.10.2.4988404" \
+            "ndk;28.1.13356709"
+
+      - name: Download Godot and export templates
+        if: steps.preset.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="4.7.2"
+          mkdir -p "$RUNNER_TEMP/godot" "$HOME/.local/share/godot/export_templates/${VERSION}.stable"
+          curl -fsSL "https://github.com/godotengine/godot/releases/download/${VERSION}-stable/Godot_v${VERSION}-stable_linux.x86_64.zip" -o "$RUNNER_TEMP/godot.zip"
+          unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
+          GODOT_BIN="$RUNNER_TEMP/godot/Godot_v${VERSION}-stable_linux.x86_64"
+          chmod +x "$GODOT_BIN"
+          curl -fsSL "https://github.com/godotengine/godot/releases/download/${VERSION}-stable/Godot_v${VERSION}-stable_export_templates.tpz" -o "$RUNNER_TEMP/templates.tpz"
+          mkdir -p "$RUNNER_TEMP/templates"
+          unzip -q "$RUNNER_TEMP/templates.tpz" -d "$RUNNER_TEMP/templates"
+          if [ -d "$RUNNER_TEMP/templates/templates" ]; then
+            cp -a "$RUNNER_TEMP/templates/templates/." "$HOME/.local/share/godot/export_templates/${VERSION}.stable/"
+          else
+            echo "Unexpected export template archive layout" >&2
+            exit 1
+          fi
+          "$GODOT_BIN" --headless --editor --path . --quit
+          mkdir -p artifacts/android
+          "$GODOT_BIN" --headless --path . --export-debug "Android Debug" artifacts/android/RPG-LBA-debug.apk
+          test -s artifacts/android/RPG-LBA-debug.apk
+
+      - name: Upload APK
+        if: steps.preset.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: RPG-LBA-Android-debug
+          path: artifacts/android/RPG-LBA-debug.apk
+          retention-days: 14
+
+      - name: Report not configured
+        if: steps.preset.outputs.ready != 'true'
+        run: 'echo "SKIPPED: configure export_presets.cfg Android Debug before expecting an APK."'

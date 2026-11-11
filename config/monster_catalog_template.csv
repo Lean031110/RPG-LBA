@@ -1,0 +1,8 @@
+monster_id,name,archetype,region,level_min,level_max,behavior,signature_attack,loot_table_id,boss
+fenris_alpha,Fenris Alfa,beast,Brumaclara,2,4,charger,charge_and_howl,loot_fenris,true
+ash_wolf,Lobo Ceniciento,skirmisher,Brumaclara,1,5,pack_flanker,leap_bite,loot_beast,false
+moss_spore,Brote de Espora,summoner,Brumaclara,4,7,zone_denial,spore_cloud,loot_root,false
+hollow_anvil,Yunque Hueco,construct,Minas de Ghar,9,12,heavy_telegraph,hammer_slam,loot_anvil,true
+mud_toad,Sapo de Fango,skirmisher,Marjal Cenizal,10,15,poison,poison_spit,loot_marsh,false
+nerissa,Nerissa Voz de la Marea,caster,Costa Quebrada,15,18,area_controller,tide_wave,loot_nerissa,true
+crimson_warden,Vigia Carmesi,guardian,Bastion del Umbral,26,30,boss_phases,seal_break,loot_final,true

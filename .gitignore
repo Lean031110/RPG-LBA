@@ -25,6 +25,9 @@ Thumbs.db
 *.log
 *.tmp
 
+# CI / test artifacts (import logs, multiplayer smoke logs, build info)
+artifacts/
+
 # Editor
 .vscode/
 *.code-workspace

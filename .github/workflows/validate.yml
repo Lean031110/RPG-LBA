@@ -1,0 +1,170 @@
+name: RPG LBA - Validate
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rpg-lba-validate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.7.2"
+
+jobs:
+  project-import-and-smoke:
+    name: project-import (Godot 4.7.2) + game-smoke-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Godot 4.7.2
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/godot"
+          curl -fsSL "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o "$RUNNER_TEMP/godot.zip"
+          unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
+          GODOT_BIN="$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          chmod +x "$GODOT_BIN"
+          echo "GODOT_BIN=$GODOT_BIN" >> "$GITHUB_ENV"
+          "$GODOT_BIN" --version
+
+      - name: Import pass 1 (generate resources; first-run font messages are expected here and not validated)
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/logs
+          "$GODOT_BIN" --headless --path . --import 2>&1 | tee artifacts/logs/import_pass1.log
+
+      - name: Import pass 2 (strict validation, must be error-free)
+        shell: bash
+        run: |
+          set -o pipefail
+          "$GODOT_BIN" --headless --editor --path . --quit --verbose 2>&1 | tee artifacts/logs/import_pass2.log
+          if grep -E "SCRIPT ERROR:|Parse Error|Failed loading resource|ERROR:" artifacts/logs/import_pass2.log; then
+            echo "Godot import pass 2 emitted critical errors." >&2
+            exit 1
+          fi
+
+      - name: Run main-scene smoke test
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 90s "$GODOT_BIN" --headless --audio-driver Dummy --path . --quit-after 180 2>&1 | tee artifacts/logs/smoke.log
+          if grep -E "SCRIPT ERROR:|Parse Error|Failed loading resource|ERROR:" artifacts/logs/smoke.log; then
+            echo "Smoke test emitted critical errors." >&2
+            exit 1
+          fi
+
+      - name: Write build info
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          cat > artifacts/build-info.json <<EOF
+          {
+            "commit": "$GITHUB_SHA",
+            "ref": "$GITHUB_REF",
+            "godot": "${GODOT_VERSION}-stable",
+            "renderer_preset": "ForwardPlus (inherited from template; Compatibility switch planned for Phase 1)",
+            "build_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "ci_job": "project-import-and-smoke"
+          }
+          EOF
+
+      - name: Upload logs and build info
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpg-lba-validation-logs
+          path: |
+            artifacts/logs/
+            artifacts/build-info.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  multiplayer-smoke:
+    name: multiplayer-smoke (dedicated server + 2 clients)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Godot 4.7.2
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/godot"
+          curl -fsSL "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o "$RUNNER_TEMP/godot.zip"
+          unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
+          GODOT_BIN="$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          chmod +x "$GODOT_BIN"
+          echo "GODOT_BIN=$GODOT_BIN" >> "$GITHUB_ENV"
+          "$GODOT_BIN" --version
+
+      - name: Import pass 1 (resources for the smoke clients)
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/logs
+          "$GODOT_BIN" --headless --path . --import 2>&1 | tee artifacts/logs/mp_import_pass1.log
+
+      - name: Run headless multiplayer smoke (server + 2 clients on 127.0.0.1)
+        shell: bash
+        run: |
+          set -o pipefail
+          bash tests/multiplayer/run_multiplayer_smoke.sh .
+          # The script fails on non-zero exit codes of any process and on
+          # missing status=PASS markers. Client logs are allowed to contain
+          # the known benign "Couldn't create an ENet host" line produced by
+          # the template's headless auto-host attempt (documented in
+          # tests/multiplayer/mp_driver.gd).
+
+      - name: Upload multiplayer logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpg-lba-multiplayer-logs
+          path: artifacts/logs/
+          if-no-files-found: warn
+          retention-days: 14
+
+  asset-license-audit:
+    name: asset-license-audit (manifest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check asset manifest
+        run: python3 scripts/ci/check_asset_manifest.py assets/manifest.csv
+
+  gdunit-tests:
+    name: gdunit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: project-import-and-smoke
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run GdUnit4
+        if: ${{ hashFiles('addons/gdUnit4/**') != '' && hashFiles('tests/**') != '' }}
+        uses: godot-gdunit-labs/gdUnit4-action@v1
+        with:
+          godot-version: '4.7.2'
+          version: '7.0.0'
+          paths: 'res://tests'
+          headless: true
+          timeout: 15
+          retries: 1
+      - name: Explain skipped tests
+        if: ${{ hashFiles('addons/gdUnit4/**') == '' || hashFiles('tests/**') == '' }}
+        run: 'echo "SKIPPED: add addons/gdUnit4 and unit tests under tests/ before relying on unit-test coverage. Current tests/multiplayer is a CI smoke harness, not GdUnit4 unit tests."'

@@ -1,0 +1,14 @@
+quest_id,title,type,level_min,region,prerequisite,objectives_summary,reward_summary
+main_01,El eco de Valdeluz,main,1,Brumaclara,,rescatar exploradores y derrotar a Fenris,arma inicial y plata
+main_02,Raíces bajo la ceniza,main,4,Brumaclara,main_01,limpiar tótems y derrotar Madre Musgosa,receta de poción
+main_03,El último turno de Ghar,main,8,Minas de Ghar,main_02,restablecer mina y derrotar Yunque Hueco,plano de fabricación
+main_04,La marea sin luna,main,13,Costa Quebrada,main_03,recuperar mapa y derrotar Nerissa,reliquia
+main_05,El corazón de la Herida,main,19,Bastión del Umbral,main_04,activar sellos y derrotar Vigía Carmesí,título y equipo épico
+side_01,Hierro para el invierno,side,3,Valdeluz,,reunir mineral,desbloqueo herrero
+side_02,La receta perdida,side,3,Brumaclara,,recolectar hierbas,receta poción
+side_03,La caravana rota,side,5,Brumaclara,,escoltar caravana,plata
+side_04,Señal entre los árboles,side,6,Brumaclara,,encontrar explorador,punto de viaje
+side_05,Lobos de ojos blancos,side,6,Brumaclara,,cazar élites,cosmético
+side_06,Cartas bajo la sal,side,13,Costa Quebrada,,recuperar cartas,lore y materiales
+side_07,Los nombres de la piedra,side,10,Minas de Ghar,,activar estelas,cofre secreto
+side_08,La deuda del centinela,side,16,Marjal Cenizal,,derrotar capitán,equipo específico

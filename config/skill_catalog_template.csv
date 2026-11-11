@@ -1,0 +1,13 @@
+skill_id,class_id,name,slot,resource_cost,cooldown_seconds,range_m,area_type,description,server_authority
+sun_shield,lightwarden,Escudo Radiante,active,20,12,0,self,Reduce daño y protege aliados cercanos,server
+sun_judgment,lightwarden,Sentencia Solar,ultimate,60,45,7,circle,Daño sagrado en área,server
+forge_cleave,forge_berserker,Hender,active,15,5,2,arc,Golpe frontal que genera furia,server
+quake_leap,forge_berserker,Salto Sismico,active,25,14,6,circle,Salto que daña y ralentiza,server
+ember_bolt,echo_sorceress,Proyectil Ígneo,active,10,3,12,projectile,Proyectil elemental,server
+frost_chain,echo_sorceress,Cadena de Escarcha,active,20,10,10,chain,Salta entre objetivos y ralentiza,server
+piercing_arrow,veil_hunter,Flecha Perforante,active,12,4,14,line,Flecha de largo alcance,server
+root_trap,veil_hunter,Trampa de Raices,active,18,12,5,trap,Inmoviliza enemigos que la activan,server
+bone_spear,umbra_necromancer,Lanza Ósea,active,12,4,12,line,Proyectil de daño umbrío,server
+ash_servant,umbra_necromancer,Siervo de Ceniza,active,30,30,0,summon,Invoca una criatura temporal con límite de una,server
+twin_cut,shadow_assassin,Corte Gemelo,active,12,4,2,arc,Dos cortes rápidos,server
+shadow_step,shadow_assassin,Paso Umbrío,active,20,12,7,dash,Desplazamiento corto,server
