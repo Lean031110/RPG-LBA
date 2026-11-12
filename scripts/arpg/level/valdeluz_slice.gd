@@ -217,13 +217,22 @@ func _claim_quest() -> void:
 	for item: Dictionary in rewards.get("items", []):
 		if String(item.get("item_id", "")) == "pocion_curativa":
 			player.add_potion(int(item.get("count", 1)))
+		elif player.receive_item(String(item.get("item_id", "")), int(item.get("count", 1))):
+			# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
+			var item_data := RpgDB.get_item(String(item.get("item_id", "")))
+			hud.show_toast("Equipo recibido: %s" % RpgDB.get_text(String(item_data.get("name_key", ""))))
 	hud.show_toast(RpgDB.get_text("quest.claimed"))
 	_refresh_quest_tracker()
 	_autosave()
 
 
 func _on_fragment_collected(pickup_type: String, amount: int) -> void:
+	# Fase 3: los objetos de equipo (drops futuros) ya entraron al inventario vía
+	# receive_item; aquí solo se avisa. Los fragmentos siguen notificando a la misión.
 	if pickup_type != FRAGMENT_ID:
+		var pickup_data := RpgDB.get_item(pickup_type)
+		if String(pickup_data.get("kind", "")) == "weapon":
+			hud.show_toast("Arma recuperada: %s" % RpgDB.get_text(String(pickup_data.get("name_key", ""))))
 		return
 	QuestSystem.notify_collect(FRAGMENT_ID, amount)
 	hud.show_toast("Fragmento de bronce recuperado (%d)" % amount)

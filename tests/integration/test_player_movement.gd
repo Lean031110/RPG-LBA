@@ -27,8 +27,9 @@ func test_speed_comes_from_class_data() -> void:
 	# Se mide velocidad PLANAR: la caída libre no es parte del modelo de movimiento
 	# (estas pruebas no colocan suelo, como en la Fase 1).
 	var planar := Vector2(player.velocity.x, player.velocity.z).length()
-	assert_float(planar).is_greater(3.8)
-	assert_float(planar).is_less(4.6)
+	# Ajuste Fase 3 (justificado): deflexión máxima ahora corre (4.2 x 1.55 = 6.51).
+	assert_float(planar).is_greater(5.8)
+	assert_float(planar).is_less(6.9)
 	assert_float(player.velocity.z).is_greater(0.0)
 
 
@@ -47,8 +48,10 @@ func test_diagonal_is_normalized() -> void:
 	player.joystick_vector = Vector2(1, 1)
 	await _frames(26)
 	var planar := Vector2(player.velocity.x, player.velocity.z).length()
-	assert_float(planar).is_greater(3.8)
-	assert_float(planar).is_less(4.6)
+	# Ajuste Fase 3 (justificado): diagonal a tope corre (6.51); la intención no
+	# cambia: la diagonal no es más rápida que los ejes cardinales.
+	assert_float(planar).is_greater(5.8)
+	assert_float(planar).is_less(6.9)
 
 
 func test_facing_follows_direction() -> void:

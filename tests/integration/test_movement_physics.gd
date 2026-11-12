@@ -46,8 +46,11 @@ func test_acceleration_ramps_up() -> void:
 	assert_float(_planar_speed(player)).is_greater(1.0)
 	assert_float(_planar_speed(player)).is_less(3.4)
 	await _frames(26)
-	assert_float(_planar_speed(player)).is_greater(3.8)
-	assert_float(_planar_speed(player)).is_less(4.6)
+	# Ajuste Fase 3 (justificado): deflexión máxima ahora CORRE por diseño
+	# (4.2 x 1.55 = 6.51; teclado/estándar ARPG). La intención del caso no cambia:
+	# la aceleración converge a la velocidad objetivo del tier.
+	assert_float(_planar_speed(player)).is_greater(5.8)
+	assert_float(_planar_speed(player)).is_less(6.9)
 
 
 func test_deceleration_stops_smoothly() -> void:
@@ -116,8 +119,10 @@ func test_eight_keyboard_directions() -> void:
 			Input.action_press(action)
 		await _frames(26)
 		var velocity := player.velocity
-		assert_float(velocity.length()).is_greater(3.8)
-		assert_float(velocity.length()).is_less(4.6)
+		# Ajuste Fase 3 (justificado): teclado = correr (6.51); la intención del caso
+		# sigue siendo las ocho direcciones al mismo tope, sin ventaja diagonal.
+		assert_float(velocity.length()).is_greater(5.8)
+		assert_float(velocity.length()).is_less(6.9)
 		var deviation := velocity.normalized().dot(expected)
 		assert_float(deviation).is_greater(0.97)
 		for action_to_release: String in actions:

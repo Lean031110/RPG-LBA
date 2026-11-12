@@ -1,10 +1,12 @@
 class_name ArpgHUD
 extends CanvasLayer
-## HUD provisional de la vertical slice (tema gótico caribeño; el rediseño completo
-## llega en el Art Pass + UX Pass de la Fase 1B). Lógica desacoplada: solo escucha
-## señales del jugador/misiones y expone el vector del joystick. Sin lógica de juego.
-## Fase 2: el joystick vive en ArpgVirtualJoystick (control autónomo) y todo el HUD se
-## re-coloca al cambiar la resolución del viewport (16:9 y 20:9, landscape).
+## HUD de la vertical slice, reorganizado en los preparativos de la Fase 3 con la
+## distribución de los ARPG móviles de referencia (Diablo Immortal / Mobile Legends):
+## - Joystick abajo-izquierda; clúster de acciones en ARCO abajo-derecha (ataque grande).
+## - Minimapa cenital arriba-derecha (ArpgMinimap); mochila (inventario) junto al minimapa.
+## - Todo SEMITRANSPARENTE para no tapar la escena; paneles de stats/misión arriba-izquierda.
+## Lógica desacoplada: solo escucha señales del jugador/misiones y expone el vector del
+## joystick. Sin lógica de juego en la UI (regla del repositorio).
 
 signal joystick_changed(vector: Vector2)
 signal dialog_accepted
@@ -19,6 +21,17 @@ const COLOR_VIGOR := Color("c98a2d")
 const COLOR_XP := Color("b08d3c")
 const COLOR_ACCENT := Color("1e3a4a")
 const COLOR_DANGER := Color("e0503e")
+## Fase 3: transparencias del HUD móvil (semitransparente, referencia Diablo/MLBB).
+const ALPHA_PANEL := 0.42
+const ALPHA_BUTTON := 0.35
+const ALPHA_BUTTON_HOVER := 0.55
+const ALPHA_BUTTON_PRESSED := 0.85
+
+const ICON_ATTACK: Texture2D = preload("res://assets/ui/icons/attack.png")
+const ICON_SKILL: Texture2D = preload("res://assets/ui/icons/skill.png")
+const ICON_DODGE: Texture2D = preload("res://assets/ui/icons/dodge.png")
+const ICON_POTION: Texture2D = preload("res://assets/ui/icons/potion.png")
+const ICON_BAG: Texture2D = preload("res://assets/ui/icons/bag.png")
 
 var _player: Node = null
 var _joystick_vector := Vector2.ZERO
@@ -38,7 +51,14 @@ var _quest_hint: Label = null
 var _toast_label: Label = null
 var _interact_button: Button = null
 var _joystick: ArpgVirtualJoystick = null
-var _action_cluster: VBoxContainer = null
+var _action_cluster: Control = null
+var _attack_button: Button = null
+var _skill_button: Button = null
+var _dodge_button: Button = null
+var _potion_button: Button = null
+var _minimap: ArpgMinimap = null
+var _inventory_button: Button = null
+var _inventory_panel: ArpgInventoryPanel = null
 var _dialog_panel: PanelContainer = null
 var _dialog_name: Label = null
 var _dialog_line: Label = null
@@ -57,9 +77,19 @@ func _ready() -> void:
 	_build_action_buttons()
 	_build_interact_button()
 	_build_dialog_panel()
+	_build_minimap()
+	_build_inventory_button()
+	_build_inventory_panel()
 	var root := get_root_control()
 	root.resized.connect(_layout_hud)
 	_layout_hud()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	## Fase 3: la mochila se abre/cierra con la acción dedicada (tecla I en PC).
+	if event.is_action_pressed("arpg_inventory"):
+		toggle_inventory()
+		get_viewport().set_input_as_handled()
 
 
 func bind_player(player: Node) -> void:
@@ -70,6 +100,8 @@ func bind_player(player: Node) -> void:
 	player.leveled_up.connect(_on_leveled_up)
 	_class_label.text = player.get_class_name()
 	_resource_label.text = player.get_resource_name()
+	_minimap.set_player(player as Node3D)
+	_inventory_panel.bind_player(player as ArpgPlayer)
 	_refresh_stats()
 
 
@@ -79,6 +111,15 @@ func is_dialog_open() -> bool:
 
 func get_joystick_vector() -> Vector2:
 	return _joystick_vector
+
+
+func is_inventory_open() -> bool:
+	return _inventory_panel != null and _inventory_panel.is_open()
+
+
+func toggle_inventory() -> void:
+	if _inventory_panel != null:
+		_inventory_panel.toggle()
 
 
 func set_quest_tracker(title: String, lines: Array) -> void:
@@ -256,34 +297,54 @@ func _set_joystick(vector: Vector2) -> void:
 
 
 func _build_action_buttons() -> void:
-	_action_cluster = VBoxContainer.new()
+	## Fase 3: clúster en arco estilo ARPG móvil. El ataque es el botón más grande
+	## (abajo-derecha); habilidad encima; poción a la izquierda; esquiva arriba-izquierda.
+	_action_cluster = Control.new()
 	_action_cluster.name = "ActionCluster"
-	_action_cluster.add_theme_constant_override("separation", 10)
-	var attack := _action_button("Machete (J)", "attack")
-	var skill := _action_button("Tajo de Guásima (K)", "skill")
-	var dodge := _action_button("Esquiva (Espacio)", "dodge")
-	var potion := _action_button("Poción (Q)", "potion")
+	_action_cluster.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	get_root_control().add_child(_action_cluster)
+	_attack_button = _round_action_button(ICON_ATTACK, "J", 104.0)
+	_skill_button = _round_action_button(ICON_SKILL, "K", 84.0)
+	_dodge_button = _round_action_button(ICON_DODGE, "ESP", 72.0)
+	_potion_button = _round_action_button(ICON_POTION, "Q", 64.0)
 	_potion_badge = Label.new()
 	_potion_badge.text = "x1"
-	_potion_badge.add_theme_font_size_override("font_size", 12)
+	_potion_badge.add_theme_font_size_override("font_size", 13)
 	_potion_badge.add_theme_color_override("font_color", COLOR_TEXT)
-	potion.add_child(_potion_badge)
-	_potion_badge.position = Vector2(96, 6)
-	for button: Button in [attack, skill, dodge, potion]:
+	_potion_button.add_child(_potion_badge)
+	_potion_badge.position = Vector2(36, 2)
+	_attack_button.pressed.connect(_on_action_pressed.bind("attack"))
+	_skill_button.pressed.connect(_on_action_pressed.bind("skill"))
+	_dodge_button.pressed.connect(_on_action_pressed.bind("dodge"))
+	_potion_button.pressed.connect(_on_action_pressed.bind("potion"))
+	for button: Button in [_attack_button, _skill_button, _dodge_button, _potion_button]:
 		_action_cluster.add_child(button)
-	get_root_control().add_child(_action_cluster)
 
 
-func _action_button(text: String, action: String) -> Button:
+func _round_action_button(icon: Texture2D, key_hint: String, diameter: float) -> Button:
 	var button := Button.new()
-	button.text = text
-	button.custom_minimum_size = Vector2(216, 52)
-	button.add_theme_font_size_override("font_size", 14)
-	button.add_theme_color_override("font_color", COLOR_TEXT)
-	button.add_theme_stylebox_override("normal", _button_style(Color(0.13, 0.15, 0.20, 0.94)))
-	button.add_theme_stylebox_override("hover", _button_style(Color(0.18, 0.21, 0.28, 0.96)))
-	button.add_theme_stylebox_override("pressed", _button_style(COLOR_ACCENT))
-	button.pressed.connect(_on_action_pressed.bind(action))
+	button.custom_minimum_size = Vector2(diameter, diameter)
+	button.add_theme_stylebox_override("normal", _circle_style(diameter, ALPHA_BUTTON))
+	button.add_theme_stylebox_override("hover", _circle_style(diameter, ALPHA_BUTTON_HOVER))
+	button.add_theme_stylebox_override("pressed", _circle_style(diameter, ALPHA_BUTTON_PRESSED, true))
+	var icon_rect := TextureRect.new()
+	icon_rect.name = "Icon"
+	icon_rect.texture = icon
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.modulate = Color(1, 1, 1, 0.95)
+	var icon_size := Vector2(diameter * 0.5, diameter * 0.5)
+	icon_rect.position = Vector2((diameter - icon_size.x) * 0.5, (diameter - icon_size.y) * 0.5 - 3.0)
+	icon_rect.size = icon_size
+	button.add_child(icon_rect)
+	if key_hint != "":
+		var hint := Label.new()
+		hint.name = "KeyHint"
+		hint.text = key_hint
+		hint.add_theme_font_size_override("font_size", 10)
+		hint.add_theme_color_override("font_color", COLOR_TEXT_DIM)
+		hint.position = Vector2(diameter * 0.5 - 12.0, diameter - 16.0)
+		button.add_child(hint)
 	return button
 
 
@@ -301,6 +362,25 @@ func _on_action_pressed(action: String) -> void:
 			_player.try_potion()
 
 
+func _build_minimap() -> void:
+	_minimap = ArpgMinimap.new()
+	_minimap.name = "Minimap"
+	get_root_control().add_child(_minimap)
+
+
+func _build_inventory_button() -> void:
+	_inventory_button = _round_action_button(ICON_BAG, "I", 56.0)
+	_inventory_button.name = "InventoryButton"
+	_inventory_button.pressed.connect(toggle_inventory)
+	get_root_control().add_child(_inventory_button)
+
+
+func _build_inventory_panel() -> void:
+	_inventory_panel = ArpgInventoryPanel.new()
+	_inventory_panel.name = "InventoryPanel"
+	get_root_control().add_child(_inventory_panel)
+
+
 func _build_interact_button() -> void:
 	_interact_button = Button.new()
 	_interact_button.name = "InteractButton"
@@ -309,8 +389,8 @@ func _build_interact_button() -> void:
 	_interact_button.custom_minimum_size = Vector2(180, 48)
 	_interact_button.add_theme_font_size_override("font_size", 15)
 	_interact_button.add_theme_color_override("font_color", COLOR_TEXT)
-	_interact_button.add_theme_stylebox_override("normal", _button_style(Color(0.10, 0.16, 0.22, 0.95)))
-	_interact_button.add_theme_stylebox_override("pressed", _button_style(COLOR_ACCENT))
+	_interact_button.add_theme_stylebox_override("normal", _button_style(Color(0.10, 0.16, 0.22, 0.55)))
+	_interact_button.add_theme_stylebox_override("pressed", _accent_pressed_style())
 	get_root_control().add_child(_interact_button)
 
 
@@ -335,6 +415,10 @@ func _build_dialog_panel() -> void:
 	_dialog_action = Button.new()
 	_dialog_action.text = "Continuar"
 	_dialog_action.custom_minimum_size = Vector2(180, 44)
+	_dialog_action.add_theme_font_size_override("font_size", 14)
+	_dialog_action.add_theme_color_override("font_color", COLOR_TEXT)
+	_dialog_action.add_theme_stylebox_override("normal", _button_style(Color(0.13, 0.15, 0.20, 0.55)))
+	_dialog_action.add_theme_stylebox_override("pressed", _accent_pressed_style())
 	_dialog_action.pressed.connect(_dialog_next)
 	box.add_child(_dialog_action)
 	_dialog_panel.custom_minimum_size = Vector2(600, 150)
@@ -342,8 +426,10 @@ func _build_dialog_panel() -> void:
 
 
 func _layout_hud() -> void:
-	## Re-coloca todo el HUD según el tamaño actual del viewport. Objetivo: landscape
-	## 16:9 y 20:9 (orientación del proyecto); con anchos pequeños se hace clamp a 8 px.
+	## Re-coloca todo el HUD según el tamaño del viewport (landscape 16:9 y 20:9 objetivo;
+	## con anchos pequeños se hace clamp a 8 px). Distribución estilo ARPG móvil:
+	## stats/misión arriba-izquierda, minimapa arriba-derecha, joystick abajo-izquierda,
+	## clúster de acciones en arco abajo-derecha.
 	var root := get_root_control()
 	var viewport_size := root.size
 	if viewport_size.x < 320.0 or viewport_size.y < 240.0:
@@ -355,14 +441,42 @@ func _layout_hud() -> void:
 	var joy_size := Vector2(_joystick.radius * 2.0, _joystick.radius * 2.0)
 	_joystick.position = Vector2(150.0, viewport_size.y - 150.0) - joy_size * 0.5
 	_joystick.size = joy_size
-	_action_cluster.position = Vector2(maxf(viewport_size.x - 240.0, 8.0), maxf(viewport_size.y - 240.0, 8.0))
+	# Minimapa arriba-derecha + botón de mochila debajo (Fase 3).
+	var map_size := _minimap.custom_minimum_size
+	_minimap.position = Vector2(viewport_size.x - map_size.x - 16.0, 14.0)
+	_minimap.size = map_size
+	_inventory_button.position = Vector2(viewport_size.x - 72.0, 14.0 + map_size.y + 10.0)
+	# Clúster de acciones en arco alrededor de la esquina inferior-derecha.
+	var corner := Vector2(viewport_size.x - 20.0, viewport_size.y - 20.0)
+	_place_arc_button(_attack_button, corner, 225.0, 128.0)
+	_place_arc_button(_skill_button, corner, 250.0, 226.0)
+	_place_arc_button(_potion_button, corner, 195.0, 220.0)
+	_place_arc_button(_dodge_button, corner, 210.0, 280.0)
 	_interact_button.position = Vector2(viewport_size.x / 2.0 - 90.0, viewport_size.y - 96.0)
 	_dialog_panel.position = Vector2(maxf(viewport_size.x / 2.0 - 300.0, 8.0), maxf(viewport_size.y - 210.0, 8.0))
+	var panel_size := _inventory_panel.custom_minimum_size
+	_inventory_panel.position = Vector2(
+		maxf(viewport_size.x / 2.0 - panel_size.x * 0.5, 8.0), maxf(viewport_size.y / 2.0 - panel_size.y * 0.5, 8.0)
+	)
+	_inventory_panel.size = panel_size
+
+
+func _place_arc_button(button: Button, corner: Vector2, angle_deg: float, radius: float) -> void:
+	## Coloca un botón circular en un ángulo/radio alrededor de la esquina (0°=este,
+	## 90°=sur); los ángulos 195°-250° quedan arriba-izquierda de la esquina inferior-derecha.
+	var angle := deg_to_rad(angle_deg)
+	var button_size := button.custom_minimum_size
+	var center := corner + Vector2(cos(angle), sin(angle)) * radius
+	button.position = Vector2(
+		maxf(center.x - button_size.x * 0.5, 8.0),
+		maxf(center.y - button_size.y * 0.5, 8.0),
+	)
+	button.size = button_size
 
 
 func _panel_style(margin := 10) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(COLOR_PANEL.r, COLOR_PANEL.g, COLOR_PANEL.b, 0.93)
+	style.bg_color = Color(COLOR_PANEL.r, COLOR_PANEL.g, COLOR_PANEL.b, ALPHA_PANEL)
 	style.border_color = COLOR_PANEL_LINE
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(6)
@@ -386,6 +500,28 @@ func _button_style(bg: Color) -> StyleBoxFlat:
 	return style
 
 
+func _circle_style(diameter: float, alpha: float, pressed := false) -> StyleBoxFlat:
+	## Estilo circular semitransparente para los botones del arco (Fase 3).
+	var style := StyleBoxFlat.new()
+	if pressed:
+		style.bg_color = Color(COLOR_ACCENT.r, COLOR_ACCENT.g, COLOR_ACCENT.b, alpha)
+	else:
+		style.bg_color = Color(0.08, 0.10, 0.13, alpha)
+	style.border_color = COLOR_PANEL_LINE
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(int(diameter * 0.5) - 1)
+	style.content_margin_left = 4
+	style.content_margin_right = 4
+	style.content_margin_top = 4
+	style.content_margin_bottom = 4
+	return style
+
+
+func _accent_pressed_style() -> StyleBoxFlat:
+	## Presionado con acento (semitransparente); evita repetir el color largo en cada botón.
+	return _button_style(Color(COLOR_ACCENT.r, COLOR_ACCENT.g, COLOR_ACCENT.b, 0.85))
+
+
 func _make_bar(color: Color, height: int) -> ProgressBar:
 	var bar := ProgressBar.new()
 	bar.custom_minimum_size = Vector2(240, height)
@@ -394,14 +530,14 @@ func _make_bar(color: Color, height: int) -> ProgressBar:
 	bar.value = 100.0
 	bar.show_percentage = false
 	var fill := StyleBoxFlat.new()
-	fill.bg_color = color
+	fill.bg_color = Color(color.r, color.g, color.b, 0.9)
 	fill.corner_radius_top_left = 4
 	fill.corner_radius_bottom_left = 4
 	fill.corner_radius_top_right = 4
 	fill.corner_radius_bottom_right = 4
 	bar.add_theme_stylebox_override("fill", fill)
 	var background := StyleBoxFlat.new()
-	background.bg_color = Color(0.06, 0.07, 0.09, 0.9)
+	background.bg_color = Color(0.06, 0.07, 0.09, 0.45)
 	background.set_corner_radius_all(4)
 	bar.add_theme_stylebox_override("background", background)
 	return bar
