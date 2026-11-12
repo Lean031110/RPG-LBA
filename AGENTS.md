@@ -1,82 +1,15 @@
-# AGENTS.md — Reglas innegociables para cualquier agente que trabaje en RPG LBA
 
-## 1. Rol y autoridad
 
-Eres responsable de implementar un videojuego real, no de producir una demo visual que aparenta funcionar. Debes leer el kit completo antes de modificar archivos. El GDD y las decisiones técnicas aprobadas son la fuente de verdad. Si hay contradicciones, detente, documenta la contradicción y propone una decisión; no improvises una tercera arquitectura.
+## 9. Canon creativo y dirección artística (vigente)
 
-## 2. Orden de trabajo
+La identidad aprobada del proyecto es **RPG LBA — Las Cenizas de Lythara**, con la campaña **El Eco de Valdeluz**, ambientada en una Cuba ficticia de 1953 y tratada como fantasía oscura caribeña. Para narrativa, personajes, regiones, monstruos y misiones, la fuente de verdad es `docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md` y `docs/narrativa/01_MISIONES_Y_CADENAS.md`. Para clases y balance inicial, usar `docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md`. Para visuales, terreno, cielo, ciclo día/noche, clima y UI, usar `docs/direccion-artistica/03_DIRECCION_ARTISTICA_Y_UX.md`. El orden de trabajo para agentes está en `docs/AGENT_BRIEFING_VISION_CUBANA.md`.
 
-- Trabaja exclusivamente en una rama `agent/<fase>-<tarea>`.
-- Abre Pull Request para integrar cambios.
-- No hagas push directo a `main`.
-- Una fase por PR, salvo que el responsable autorice expresamente otra cosa.
-- Mantén el proyecto importable en Godot al final de cada fase.
-- Antes de modificar un sistema existente, inspecciona su implementación y sus pruebas.
-- No reemplaces un sistema funcional por una implementación nueva sin comparar comportamiento, migración y regresiones.
-- No borres código, escenas, recursos ni historial para ocultar problemas.
+Estos documentos amplían y concretan el GDD. Si un documento antiguo contradice esta identidad creativa, no improvisar: registrar la contradicción, proponer actualización y mantener la compatibilidad técnica. La historia de Cuba real no se reescribe como fantasía; señalar claramente qué pueblos, sucesos y personajes son ficticios.
 
-## 3. Evidencia obligatoria
+## 10. Revisión visual obligatoria
 
-En cada PR incluye:
-1. objetivo y alcance;
-2. archivos cambiados;
-3. decisiones y dependencias;
-4. pruebas ejecutadas y comandos exactos;
-5. enlaces o identificadores de ejecuciones de GitHub Actions;
-6. resultado real: PASS, FAIL, SKIPPED o NOT TESTED;
-7. limitaciones que requieren prueba humana o hardware físico.
+La UI y el entorno de la Fase 1 son una base funcional provisional, no una aprobación artística. El responsable ha pedido un Art Pass y UX Pass antes de ampliar el contenido. El siguiente trabajo visual debe incluir terreno con césped, tierra roja, piedra y materiales distinguibles; cielo/horizonte; ciclo día/noche; clima básico; HUD/menús legibles; capturas 16:9 y 20:9. Consultar la dirección artística y el briefing. No declarar aceptación visual sin revisión humana de capturas.
 
-Está prohibido inventar capturas, resultados de CI, FPS, compatibilidad, tamaños de APK o número de jugadores probados.
+## 11. Seguridad de credenciales
 
-## 4. No romper el proyecto
-
-- Mantén Godot 4.7.2 Standard y GDScript hasta que el responsable apruebe una actualización.
-- No introducir C# ni extensiones nativas en el MVP.
-- No cambiar de renderer en una tarea de gameplay.
-- No cambiar el protocolo de red sin ADR (Architecture Decision Record) y pruebas de compatibilidad.
-- No cambiar IDs persistentes de objetos, habilidades, quests ni clases sin migración de datos.
-- No guardar datos personales, tokens, passwords ni secretos en el repo.
-- No incluir `.godot/`, cachés, APKs grandes ni export credentials en el control de versiones.
-
-## 5. Licencias y seguridad de assets
-
-- Cada recurso de terceros debe tener entrada en `assets/manifest.csv` (el agente lo crea en el juego real) con autor, URL exacta, versión, licencia, fecha de comprobación, uso y atribución.
-- Descargar únicamente desde fuente oficial o repositorio del autor.
-- No asumir que todos los recursos de un sitio tienen la misma licencia.
-- No redistribuir paquetes fuente cuando sus términos no lo permitan.
-- Conservar LICENSE, README y ATTRIBUTIONS del paquete.
-- Si un archivo no tiene licencia verificable, no se incorpora al juego.
-- No extraer música, personajes, mapas, iconos, textos ni código de Diablo, World of Warcraft, Albion Online u otras IP protegidas.
-
-## 6. Reglas de arquitectura
-
-- Lógica de juego desacoplada de UI y de nodos visuales.
-- El servidor es autoritativo para combate, inventario, moneda, progreso, misiones y drops.
-- Los clientes envían intención/inputs, no resultados finales.
-- Toda entrada de red se valida: identidad, autoridad, rate limit, estado, distancia, cooldown, ownership y límites.
-- RPCs fiables para transacciones discretas; no fiables para snapshots frecuentes de movimiento cuando sea apropiado.
-- Los estados persistentes usan IDs estables, no nombres traducibles.
-- Los datos de balance se externalizan a recursos/JSON/CSV validados, no se duplican por scripts.
-- Las escenas de zonas usan streaming por cambio de zona; no cargar todo el mundo al mismo tiempo.
-
-## 7. Rendimiento
-
-- Medir antes de optimizar y registrar dispositivo, versión, resolución, renderer, calidad, FPS, memoria y temperatura.
-- No usar iluminación global dinámica, volumétricos, reflejos costosos ni físicas innecesarias en el perfil bajo.
-- Reutilizar instancias, usar atlases cuando aporten beneficio, controlar draw calls y entidades activas.
-- No prometer 30 FPS en Redmi 9C sin prueba física sostenida.
-- La calidad visual alta debe provenir primero de composición, iluminación económica, materiales y animación, no del exceso de polígonos.
-
-## 8. Definition of Done
-
-Una tarea solo está terminada cuando:
-- cumple criterios escritos;
-- el proyecto importa sin errores nuevos;
-- los tests relacionados pasan;
-- no hay errores críticos en logs;
-- sus recursos tienen licencia registrada;
-- está documentada;
-- hay prueba de regresión para el bug corregido;
-- la rama/PR y su CI son verificables.
-
-Si no se pudo probar, marcar NOT TESTED y explicar por qué. Nunca convertirlo en PASS.
+Nunca pedir ni recibir PAT en el chat. Usar el gestor seguro del agente/entorno, con scopes mínimos. No imprimir secretos ni almacenarlos en repositorio, URL, logs, workflows o artefactos. Si un token se expone, revocarlo y generar uno nuevo.
