@@ -171,14 +171,15 @@ Cada misión incluye: premisa, escena de apertura, objetivos jugables, giro narr
 **Regla:** cada recuerdo recuperado cambia la arena del jefe final y convoca una voz aliada.  
 **Recompensa:** poder para enfrentar al Rey.
 
-### P26 — El Rey de la Ceniza
-**Jefe final:** cuatro fases cinematográficas.  
-**Objetivo:** resistir las ilusiones, reconocer los telegráficos verdaderos, destruir la corona y pronunciar los nombres recuperados.  
-**Final:** determinado por recuerdos y cadenas secundarias completadas.
+### P26 — La plaza que recuerda
+**Encuentro de clímax:** el Rey de la Ceniza, tres movimientos cinematográficos.  
+**Objetivo:** distinguir ilusiones, proteger recuerdos aliados, romper parte de la corona y contener la expansión de la grieta. El Rey pierde forma y escapa; no muere ni queda eliminado definitivamente.  
+**Resultado:** victoria parcial. Las decisiones y cadenas completadas cambian aliados, rutas y escenas posteriores, sin cerrar la saga.
 
-### P27 — La isla recuerda
-**Objetivo:** epílogo interactivo. Visitar Valdeluz, hablar con aliados y decidir qué hacer con el cascabel.  
-**Recompensa:** modo de aventura posterior, cosmético “Ceniza y Amanecer”.
+### P27 — El día después
+**Objetivo:** epílogo interactivo y abierto. Volver a Valdeluz, hablar con aliados, revisar consecuencias, ayudar a reconstruir y decidir qué hacer temporalmente con el cascabel.  
+**Última escena:** una radio apagada se enciende y una voz pregunta cuántas puertas quedan. Se revelan señales hacia La Habana, el mar y una región aún no cartografiada. El jugador queda libre para continuar jugando y aceptar nuevo contenido.  
+**Recompensa:** acceso al modo de aventura posterior, cosmético “Ceniza y Amanecer” y nuevas historias desbloqueables. No mostrar créditos como final definitivo de la franquicia.
 
 ---
 

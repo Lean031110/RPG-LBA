@@ -43,10 +43,11 @@ El agente no debe desarrollar el juego completo en una sola operación. Cada fas
 
 ## Fase 2 — Combate ARPG y seis clases
 
-- Implementar estadísticas desde `docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md`.
-- Ataque básico, cuatro habilidades, esquiva, definitiva y pasivas por clase.
-- Enemigos por arquetipo y élites; telegráficos, VFX y audio.
-- Balance inicial niveles 1–10, tests de coste, cooldown, alcance y daño.
+- Implementar las seis clases vigentes desde `docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md`: Machetero, Bruja, Sepulturero, Tirador, Cimarrón y Bardo.
+- Ataque básico, cuatro habilidades, esquiva, definitiva, pasivas, recursos y dos especializaciones por clase.
+- Implementar servicio común de XP/niveles y datos configurables.
+- Simular balance por DPS, supervivencia, control, apoyo, dificultad y equipo; probar costes, cooldowns, alcance, invocaciones y límites anti-farmeo.
+- No copiar clases, poderes ni visuales de franquicias existentes.
 
 ## Fase 3 — Inventario, equipo y economía
 
