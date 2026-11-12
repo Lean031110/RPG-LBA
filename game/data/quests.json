@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "note": "Misiones de la vertical slice. IDs estables; el texto visible nunca se usa como identificador. P00–P27 (campaña completa) se incorporan en fases posteriores mediante datos, sin reescribir el gestor.",
+  "quests": [
+    {
+      "id": "VS_P00",
+      "title_key": "quest.vs_p00.title",
+      "description_key": "quest.vs_p00.desc",
+      "region_id": "valdeluz_afueras",
+      "quest_type": "tutorial",
+      "giver_npc": "cheo",
+      "prerequisites": [],
+      "objectives": [
+        {
+          "id": "obj_vs_p00_kill",
+          "type": "kill",
+          "target_enemy": "sombra_de_portal",
+          "count": 3
+        },
+        {
+          "id": "obj_vs_p00_collect",
+          "type": "collect",
+          "target_item": "fragmento_bronce",
+          "count": 2
+        }
+      ],
+      "rewards": {
+        "xp": 50,
+        "items": [
+          {
+            "item_id": "pocion_curativa",
+            "count": 1
+          }
+        ],
+        "flags": [
+          "vs_p00_completada"
+        ]
+      },
+      "repeat_policy": "once",
+      "dialogue_offer": [
+        "cheo.offer.1",
+        "cheo.offer.2",
+        "cheo.offer.3"
+      ],
+      "dialogue_in_progress": [
+        "cheo.progress.1"
+      ],
+      "dialogue_ready": [
+        "cheo.ready.1",
+        "cheo.ready.2"
+      ],
+      "save_version": 1
+    },
+    {
+      "id": "VS_P01",
+      "title_key": "quest.vs_p01.title",
+      "description_key": "quest.vs_p01.desc",
+      "region_id": "valdeluz_afueras",
+      "quest_type": "main",
+      "giver_npc": "cheo",
+      "prerequisites": [
+        "VS_P00"
+      ],
+      "objectives": [
+        {
+          "id": "obj_vs_p01_kill",
+          "type": "kill",
+          "target_enemy": "sombra_de_portal",
+          "count": 4
+        }
+      ],
+      "rewards": {
+        "xp": 80,
+        "items": [],
+        "flags": [
+          "vs_p01_completada"
+        ]
+      },
+      "repeat_policy": "once",
+      "dialogue_offer": [
+        "cheo.p01.offer.1"
+      ],
+      "dialogue_in_progress": [
+        "cheo.p01.progress.1"
+      ],
+      "dialogue_ready": [
+        "cheo.p01.ready.1"
+      ],
+      "save_version": 1
+    }
+  ],
+  "npcs": [
+    {
+      "id": "cheo",
+      "name_key": "npc.cheo.name",
+      "role_key": "npc.cheo.role",
+      "interaction_radius": 3.0
+    }
+  ],
+  "strings": {
+    "es": {
+      "quest.vs_p00.title": "El eco de Valdeluz",
+      "quest.vs_p00.desc": "Cheo dice que el camino de las afueras ya no está tranquilo. Limpia las sombras, recupera los fragmentos de bronce y vuelve al portal.",
+      "npc.cheo.name": "Eusebio “Cheo” Marrero",
+      "npc.cheo.role": "El viejo del portal",
+      "cheo.offer.1": "Ahí vienes, compadre. Menos mal que bajas del pueblo…",
+      "cheo.offer.2": "Las sombras se despegan de la gente desde que la campana sonó a deshora. El camino de las afueras está perdido.",
+      "cheo.offer.3": "Limpia el camino de esas sombras y recoge dos fragmentos de bronce que se cayeron de la carreta. Yo te espero aquí con el café.",
+      "cheo.progress.1": "Todavía queda sombra en el camino y bronce por el suelo. Con cuidado, que la noche no perdona.",
+      "cheo.ready.1": "¡Eso es! El camino respira otra vez.",
+      "cheo.ready.2": "Toma: un poco de XP pa’l camino y una poción. Esto apenas empieza, pero Valdeluz tiene gente que responde.",
+      "objective.kill": "Sombras derrotadas",
+      "objective.collect": "Fragmentos de bronce",
+      "quest.state.available": "Disponible",
+      "quest.state.active": "En curso",
+      "quest.state.ready_to_claim": "Lista para reclamar",
+      "quest.state.completed": "Completada",
+      "quest.ready_hint": "Vuelve con Cheo para reclamar la recompensa.",
+      "quest.claimed": "Misión completada: El eco de Valdeluz",
+      "cheo.done.1": "El café sigue ahí y el camino, tranquilo. Esto apenas empieza, compadre.",
+      "quest.vs_p01.title": "Sombra sobre el campanario",
+      "quest.vs_p01.desc": "Preparada como dato de demostracion de prerequisitos: se desbloquea al completar VS_P00 y se implementa con contenido real en Fase 4 (misiones y narrativa).",
+      "cheo.p01.offer.1": "El campanario volvio a sonar a deshora. Eso no es de ayer, compadre.",
+      "cheo.p01.progress.1": "El campanario sigue llamando. Con calma.",
+      "cheo.p01.ready.1": "Se oye mejor el silencio."
+    }
+  }
+}
