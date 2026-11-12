@@ -53,7 +53,10 @@ Godot: `Godot_v4.7.2-stable_linux.x86_64` local (idéntico al de CI).
 | Lint | `gdlint scripts tests` | PASS (0 problemas) |
 | Formato | `gdformat --check scripts tests` | PASS |
 | GdUnit4 | `GODOT_BIN=... ./addons/gdUnit4/runtest.sh --headless "--audio-driver Dummy" --continue --add res://tests` | **108/108 PASS, 0 errores, 0 huérfanos** |
-| Acciones de GitHub | Ver pestaña *Checks* del PR de esta rama | Se consulta en el PR (no se anticipa) |
+| Acciones de GitHub (final, verde) | [run 43280525911](https://github.com/Lean031110/RPG-LBA/actions/runs/43280525911) | **PASS** (5/5 checks, 108/108 en CI) |
+
+Ejecuciones previas durante el ciclo de corrección (evidencia del proceso, no ocultas):
+[43279668985](https://github.com/Lean031110/RPG-LBA/actions/runs/43279668985) (fallo: `.gitignore` tragaba `addons/gdUnit4/bin`, el runner de pruebas nunca llegó al checkout) y [43280139728](https://github.com/Lean031110/RPG-LBA/actions/runs/43280139728) (pruebas 108/108 exit 0 pero el publicador de reportes requería `checks: write`).
 
 Cobertura GdUnit4 por área: curva XP (10), servicio de combate (9), datos de clases vs canon (6), datos de enemigos/ítems (6), gestor de misiones (11), guardado versionado (6), perfiles gráficos (7), movimiento (10), ventana de golpeo (8), IA de enemigo (8), recogibles (4), HUD (8), flujo de escena (6), layout de nivel (7).
 
