@@ -160,7 +160,10 @@ jobs:
         uses: godot-gdunit-labs/gdUnit4-action@v1
         with:
           godot-version: '4.7.2'
-          version: '7.0.0'
+          # 'installed' usa la copia verificada en el repo (addons/gdUnit4, gdUnit4 7.0.0
+          # en SHA 674a5a0e0065e641d289fffa4e4350a47be57705) en lugar de clonar master
+          # móvil. Determinista y auditable; ver THIRD_PARTY_NOTICES.md.
+          version: 'installed'
           paths: 'res://tests'
           headless: true
           timeout: 15
