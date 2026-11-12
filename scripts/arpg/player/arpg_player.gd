@@ -4,6 +4,8 @@ extends CharacterBody3D
 ## Definición 100% dirigida por datos (game/data/classes.json); sin fórmulas duplicadas.
 ## La animación jamás es fuente de verdad del daño: la hitbox solo está activa en su ventana.
 ## Lógica desacoplada de la UI: el HUD escucha señales y llama métodos públicos.
+## Fase 2: movimiento con aceleración/desaceleración y relativo a la cámara (var camera_source);
+## sin fuente de cámara se usa el eje mundial (identidad), como en la Fase 1.
 
 signal stats_changed
 signal leveled_up(new_level: int)
@@ -16,6 +18,11 @@ signal attack_started(kind: String)
 const GRAVITY := 18.0
 const HURT_GRACE_TIME := 0.25
 const CRIT_CHANCE := 0.05
+## Fase 2: modelo de movimiento fluido. Valores por defecto en código; si el balance
+## aporta "move_accel"/"move_decel" en classes.json, los datos mandan (mismo patrón que move_speed).
+const DEFAULT_MOVE_ACCEL := 24.0
+const DEFAULT_MOVE_DECEL := 30.0
+const FLOOR_SNAP := 0.25
 const BODY_LAYER := ArpgLayers.PLAYER
 const BODY_MASK := ArpgLayers.WORLD
 const HITBOX_LAYER := ArpgLayers.HITBOX_PLAYER
@@ -34,6 +41,9 @@ var armor := 0.0
 var potions := 1
 var joystick_vector := Vector2.ZERO
 var is_dodging := false
+## Fuente del marco de movimiento (Fase 2). Asignación directa pública:
+## player.camera_source = rig. Sin asignar (tests, escenas mínimas) es identidad.
+var camera_source: Node3D = null
 
 var _action := "none"
 var _action_timer := 0.0
@@ -59,9 +69,15 @@ func setup(new_class_id: String) -> void:
 	if class_data.is_empty():
 		push_error("ArpgPlayer: clase desconocida %s" % class_id)
 		return
+
+		# Fase 2: pegado al suelo en bajadas de pendiente/rampa (evita micro-vuelos al bajar).
+
+		# Fase 2: pegado al suelo en bajadas de pendiente/rampa (evita micro-vuelos al bajar).
 	collision_layer = BODY_LAYER
 	collision_mask = BODY_MASK
 	_build_body_shape()
+	# Fase 2: pegado al suelo en bajadas de pendiente/rampa (evita micro-vuelos al bajar).
+	floor_snap_length = FLOOR_SNAP
 	_reset_stats()
 	_build_hitbox()
 	_build_visual()
@@ -144,6 +160,10 @@ func get_potions() -> int:
 func add_xp(amount: int) -> void:
 	if amount <= 0 or _dead:
 		return
+
+		# Diseño de la rebanada: al subir de nivel se restaura por completo (decisión documentada).
+
+		# Diseño de la rebanada: al subir de nivel se restaura por completo (decisión documentada).
 
 		# Diseño de la rebanada: al subir de nivel se restaura por completo (decisión documentada).
 	var result := ProgressionService.add_xp(level, xp_into_level, amount, RpgDB.get_progression())
@@ -258,7 +278,9 @@ func _start_action(kind: String, params: Dictionary) -> bool:
 
 
 func _input_direction() -> Vector3:
-	## Dirección de movimiento en XZ desde teclado + joystick virtual (HUD).
+	## Dirección de movimiento en XZ desde teclado + joystick virtual (HUD), normalizada
+	## en diagonal y expresada en el marco de la cámara (Fase 2). Sin cámara asignada,
+	## el marco es la identidad: exactamente el eje mundial de la Fase 1 (compatibilidad).
 	var keyboard := Vector3(
 		Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
 		0,
@@ -268,32 +290,77 @@ func _input_direction() -> Vector3:
 	var combined := keyboard + stick
 	if combined.length() > 1.0:
 		combined = combined.normalized()
-	return combined
+	return _to_camera_space(combined)
+
+
+func _to_camera_space(direction: Vector3) -> Vector3:
+	## Proyecta la base de la cámara al plano XZ: "arriba en pantalla" sigue siendo arriba
+	## del mundo aunque la cámara gane yaw en fases futuras. Pitch no afecta (se aplana).
+	if camera_source == null or not is_instance_valid(camera_source):
+		return direction
+	var basis := camera_source.global_transform.basis
+	var right := Vector3(basis.x.x, 0.0, basis.x.z)
+	var back := Vector3(basis.z.x, 0.0, basis.z.z)
+	if right.length_squared() < 0.001 or back.length_squared() < 0.001:
+		return direction
+	return right.normalized() * direction.x + back.normalized() * direction.z
 
 
 func _physics_process(delta: float) -> void:
 	if class_data.is_empty():
 		return
+
+		# Fase 2: aceleración hacia la velocidad objetivo y desaceleración al soltar.
+
+		# Giro y ciclo de pasos siguen la velocidad REAL del cuerpo: sin deslizamiento visual.
+
+		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
+
+		# Fase 2: aceleración hacia la velocidad objetivo y desaceleración al soltar.
+
+		# Giro y ciclo de pasos siguen la velocidad REAL del cuerpo: sin deslizamiento visual.
+
+		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
+
+		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 	_tick_timers(delta)
-	var motion := Vector3.ZERO
 	if not is_dodging and _action_params.is_empty():
+		# Fase 2: aceleración hacia la velocidad objetivo y desaceleración al soltar.
 		var direction := _input_direction()
 		var speed := float(class_data.get("move_speed", 4.0))
-		motion = direction * speed
-		if direction.length() > 0.05:
-			_face_towards(direction, delta)
-			_walk_phase += delta * speed * 2.4
+		var target := direction * speed
+		var accel := float(class_data.get("move_accel", DEFAULT_MOVE_ACCEL))
+		var decel := float(class_data.get("move_decel", DEFAULT_MOVE_DECEL))
+		var rate := decel if target.length() < 0.05 else accel
+		var planar := Vector3(velocity.x, 0, velocity.z).move_toward(target, rate * delta)
+		velocity.x = planar.x
+		velocity.z = planar.z
+		var planar_speed := planar.length()
+		if planar_speed > 0.05:
+			# Giro y ciclo de pasos siguen la velocidad REAL del cuerpo: sin deslizamiento visual.
+			_face_towards(planar.normalized(), delta)
+			_walk_phase += delta * planar_speed * 2.4
 			_animate_walk(_walk_phase)
+
+			# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 		else:
 			_animate_idle(delta)
+
+			# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
+
+		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 	else:
 		_animate_walk(_walk_phase)
+		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
+		velocity.x = 0.0
+		velocity.z = 0.0
 	if is_dodging:
 		var duration := maxf(float(_action_params.get("duration", 0.3)), 0.05)
 		var dodge_speed := float(_action_params.get("distance", 4.0)) / duration
-		motion = _dodge_direction * dodge_speed
+		var dodge_motion := _dodge_direction * dodge_speed
+		velocity.x = dodge_motion.x
+		velocity.z = dodge_motion.z
 		_face_towards(_dodge_direction, delta)
-	velocity = motion
 	if not is_on_floor():
 		velocity.y -= GRAVITY * delta
 	else:
@@ -549,6 +616,10 @@ func _animate_idle(delta: float) -> void:
 func _animate_action(delta: float) -> void:
 	if _puppet.is_empty():
 		return
+
+		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
+
+		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
 
 		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
 	var arm_r := _puppet["arm_r"] as Node3D
