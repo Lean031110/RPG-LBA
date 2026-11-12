@@ -170,7 +170,7 @@ func _create_rain_particles() -> void:
 	drop_material.vertex_color_use_as_albedo = true
 	drop_material.albedo_color = Color(1.0, 1.0, 1.0, 0.48)
 	drop.material = drop_material
-	rain_particles.draw_pass_1 = drop
+	rain_particles.mesh = drop
 	add_child(rain_particles)
 
 
