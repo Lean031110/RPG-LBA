@@ -58,6 +58,11 @@ func _build_buttons() -> void:
 	var new_game := _menu_button("Nueva partida")
 	new_game.pressed.connect(_on_new_game_pressed)
 	box.add_child(new_game)
+	var prototype := _menu_button("Prototipo (Fase 2)")
+	prototype.pressed.connect(
+		func() -> void: get_tree().change_scene_to_file("res://scenes/arpg/prototype/prototype_ground.tscn")
+	)
+	box.add_child(prototype)
 	var settings := _menu_button("Ajustes")
 	settings.pressed.connect(
 		func() -> void: get_tree().change_scene_to_file("res://scenes/arpg/menu/settings_menu.tscn")
@@ -73,7 +78,7 @@ func _build_buttons() -> void:
 
 func _build_footer() -> void:
 	var footer := Label.new()
-	footer.text = "Vertical slice — Fase 1 · Godot 4.7.2 · Compatibility Renderer"
+	footer.text = "Vertical slice — Fase 1 · Prototipo de movimiento — Fase 2 · Godot 4.7.2 · Compatibility Renderer"
 	footer.add_theme_font_size_override("font_size", 12)
 	footer.add_theme_color_override("font_color", Color("6f757b"))
 	footer.position = Vector2(16.0, size.y - 64.0)
