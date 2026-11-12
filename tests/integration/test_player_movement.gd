@@ -2,6 +2,8 @@ class_name TestPlayerMovement
 extends GdUnitTestSuite
 ## Movimiento omnidireccional (prompt 01): teclado + joystick virtual, velocidad
 ## desde datos de clase, giro suave y esquiva con desplazamiento.
+## Fase 2: el movimiento ahora acelera/frena (24/30 m/s²); los asertos de velocidad
+## esperan fotogramas de asentamiento (~26) en vez de los 6 de la Fase 1.
 
 
 func _make_player() -> ArpgPlayer:
@@ -20,17 +22,20 @@ func _frames(count: int) -> void:
 func test_speed_comes_from_class_data() -> void:
 	var player := _make_player()
 	player.joystick_vector = Vector2(0, 1)
-	await _frames(6)
+	await _frames(26)
 	# machetero move_speed 4.2; el joystick max (0,1) mueve hacia +Z.
-	assert_float(player.velocity.length()).is_greater(3.8)
-	assert_float(player.velocity.length()).is_less(4.6)
+	# Se mide velocidad PLANAR: la caída libre no es parte del modelo de movimiento
+	# (estas pruebas no colocan suelo, como en la Fase 1).
+	var planar := Vector2(player.velocity.x, player.velocity.z).length()
+	assert_float(planar).is_greater(3.8)
+	assert_float(planar).is_less(4.6)
 	assert_float(player.velocity.z).is_greater(0.0)
 
 
 func test_keyboard_actions_move_player() -> void:
 	var player := _make_player()
 	Input.action_press("move_forward")
-	await _frames(6)
+	await _frames(26)
 	Input.action_release("move_forward")
 	assert_float(absf(player.velocity.z)).is_greater(3.8)
 	# move_forward = -Z (arriba en pantalla); el jugador se acerca a la camara.
@@ -40,10 +45,10 @@ func test_keyboard_actions_move_player() -> void:
 func test_diagonal_is_normalized() -> void:
 	var player := _make_player()
 	player.joystick_vector = Vector2(1, 1)
-	await _frames(4)
-	var speed := player.velocity.length()
-	assert_float(speed).is_greater(3.8)
-	assert_float(speed).is_less(4.6)
+	await _frames(26)
+	var planar := Vector2(player.velocity.x, player.velocity.z).length()
+	assert_float(planar).is_greater(3.8)
+	assert_float(planar).is_less(4.6)
 
 
 func test_facing_follows_direction() -> void:
