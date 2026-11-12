@@ -18,7 +18,7 @@ Antes de modificar gameplay, leer:
 8. `docs/13_RIESGOS_Y_DECISIONES.md`
 9. Informe de entrega de Fase 1 y `prompts/01_VERTICAL_SLICE.md`.
 
-Los documentos de narrativa y arte pasan a ser la fuente de verdad creativa. Si chocan con una regla técnica, conservar la regla técnica y proponer un ADR; no improvisar.
+Los documentos de narrativa y arte pasan a ser la fuente de verdad creativa. La lista vigente de clases es: Machetero de la Sierra, Bruja de la Manigua, Sepulturero de Guanabacoa, Tirador del Malecón, Cimarrón Sombrío y Bardo del Solar. No reintroducir Santero de la Luz ni nombres anteriores sin autorización. Si chocan con una regla técnica, conservar la regla técnica y proponer un ADR; no improvisar.
 
 ## Estado de partida
 
@@ -64,6 +64,12 @@ El responsable no aprueba la presentación actual. No continuar añadiendo conte
 10. Ejecutar import×2, lint, GdUnit, smoke, visual evidence y CI.
 11. Abrir PR; no hacer push directo a main.
 12. Esperar revisión humana de capturas antes de ampliar el contenido.
+
+## Ajuste de clases, progresión y narrativa abierta
+
+Antes de implementar habilidades, usar exclusivamente `docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md` como especificación vigente. Implementar primero los seis arquetipos con atributos, recursos, pros, contras, habilidades, cooldowns y tests. El Sepulturero es un invocador original de ecos/recuerdos; no copiar al Nigromante de Diablo ni su arte, habilidades o iconografía. Simular DPS, supervivencia, control y apoyo. Verificar la curva XP, misiones, repetición, grupo, límites y migración.
+
+La primera campaña debe cerrar su primer arco con victoria parcial, no con un final definitivo. El Rey de la Ceniza escapa fragmentado; puertas y misterios siguen abiertos. Debe quedar espacio para regiones, misiones principales, secundarias, encargos de NPC y facciones. Consultar biblia y misiones actualizadas.
 
 ## Después del Art Pass
 
