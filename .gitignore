@@ -31,3 +31,6 @@ artifacts/
 # Editor
 .vscode/
 *.code-workspace
+
+# GdUnit4 local reports (publicados como artefactos por CI, no versionados)
+reports/
