@@ -1,117 +1,94 @@
 # 01 — Game Design Document (GDD)
 
+> **Actualización de canon 2026-11-12:** La identidad creativa vigente es RPG LBA — Las Cenizas de Lythara; la primera campaña se titula *El Eco de Valdeluz* y ocurre en una Cuba ficticia de 1953, reinterpretada como fantasía oscura caribeña. Esta definición supersede la descripción genérica de fantasía medieval de versiones anteriores. La biblia narrativa, las misiones, las clases y la dirección artística enlazadas abajo son las fuentes específicas de contenido.
+>
+> - Narrativa: [Biblia del mundo](narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md) y [misiones](narrativa/01_MISIONES_Y_CADENAS.md).
+> - Clases: [atributos y habilidades](diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md).
+> - Arte y UX: [dirección artística](direccion-artistica/03_DIRECCION_ARTISTICA_Y_UX.md).
+> - Ejecución de agentes: [briefing](AGENT_BRIEFING_VISION_CUBANA.md).
+
 ## 1. Visión general
 
-**RPG LBA: Las Cenizas de Lythara** es un action RPG 3D de fantasía medieval. La cámara se mantiene elevada, con ángulo isométrico legible y control táctil de doble zona: joystick virtual a la izquierda y ataques/habilidades/consumibles a la derecha. El jugador explora regiones conectadas, combate enemigos, completa historias, consigue equipo y se une a grupos para superar mazmorras con jefes.
+**RPG LBA: Las Cenizas de Lythara** es un action RPG 3D de fantasía oscura caribeña. Su primera campaña, **El Eco de Valdeluz**, transcurre en una Cuba ficticia de 1953: pueblos de interior, La Habana, fortalezas, centrales azucareros, mogotes, montañas, ciénagas y una dimensión sobrenatural llamada La Otra Orilla. El juego combina combate de acción isométrico, seis clases con habilidades propias, exploración por regiones, misiones cinematográficas y multijugador planificado con servidor dedicado autoritativo.
 
-El tono combina aventura, misterio y fantasía oscura moderada. La dirección visual será estilizada low-poly con siluetas limpias, superficies suaves, paleta coherente y efectos mágicos de alto contraste. El juego no debe imitar literalmente la interfaz, arte, iconos, historia o personajes de títulos existentes.
+La identidad visual es gótico caribeño: arquitectura colonial y art déco, vegetación tropical, césped, tierra roja, piedra caliza, metal envejecido, faroles, radios, trenes y clima dramático. La interfaz debe ser oscura y sobria, pero de lectura inmediata en móvil. No copiar recursos ni UI de juegos existentes.
 
 ## 2. Bucle principal
 
-1. Seleccionar personaje y mundo.
-2. Aparecer en ciudad o último punto seguro.
-3. Leer objetivo, aceptar misión o preparar equipo.
-4. Viajar a una región de caza/exploración.
-5. Explorar, combatir, recolectar y descubrir eventos.
-6. Recibir experiencia, oro, materiales y botín.
-7. Volver a ciudad, vender, reparar, fabricar o mejorar equipo.
-8. Desbloquear región/mazmorra y mejorar build.
-9. Repetir con enemigos y retos de mayor nivel.
+1. Seleccionar personaje y clase.
+2. Aparecer en Valdeluz, La Habana o último punto seguro.
+3. Consultar diario, hablar con personajes y preparar equipo.
+4. Viajar a una región de exploración.
+5. Explorar, combatir, investigar, recolectar y descubrir eventos.
+6. Completar objetivos, recuperar recuerdos y conseguir experiencia, equipo y materiales.
+7. Volver a un refugio, comerciar, fabricar, curar y mejorar habilidades.
+8. Desbloquear regiones, mazmorras y capítulos de la campaña.
+9. Repetir con encuentros más complejos, decisiones y jefes.
 
-Cada expedición debe tener una duración útil de 10–25 minutos. La misión secundaria puede resolverse en 3–10 minutos.
+Cada expedición debe tener duración útil de 10–25 minutos. Las misiones secundarias suelen durar 3–10 minutos, con cadenas narrativas más largas.
 
 ## 3. Cámara y lectura
 
-- Cámara 3D elevada fija, cercana a isométrica; rotación no necesaria en primera versión.
-- Cámara ortográfica como primera implementación para lectura consistente; evaluar perspectiva débil solo si las pruebas visuales demuestran una mejora clara.
+- Cámara 3D elevada, cercana a isométrica; rotación no necesaria en primera versión.
+- Cámara ortográfica como primera implementación; evaluar perspectiva débil solo si las pruebas visuales demuestran mejora.
 - Ángulo inicial a probar: 50–58° desde el plano horizontal; altura/ortho-size configurable por zona.
-- El personaje controlado permanece cerca del centro, con desplazamiento suave y límites para no ocultarlo.
-- Ocultar/atenuar elementos que tapen al personaje (árboles, techos) con material de transparencia gradual o hide-on-occlusion sencillo.
-- Enemigos y telegráficos nunca deben quedar ocultos por efectos.
+- Personaje controlado cerca del centro, con seguimiento suave.
+- Ocultar/atenuar elementos que tapen al personaje.
+- Enemigos y telegráficos nunca deben quedar ocultos por vegetación o efectos.
 
 ## 4. Estructura del mundo
 
-El mundo se organiza en un realm con regiones conectadas. Cada región se divide internamente en sectores de streaming y puntos de interés. No se carga el mundo completo en memoria.
+El mundo se organiza por regiones cubanas ficticias o inspiradas en geografía real, con sectores de streaming y puntos de interés. No cargar el mundo completo al mismo tiempo. La región inicial es Valdeluz; las zonas principales se detallan en la biblia narrativa.
 
-- Ciudad segura: servicios, comerciantes, herrero, alquimista, maestro de clase, almacén, tablón y portal.
-- Regiones exteriores: caza, recolección, eventos y entradas a mazmorras.
-- Mazmorras: instancias privadas o de grupo, generación determinista por semilla.
-- Zonas de jefe: arenas con fases, telegráficos y condiciones de victoria.
+- Ciudad/refugio: servicios, comerciantes, herrero, médico, almacén y tablón.
+- Regiones exteriores: combate, exploración, eventos y recolección.
+- Mazmorras: instancias de grupo o solitario con semilla determinista.
+- Jefes: arenas con fases, telegráficos y condiciones de victoria.
 
 ## 5. Modos de juego
 
 ### Solitario
-
-Una partida local con guardado propio. La lógica y los sistemas de personaje son los mismos que en online, con autoridad local. Los datos del modo solitario no se mezclan con personajes online.
+Partida local con guardado propio. La lógica de personaje y combate se diseña para que pueda validarse luego en servidor; el modo offline no comparte datos con online.
 
 ### Multijugador LAN
-
-Se elige un mundo local y se conecta al servidor dedicado en la red. El servidor puede estar en la PC del jugador, pero ejecuta como proceso headless y no es un cliente que tenga privilegios especiales.
+Cliente conectado a servidor dedicado local, proceso headless sin privilegios especiales de cliente.
 
 ### Online
-
-Selección de región/realm, lista de mundos, personaje y zona. Se habilita cuando exista servidor público desplegado, matchmaking/lobby, autentificación y reglas de protección de datos.
+Se habilita cuando existan servidor público, autenticación, matchmaking/lobby y reglas de protección de datos.
 
 ## 6. Sesión y jugadores
 
-- Grupo: 4 jugadores.
-- Zona: comenzar con 4 conectados probados; objetivo de 10 por instancia tras benchmark.
-- Guild: objetivo inicial 20 miembros.
-- El diseño de datos admite más capacidad, pero no se subirá el límite sin pruebas de latencia, CPU, memoria y ancho de banda.
-- Recompensas de grupo: experiencia compartida dentro de radio; loot personal instanciado para evitar disputa en el MVP.
+- Grupo: 4 jugadores como objetivo inicial.
+- Zona: probar 4 conectados antes de elevar límites; el objetivo de 10 por instancia requiere benchmark real.
+- Guild: objetivo posterior de 20 miembros.
+- Loot personal instanciado en grupo para evitar disputa en MVP.
 
 ## 7. Progreso
 
-- Nivel 1–30 para el primer arco de contenido.
-- El jugador gana XP por misiones, enemigos, exploración y mazmorras.
-- Cada nivel entrega puntos de habilidad o mejora predefinida según el sistema de progresión aprobado.
-- Desbloqueos de habilidades por niveles; especializaciones por ramas.
-- No hacer que la mejora de poder dependa solo de grind repetitivo; cada tramo debe desbloquear una herramienta o decisión jugable.
-- La dificultad de enemigos se define por zona y rango de nivel. No escalar automáticamente todos los enemigos al nivel del jugador: mantener zonas de inicio reconocibles y riesgo por región.
+- Nivel 1–30 para el primer arco.
+- XP por misiones, enemigos, exploración y mazmorras.
+- Desbloqueos de habilidades y especializaciones a niveles definidos.
+- La progresión debe desbloquear decisiones jugables y no depender solo de grind.
+- Las zonas mantienen rangos de nivel propios; no escalar todo automáticamente al jugador.
 
 ## 8. Equipo y objetos
 
-Slots: arma principal, mano secundaria/escudo/catalizador, cabeza, torso, manos, piernas, pies, amuleto y dos anillos. La disponibilidad de off-hand depende de clase.
+Slots: arma principal, mano secundaria/escudo/catalizador, cabeza, torso, manos, piernas, pies, amuleto y dos anillos. Off-hand depende de clase. Rarezas: común, poco común, raro, épico y legendario. Los afijos deben crear decisiones y no solo inflación de números.
 
-Rarezas: común, poco común, raro, épico, legendario. La rareza añade afijos y una propiedad distintiva; no solo incrementa números sin límite.
-
-Objetos:
-- armas, armaduras, consumibles, materiales, recetas, llaves, objetos de misión y cosméticos.
-- Equipo con nivel requerido y clase/slot cuando corresponda.
-- Durabilidad y reparación solo si no crea fricción innecesaria; se puede dejar para fase posterior.
-- Botín personal para grupo, con tabla determinista por enemigo/encuentro y semilla del servidor.
+Objetos: armas, armaduras, consumibles, materiales, recetas, llaves, objetos de misión y cosméticos. Loot de grupo personal, validado por servidor futuro.
 
 ## 9. Economía
 
-- Moneda: Plata de Lythara.
-- Comerciantes: compra/venta de consumibles y materiales comunes.
-- Herrero: reparación (si se activa), fabricación y mejora controlada.
-- Alquimista: pociones y consumibles.
-- Desguace: convertir equipo sobrante en materiales.
-- Almacén: inventario compartido por cuenta/realm sujeto a reglas de seguridad.
-- Mercado entre jugadores: fase posterior, no en MVP.
-- Trade directo: ventana doble, revisión final y confirmación bilateral; el servidor valida propiedad y cantidades de forma atómica.
+Moneda inicial de diseño: **Reales de Plata** (nombre de lore sujeto a revisión). Comerciantes, herrero, médico/alquimista, almacén y fabricación. Mercado y trade entre jugadores quedan para fase posterior con transacciones atómicas y validación autoritativa.
 
 ## 10. Descubrimiento y mundo
 
-- Hitos de exploración en cada región: puntos panorámicos, santuarios, cofres ocultos y mini-jefes.
-- Eventos de zona: caravanas atacadas, portales inestables, campamentos enemigos.
-- Recolección de hierbas, mineral y madera en puntos limitados y visibles.
-- Los recursos reaparecen por temporizador de servidor, no por reloj del cliente.
+Hitos de exploración, puntos panorámicos, santuarios ficticios, cofres, mini-jefes, caravanas, trenes, eventos de región y recolección de hierbas/mineral/madera. Respawn y clima deben ser autoridad del servidor en multijugador.
 
 ## 11. Fin de juego del primer arco
 
-- Mazmorras en dificultad normal y desafiante.
-- Jefes con 2–3 fases y señales visuales/sonoras.
-- Caza de élites y eventos de región.
-- Equipamiento épico y legendario con builds alternativas.
-- El contenido final inicial debe durar varias sesiones, pero no debe intentar competir con un MMO comercial completo.
+Mazmorras en dificultades normal/desafiante, jefes de 2–3 fases, eventos de región y equipo épico/legendario. El contenido inicial debe ser finito y sostenible; no intentar simular un MMO comercial completo desde el MVP.
 
 ## 12. Accesibilidad y experiencia móvil
 
-- Escalado de UI para pantallas 16:9, 20:9, tablets y notch/safe areas.
-- Botones reubicables y opción de cambiar tamaño/opacidad.
-- Vibración configurable, subtítulos, volumen separado, texto legible, daltonismo no dependiente solo del color.
-- Auto-target opcional y modo apuntado manual simplificado.
-- Opción para reducir partículas y sacudida de cámara.
-- Controles táctiles y gamepad Bluetooth opcional; no depender de teclado/ratón.
+Escalado 16:9, 20:9, tablets y safe areas; botones reubicables; vibración y subtítulos configurables; tipografía legible; estados no dependientes solo del color; auto-target opcional; reducción de partículas y sacudida; gamepad opcional. El HUD se define en la dirección artística.
