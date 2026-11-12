@@ -1,17 +1,33 @@
-name: RPG LBA - Android debug build
+name: RPG LBA - Android debug APK (autofirma + verificación de instalación)
 
 on:
   workflow_dispatch:
   push:
-    tags: ['v*']
+    branches:
+      - main
+      - develop
+      - 'agent/**'
+      - 'feature/**'
+  pull_request:
+  tags: ['v*']
 
 permissions:
   contents: read
 
+concurrency:
+  group: rpg-lba-android-debug-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.7.2"
+  APK_REL: artifacts/android/RPG-LBA-debug.apk
+  PACKAGE: com.lbagames.rpglba
+
 jobs:
-  android-debug:
+  build-sign-verify:
+    name: Export, autofirma open source y verificación estática
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -23,7 +39,6 @@ jobs:
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "Android Debug export preset is not configured yet. This is expected before the Android export phase."
           fi
 
       - name: Setup Java
@@ -37,50 +52,220 @@ jobs:
         if: steps.preset.outputs.ready == 'true'
         uses: android-actions/setup-android@v3
 
+      # Nota: la exportación directa de Godot (sin Gradle) NO usa NDK ni cmake;
+      # se omiten respecto del workflow original para ahorrar tiempo de setup.
       - name: Install Android packages
         if: steps.preset.outputs.ready == 'true'
         run: |
           sdkmanager --install \
             "platform-tools" \
             "build-tools;35.0.1" \
-            "platforms;android-35" \
-            "cmdline-tools;latest" \
-            "cmake;3.10.2.4988404" \
-            "ndk;28.1.13356709"
+            "platforms;android-35"
+
+      - name: Cache Godot editor and export templates
+        if: steps.preset.outputs.ready == 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/rpg-lba/godot
+            ~/.local/share/godot/export_templates
+          key: godot-${{ env.GODOT_VERSION }}-stable-v1
 
       - name: Download Godot and export templates
         if: steps.preset.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          VERSION="4.7.2"
-          mkdir -p "$RUNNER_TEMP/godot" "$HOME/.local/share/godot/export_templates/${VERSION}.stable"
-          curl -fsSL "https://github.com/godotengine/godot/releases/download/${VERSION}-stable/Godot_v${VERSION}-stable_linux.x86_64.zip" -o "$RUNNER_TEMP/godot.zip"
-          unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
-          GODOT_BIN="$RUNNER_TEMP/godot/Godot_v${VERSION}-stable_linux.x86_64"
-          chmod +x "$GODOT_BIN"
-          curl -fsSL "https://github.com/godotengine/godot/releases/download/${VERSION}-stable/Godot_v${VERSION}-stable_export_templates.tpz" -o "$RUNNER_TEMP/templates.tpz"
-          mkdir -p "$RUNNER_TEMP/templates"
-          unzip -q "$RUNNER_TEMP/templates.tpz" -d "$RUNNER_TEMP/templates"
-          if [ -d "$RUNNER_TEMP/templates/templates" ]; then
-            cp -a "$RUNNER_TEMP/templates/templates/." "$HOME/.local/share/godot/export_templates/${VERSION}.stable/"
-          else
-            echo "Unexpected export template archive layout" >&2
-            exit 1
+          GODOT_DIR="$HOME/.cache/rpg-lba/godot"
+          mkdir -p "$GODOT_DIR" "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          if [ ! -x "$GODOT_DIR/Godot_v${GODOT_VERSION}-stable_linux.x86_64" ]; then
+            curl -fsSL "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o "$GODOT_DIR/godot.zip"
+            unzip -q "$GODOT_DIR/godot.zip" -d "$GODOT_DIR"
+            chmod +x "$GODOT_DIR/Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+            rm -f "$GODOT_DIR/godot.zip"
           fi
-          "$GODOT_BIN" --headless --editor --path . --quit
-          mkdir -p artifacts/android
-          "$GODOT_BIN" --headless --path . --export-debug "Android Debug" artifacts/android/RPG-LBA-debug.apk
-          test -s artifacts/android/RPG-LBA-debug.apk
+          if [ ! -f "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable/android_debug.apk" ]; then
+            curl -fsSL "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz" -o /tmp/templates.tpz
+            mkdir -p /tmp/templates
+            unzip -q /tmp/templates.tpz -d /tmp/templates
+            cp -a /tmp/templates/templates/. "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable/"
+            rm -rf /tmp/templates /tmp/templates.tpz
+          fi
 
-      - name: Upload APK
+      # El export de Godot lee el SDK y el JDK de Editor Settings; con dos
+      # claves basta (probado en local). Las rutas absolutas salen del runner.
+      - name: Write Godot Editor Settings (SDK + JDK paths)
+        if: steps.preset.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.config/godot"
+          {
+            echo '[gd_resource type="EditorSettings" format=3]'
+            echo ''
+            echo '[resource]'
+            echo "export/android/android_sdk_path = \"${ANDROID_SDK_ROOT}\""
+            echo "export/android/java_sdk_path = \"${JAVA_HOME}\""
+          } > "$HOME/.config/godot/editor_settings-4.7.tres"
+          cat "$HOME/.config/godot/editor_settings-4.7.tres"
+
+      # Sin adb activo, Godot aborta (exit 134) al terminar el export headless.
+      - name: Start adb server
+        if: steps.preset.outputs.ready == 'true'
+        run: adb start-server
+
+      - name: Import project
+        if: steps.preset.outputs.ready == 'true'
+        run: |
+          "$HOME/.cache/rpg-lba/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" \
+            --headless --editor --path . --quit
+
+      # El directorio de destino debe existir antes del export.
+      - name: Export debug APK (firma con la autofirma del proyecto)
+        if: steps.preset.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/android
+          "$HOME/.cache/rpg-lba/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" \
+            --headless --path . --export-debug "Android Debug" "${APK_REL}"
+          test -s "${APK_REL}"
+
+      - name: Verify APK (static checks)
+        if: steps.preset.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          ./scripts/ci/verify_apk.sh "${APK_REL}" "${APK_REL%.*}_verification_report.txt" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload APK and report
         if: steps.preset.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: RPG-LBA-Android-debug
-          path: artifacts/android/RPG-LBA-debug.apk
+          path: |
+            artifacts/android/RPG-LBA-debug.apk
+            artifacts/android/RPG-LBA-debug_verification_report.txt
           retention-days: 14
+          if-no-files-found: error
 
       - name: Report not configured
         if: steps.preset.outputs.ready != 'true'
-        run: 'echo "SKIPPED: configure export_presets.cfg Android Debug before expecting an APK."'
+        run: 'echo "SKIPPED: no Android Debug preset in export_presets.cfg; nothing to build."'
+
+  emulator-install-test:
+    name: Instalación y arranque en emulador (API 35)
+    needs: build-sign-verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install emulator and system image
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager --install \
+            "platform-tools" \
+            "emulator" \
+            "system-images;android-35;google_apis;x86_64" >/dev/null
+
+      - name: Check KVM
+        run: |
+          if [ ! -e /dev/kvm ]; then
+            echo "ERROR: /dev/kvm not available on this runner; cannot hardware-accelerate the emulator." >&2
+            exit 1
+          fi
+          echo "KVM available."
+
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: RPG-LBA-Android-debug
+          path: dist
+
+      - name: Boot emulator
+        run: |
+          set -euo pipefail
+          echo no | avdmanager create avd -n rpglba_ci -k "system-images;android-35;google_apis;x86_64" --device pixel >/dev/null
+          nohup emulator -avd rpglba_ci -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -accel on > /tmp/emulator.log 2>&1 &
+          adb wait-for-device
+          deadline=$((SECONDS + 480))
+          while [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "ERROR: emulator did not finish booting within 480s." >&2
+              tail -40 /tmp/emulator.log >&2 || true
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "Emulator booted."
+
+      - name: Install APK (valid to install?)
+        run: |
+          set -euo pipefail
+          adb install -r dist/RPG-LBA-debug.apk | tee install.txt
+          grep -q "Success" install.txt || { echo "ERROR: adb install did not report Success." >&2; exit 1; }
+
+      - name: Launch game and watch for crashes
+        run: |
+          set -euo pipefail
+          adb logcat -c
+          COMPONENT=$(adb shell cmd package resolve-activity --brief "${PACKAGE}" | tail -n 1 | tr -d '\r')
+          echo "Launchable component: $COMPONENT"
+          echo "$COMPONENT" | grep -q "/" || { echo "ERROR: no launchable activity resolved." >&2; exit 1; }
+          adb shell am start -n "$COMPONENT"
+          sleep 25
+          PID=$(adb shell pidof "${PACKAGE}" | tr -d '\r')
+          if [ -z "$PID" ]; then
+            echo "ERROR: process not alive 25s after launch." >&2
+            adb logcat -d | tail -80 >&2
+            exit 1
+          fi
+          echo "Process alive (pid $PID) 25s after launch."
+          if adb logcat -d | grep -q "FATAL EXCEPTION"; then
+            echo "ERROR: FATAL EXCEPTION found in logcat." >&2
+            adb logcat -d | grep -A20 "FATAL EXCEPTION" >&2 || true
+            exit 1
+          fi
+          adb logcat -d | grep -m1 "Godot Engine" || echo "note: no Godot Engine banner line in logcat (not fatal by itself)."
+
+      - name: Capture screenshot evidence
+        run: |
+          adb exec-out screencap -p > emulator_screenshot.png
+          adb logcat -d > emulator_logcat.txt
+          ls -la emulator_screenshot.png
+
+      - name: Uninstall and shut down
+        run: |
+          adb uninstall "${PACKAGE}" || true
+          adb emu kill || true
+          pkill -f qemu-system || true
+
+      - name: Upload emulator evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: RPG-LBA-Android-emulator-evidence
+          path: |
+            emulator_screenshot.png
+            emulator_logcat.txt
+            install.txt
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Summary
+        run: |
+          {
+            echo "## Android debug APK — verificación de instalación"
+            echo ""
+            echo "- Instalación en emulador API 35 (x86_64, SwiftShader): **PASS**"
+            echo "- Lanzamiento del juego y proceso vivo 25 s: **PASS**"
+            echo "- Sin FATAL EXCEPTION en logcat: **PASS**"
+            echo "- Captura y logcat adjuntos como artefactos."
+            echo ""
+            echo "Esto NO equivale a una prueba en dispositivo físico (queda NOT TESTED en dispositivo real)."
+          } >> "$GITHUB_STEP_SUMMARY"

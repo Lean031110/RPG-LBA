@@ -10,7 +10,7 @@ Estados: COMPLETADO · PENDIENTE · BLOQUEADO · NO PROBADO.
 | Subir la Fase 2 a GitHub (rama `feature/phase-2-playable-prototype`) | COMPLETADO | Push directo con credenciales autorizadas; PR#6 abierta sobre `agent/fase1-vertical-slice`. |
 | Verificar que Actions pase en la PR de Fase 2 | COMPLETADO | `validate.yml` verde: import+smoke, multiplayer-smoke, asset-license-audit, gdunit-tests, test-report (5/5). |
 | Sin merge automático (regla del repositorio) | COMPLETADO | PRs abiertas; decisión del propietario. |
-| APK debug desde CI (`android-debug.yml`) | PENDIENTE | Requiere `workflow_dispatch`/tag; el preset y el workflow quedaron operativos en Fase 2. |
+| APK debug desde CI (`android-debug.yml`) | EN CURSO (Fase 3B) | Rama `agent/fase3b-apk-firma-verificacion`: autofirma open source versionada + verificación estática (15 checks) + instalación real en emulador API 35. Local: export exit 0, firma verificada, 171/171. CI: pendiente de corrida; se actualizará con identificadores reales. |
 
 ## HUD y controles (estilo Diablo Immortal / MLBB)
 
