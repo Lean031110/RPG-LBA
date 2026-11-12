@@ -101,7 +101,7 @@ func register_night_light(light: OmniLight3D, base_energy: float = -1.0) -> void
 		return
 	var energy := base_energy if base_energy > 0.0 else light.light_energy
 	_night_lights[light.get_instance_id()] = {"light": light, "energy": energy}
-	_apply_night_lights()
+	_apply_visual_state()
 
 
 func _create_world_environment() -> void:

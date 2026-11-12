@@ -18,6 +18,8 @@ func test_controller_creates_sky_and_low_cost_sun() -> void:
 	assert_object(controller.active_environment.sky).is_instanceof(Sky)
 	assert_object(controller.sun_light).is_instanceof(DirectionalLight3D)
 	assert_bool(controller.sun_light.shadow_enabled).is_false()
+	assert_object(controller.rain_particles).is_instanceof(CPUParticles3D)
+	assert_object(controller.rain_particles.mesh).is_instanceof(QuadMesh)
 
 
 func test_time_api_updates_period_without_scene_dependency() -> void:
@@ -35,6 +37,9 @@ func test_weather_can_be_changed_and_toggled() -> void:
 	assert_bool(controller.set_weather_by_name("lluvia", true)).is_true()
 	assert_str(controller.get_weather_name()).is_equal("Lluvia")
 	assert_float(controller.get_weather_weight(WeatherController.Weather.RAIN)).is_equal_approx(1.0, 0.001)
+	assert_bool(controller.rain_particles.emitting).is_true()
+	assert_bool(controller.set_weather_by_name("despejado", true)).is_true()
+	assert_bool(controller.rain_particles.emitting).is_false()
 	assert_bool(controller.set_weather_by_name("tormenta")).is_false()
 
 
