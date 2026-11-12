@@ -1,119 +1,96 @@
 # 09 — Roadmap de producción y prompts por fase
 
+## Puerta creativa nueva — antes de ampliar el juego
+
+La vertical slice funcional no obtuvo aprobación visual final. Antes de desarrollar más regiones, enemigos o contenido, ejecutar el **Art Pass + UX Pass** definido en `docs/direccion-artistica/03_DIRECCION_ARTISTICA_Y_UX.md` y autorizado por `docs/AGENT_BRIEFING_VISION_CUBANA.md`.
+
+Orden obligatorio inmediato:
+1. Verificar estado real de main, rama Fase 1, commits, árbol, PR y CI; no asumir que una entrega local ya está en GitHub.
+2. Integrar la documentación creativa aprobada mediante PR independiente.
+3. Crear rama `agent/art-pass-cuban-dark-fantasy` desde el commit aprobado.
+4. Construir benchmark de césped, tierra roja, piedra, vegetación y cielo.
+5. Implementar ciclo día/noche y clima básico con cuatro capturas horarias.
+6. Rediseñar HUD/menús para 16:9 y 20:9.
+7. Rehacer bosque de Valdeluz, medir y capturar antes/después.
+8. Obtener revisión visual humana antes de pasar a contenido adicional.
+
 ## Regla de ejecución
 
-El agente no debe desarrollar el juego completo en una sola operación. Cada fase termina con un PR pequeño, un informe y pruebas verdes. Cuando una fase falle, corregirla antes de avanzar.
+El agente no debe desarrollar el juego completo en una sola operación. Cada fase termina con un PR, un informe y pruebas verdes. Cuando una fase falle, corregirla antes de avanzar.
 
 ## Fase 0 — Auditoría y base reproducible
 
-- Clonar el repositorio base Godot 3D Multiplayer Template en tag `v2.0.0`.
-- Revisar cada script, escena, licencia, workflow y asset.
-- Ejecutar el proyecto original en Godot 4.7.2 y probar servidor con 2 clientes.
-- Confirmar el estado real de inventario/equipamiento/chat/sesiones.
-- Identificar sistemas que no son ARPG: cámara tercera persona, movimiento, ataque solo visual, arena de prueba.
-- Crear fork/copia en repo `RPG-LBA` (nombre sugerido; comprobar disponibilidad).
-- Conservar upstream remoto y tag/commit de origen.
-- Añadir este kit, `AGENTS.md`, branch protection, CI básico.
+- Auditar la plantilla, código, escenas, licencias, workflows y assets.
+- Probar servidor y clientes; conservar trazabilidad y CI.
 
-**Salida:** repo importable y plantilla original validada, informe de activos/licencias y deuda técnica.
+**Salida:** repo importable, informe de activos/licencias y deuda técnica.
 
-## Fase 1 — Vertical slice single player
+## Fase 1 — Vertical slice single player (reportada como entrega local)
 
-- Cámara elevada/isométrica.
-- Personaje de una clase.
-- Movimiento con joystick y teclado de pruebas.
-- Una escena de bosque pequeña.
-- Un enemigo, ataque básico, HP, muerte y drop.
-- HUD móvil, menú pausa y ajuste de calidad.
-- Una misión corta tutorial.
+- Cámara isométrica, personaje, bosque, enemigo, combate, HUD, misión tutorial y menús.
+- El informe de entrega reporta 48/48 tests y 10 capturas. Push/PR/CI deben verificarse antes de marcar la fase integrada.
+- APK, dispositivo físico y FPS deben conservar estado NOT TESTED hasta prueba real.
 
-**Salida:** APK de debug, gameplay de 5 minutos, pruebas de movimiento, combate, loot y scene startup.
+## Fase 1B — Art Pass + UX Pass (prioridad inmediata)
+
+- Terreno con materiales distinguibles: césped, tierra roja, piedra, madera y metal.
+- Cielo/horizonte, sol/luna, amanecer/día/atardecer/noche.
+- Clima básico: despejado, nublado, lluvia y niebla.
+- HUD/menús con jerarquía ARPG oscura, legibles y adaptables.
+- Capturas 16:9 y 20:9; pruebas de perfil Low.
+
+**Salida:** aprobación visual humana antes de contenido amplio.
 
 ## Fase 2 — Combate ARPG y seis clases
 
-- Datos de clase, recurso, habilidades y cooldown.
-- 6 clases con 1 básico, 4 habilidades, esquiva y definitiva inicial.
-- Enemigos por arquetipo y élites.
-- Telegráficos, VFX y audio.
-- Balance inicial a nivel 1–10.
-
-**Salida:** test de habilidad por clase, daño validado, cooldown/coste y UI legible.
+- Implementar estadísticas desde `docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md`.
+- Ataque básico, cuatro habilidades, esquiva, definitiva y pasivas por clase.
+- Enemigos por arquetipo y élites; telegráficos, VFX y audio.
+- Balance inicial niveles 1–10, tests de coste, cooldown, alcance y daño.
 
 ## Fase 3 — Inventario, equipo y economía
 
 - Slots, rareza, afijos, consumibles, materiales.
-- Comerciantes, herrero, alquimista, almacén y desguace.
-- Fabricación y upgrade acotado.
-- Guardado local offline y servicio de inventario servidor.
-
-**Salida:** transacciones idempotentes, no duplicar/dupear objetos, pruebas de save/load, compra/venta y equipar.
+- Comerciantes, herrero, médico/alquimista, almacén y fabricación.
+- Guardado local y servicio futuro de inventario servidor.
 
 ## Fase 4 — Misiones y narrativa
 
-- Cinco principales y ocho secundarias.
-- NPC, diálogos, objetivos, tracking y recompensas.
-- Estado de quest persistente.
-- Localización española y estructura inglés.
-
-**Salida:** campaña inicial completada desde prólogo hasta cierre, misiones no repetibles indebidamente.
+- Implementar prólogo P00–P03 y cadena principal en orden.
+- Diálogos, objetivos, tracking, decisiones y persistencia.
+- Añadir cadenas secundarias en lotes, con IDs estables y localización.
 
 ## Fase 5 — Mundo y dungeons
 
-- Ciudad Valdeluz y regiones iniciales.
-- Streaming por zonas.
-- 3 dungeon graphs deterministas y seed de servidor.
-- 5 jefes con fases y mecánicas.
-- Eventos y puntos de interés.
-
-**Salida:** entradas/salidas no bloqueadas, semilla reproduce dungeon, navmesh valida conectividad y boss puede completarse.
+- Valdeluz y regiones iniciales; streaming por sectores.
+- Mazmorras deterministas, jefes con fases y eventos.
 
 ## Fase 6 — Multijugador LAN autoritativo
 
-- Cliente/servidor y selección de modo.
-- Prueba 2 clientes y party 4.
-- Servidor headless.
-- Sincronización de posición/acción/vida/animación.
-- Validación de combate, drops, inventario y misiones.
-- Reconexión y salida segura.
-
-**Salida:** dos a cuatro clientes terminan misión y jefe sin divergencia de estado.
+- Cliente/servidor, party, sincronización y servidor headless.
+- Validar combate, drops, inventario y misiones; reconexión.
 
 ## Fase 7 — Mundos, grupos y guild
 
-- World selector/realm ID.
-- Instance manager.
-- Party, guild inicial, chat protegido y trade bilateral.
-- SQLite single realm; migración PostgreSQL cuando corresponda.
-
-**Salida:** personajes aislados por world_id, no duplicación de trades, guild permissions tests.
+- World selector, instancias, party, guild y trade seguro.
 
 ## Fase 8 — Calidad, rendimiento y audio
 
-- Perfil bajo/medio/alto.
-- LOD, visibilidad, densidad de enemigos, resolución interna y efectos.
-- Música/sfx por región/clase.
-- Pruebas de memoria, calentamiento y batería.
-- Pruebas físicas Redmi 9C y un dispositivo más potente.
-
-**Salida:** matriz de dispositivos con mediciones reales y límites conocidos.
+- Perfiles Low/Medium/High, LOD, visibilidad, densidad, audio original.
+- Medición real de memoria, temperatura, batería y FPS en hardware objetivo.
 
 ## Fase 9 — Release candidate
 
-- Seguridad y revisión de RPC.
-- Migraciones y backups.
-- Prueba de carga con clientes simulados.
-- Export Android firmado fuera de PR, release notes, credits y legal.
-- Bug bash y pruebas manuales.
-
-**Salida:** release candidate, no producción pública hasta configurar alojamiento y soporte.
+- Seguridad RPC, migraciones, backups, pruebas de carga y export Android firmado.
+- Release notes, créditos, legal, bug bash y pruebas manuales.
 
 ## Prompts
 
-### Prompt general para cada fase
+### Prompt general
 
-“Lee `AGENTS.md` y todos los documentos de diseño referenciados. Trabaja solo en la fase autorizada. Primero inspecciona el estado actual y presenta un plan pequeño. No sobrescribas ni borres sistemas. Implementa pruebas antes o junto al código. Ejecuta el pipeline local y GitHub Actions. Abre PR. Informa PASS/FAIL/SKIPPED/NOT TESTED con evidencia real. No avances a la siguiente fase.”
+“Lee `AGENTS.md` y los documentos de diseño. Trabaja solo en la fase autorizada. Inspecciona el estado actual antes de editar. No sobrescribas ni borres sistemas funcionales. Añade pruebas y evidencia. Ejecuta el pipeline local y GitHub Actions. Abre PR. Informa PASS/FAIL/SKIPPED/NOT TESTED con comandos y logs reales. No avances a la siguiente fase.”
 
-### Secuencia recomendada
+### Secuencia original de prompts
 
 - `prompts/00_AUDITORIA_Y_BOOTSTRAP.md`
 - `prompts/01_VERTICAL_SLICE.md`
@@ -124,3 +101,5 @@ El agente no debe desarrollar el juego completo en una sola operación. Cada fas
 - `prompts/06_MULTIJUGADOR_LAN.md`
 - `prompts/07_REALMS_GUILDS.md`
 - `prompts/08_OPTIMIZACION_RELEASE.md`
+
+Los prompts existentes deben adaptarse a la visión cubana y a la puerta Art Pass sin cambiar silenciosamente su alcance.

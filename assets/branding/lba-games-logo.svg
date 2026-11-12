@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 360" role="img" aria-labelledby="title desc">
+<title id="title">LBA Games</title><desc id="desc">Marca de estudio con estrella, ola y paleta dorada y azul noche.</desc>
+<defs><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#ffe6a2"/><stop offset=".5" stop-color="#c18a38"/><stop offset="1" stop-color="#68401e"/></linearGradient></defs>
+<rect width="1000" height="360" rx="28" fill="#0c111a"/><path d="M120 100 Q500 -20 880 100" fill="none" stroke="url(#gold)" stroke-width="8"/>
+<path d="M500 32 L520 76 L568 82 L533 115 L542 163 L500 140 L458 163 L467 115 L432 82 L480 76Z" fill="url(#gold)"/>
+<path d="M190 192 Q310 120 430 180 T670 180 T850 192" fill="none" stroke="#bd303b" stroke-width="18" stroke-linecap="round"/>
+<path d="M190 214 Q310 142 430 202 T670 202 T850 214" fill="none" stroke="#2b5a88" stroke-width="14" stroke-linecap="round"/>
+<text x="500" y="245" text-anchor="middle" font-family="Georgia,serif" font-size="132" font-weight="bold" letter-spacing="14" fill="url(#gold)">LBA</text>
+<text x="500" y="310" text-anchor="middle" font-family="Georgia,serif" font-size="54" letter-spacing="22" fill="#e7d5b4">GAMES</text>
+<text x="500" y="342" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" letter-spacing="5" fill="#b8a27e">CREAMOS MUNDOS · CONTAMOS HISTORIAS</text></svg>
