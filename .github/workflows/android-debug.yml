@@ -8,8 +8,8 @@ on:
       - develop
       - 'agent/**'
       - 'feature/**'
+    tags: ['v*']
   pull_request:
-  tags: ['v*']
 
 permissions:
   contents: read
