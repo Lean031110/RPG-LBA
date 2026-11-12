@@ -49,7 +49,7 @@ Los atributos, poderes, especializaciones, XP, curva de niveles y pruebas de bal
 | Área | Estado |
 |---|---|
 | Godot 4.7.2 y auditoría inicial | Fase 0 reportada |
-| Vertical slice | Entrega local reportada; integración a verificar |
+| Vertical slice | Reconstruida y publicada en `agent/fase1-vertical-slice` (PR pendiente de revisión; 108/108 pruebas GdUnit4 y CI en verde) |
 | Dirección creativa y narrativa | Documentadas |
 | Clases, XP y balance | Diseño revisado; implementación y simulación pendientes |
 | Art Pass / ciclo día-noche / UX | Especificados; implementación pendiente |

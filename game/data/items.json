@@ -1,0 +1,38 @@
+{
+	"schema_version": 1,
+	"note": "Objetos de la vertical slice. El inventario completo (equipo, rarezas, afijos) llega en Fase 3; aquí solo consumibles y objetos de misión.",
+	"items": [
+		{
+			"id": "pocion_curativa",
+			"name_key": "item.pocion.name",
+			"description_key": "item.pocion.desc",
+			"kind": "consumable",
+			"heal_amount": 40,
+			"stackable": true
+		},
+		{
+			"id": "fragmento_bronce",
+			"name_key": "item.fragmento.name",
+			"description_key": "item.fragmento.desc",
+			"kind": "quest",
+			"stackable": true
+		},
+		{
+			"id": "machete_mellado",
+			"name_key": "item.machete.name",
+			"description_key": "item.machete.desc",
+			"kind": "weapon",
+			"class_id": "machetero"
+		}
+	],
+	"strings": {
+		"es": {
+			"item.pocion.name": "Poción de curación",
+			"item.pocion.desc": "Tónico amargo de la médica. Restaura 40 de vida.",
+			"item.fragmento.name": "Fragmento de bronce",
+			"item.fragmento.desc": "Un pedazo de la campana agrietada. Está tibio, como si sonara hace un momento.",
+			"item.machete.name": "Machete mellado de Cheo",
+			"item.machete.desc": "Viejo acero de monte. La filo tiene historia; la memoria, también."
+		}
+	}
+}

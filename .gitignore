@@ -11,6 +11,9 @@ export_presets.cfg
 builds/
 bin/
 releases/
+# gdUnit4: el bin/ del addon es su runtime de pruebas, no un artefacto de build.
+# Sin esta excepcion, git ignora addons/gdUnit4/bin y la CI no puede correr tests.
+!addons/gdUnit4/bin/
 
 # Mono-specific ignores
 .mono/
@@ -31,3 +34,6 @@ artifacts/
 # Editor
 .vscode/
 *.code-workspace
+
+# GdUnit4 local reports (publicados como artefactos por CI, no versionados)
+reports/
