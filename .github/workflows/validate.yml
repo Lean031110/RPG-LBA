@@ -73,7 +73,7 @@ jobs:
             "commit": "$GITHUB_SHA",
             "ref": "$GITHUB_REF",
             "godot": "${GODOT_VERSION}-stable",
-            "renderer_preset": "ForwardPlus (inherited from template; Compatibility switch planned for Phase 1)",
+            "renderer_preset": "gl_compatibility (switched in Fase 1 per ADR-002)",
             "build_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
             "ci_job": "project-import-and-smoke"
           }
