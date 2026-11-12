@@ -48,9 +48,11 @@ func from_dict(data: Dictionary) -> void:
 		clear()
 		return
 
+	# Fase 3: los ids que no están en ItemDatabase se CONSERVAN (el ARPG tiene su propia
+	# base de datos RpgDB; p. ej. machete_mellado). Solo se acota el apilado si se conoce.
 	var item = ItemDatabase.get_item(item_id)
 	if not item:
-		clear()
+		quantity = maxi(quantity, 1)
 		return
 
 	var max_quantity = item.max_stack if item.stackable else 1

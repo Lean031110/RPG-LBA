@@ -71,7 +71,9 @@ func test_claim_returns_rewards_once() -> void:
 	QuestSystem.notify_collect("fragmento_bronce", 2)
 	var rewards := QuestSystem.claim("VS_P00")
 	assert_int(int(rewards.get("xp", 0))).is_equal(50)
-	assert_array(rewards.get("items", [])).has_size(1)
+	# Ajuste Fase 3 (justificado): VS_P00 ahora entrega poción + machete mellado
+	# (recompensa data-driven; la intención del caso —claim único— no cambia).
+	assert_array(rewards.get("items", [])).has_size(2)
 	# Segundo claim bloqueado (repeat_policy once).
 	assert_dict(QuestSystem.claim("VS_P00")).is_empty()
 
