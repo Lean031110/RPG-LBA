@@ -1,8 +1,6 @@
 class_name TestLevelLayout
 extends GdUnitTestSuite
-## Layout determinista de las afueras de Valdeluz: grupos presentes, colisiones en la
-## capa correcta, rectángulo jugable y densidad según perfil gráfico.
-
+## Layout determinista de las afueras de Valdeluz y sus recursos ambientales.
 
 func _build(density: float) -> Node3D:
 	var root: Node3D = auto_free(Node3D.new())
@@ -13,9 +11,8 @@ func _build(density: float) -> Node3D:
 
 func test_builder_creates_all_groups() -> void:
 	var root := _build(0.45)
-	for group: String in ["Ground", "WorldEnvironment", "Boundaries", "Vegetation", "Props"]:
-		var found := root.get_node_or_null(group) != null
-		assert_bool(found).is_true()
+	for group: String in ["Ground", "EnvironmentController", "Boundaries", "Vegetation", "Props"]:
+		assert_bool(root.get_node_or_null(group) != null).is_true()
 
 
 func test_play_area_rect_is_sane() -> void:
@@ -53,16 +50,21 @@ func test_density_changes_vegetation_count() -> void:
 
 
 func test_layout_is_deterministic() -> void:
-	## Misma semilla: misma cantidad de nodos por grupo en dos construcciones.
 	var first := _build(0.8)
 	var second := _build(0.8)
 	for group: String in ["Vegetation", "Boundaries"]:
 		assert_int(first.get_node(group).get_child_count()).is_equal(second.get_node(group).get_child_count())
 
 
-func test_lighting_has_no_shadows_in_default() -> void:
-	## El sol de la mañana arranca sin sombras dinamicas (Low es la referencia).
+func test_default_lighting_disables_dynamic_shadows() -> void:
 	var root := _build(0.45)
-	var sun := root.get_node_or_null("MorningSun")
-	assert_object(sun).is_instanceof(DirectionalLight3D)
-	assert_bool((sun as DirectionalLight3D).shadow_enabled).is_false()
+	var controller := root.get_node("EnvironmentController") as EnvironmentController
+	assert_bool(controller.sun_light.shadow_enabled).is_false()
+	assert_object(controller.world_environment).is_instanceof(WorldEnvironment)
+
+
+func test_terrain_mesh_has_relief_without_extreme_steps() -> void:
+	var root := _build(0.45)
+	var mesh_instance := root.get_node("Ground/GroundMesh") as MeshInstance3D
+	assert_object(mesh_instance.mesh).is_instanceof(ArrayMesh)
+	assert_int(mesh_instance.mesh.get_faces().size()).is_greater(1000)
