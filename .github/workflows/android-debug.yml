@@ -48,19 +48,26 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Android SDK
-        if: steps.preset.outputs.ready == 'true'
-        uses: android-actions/setup-android@v3
-
-      # Nota: la exportación directa de Godot (sin Gradle) NO usa NDK ni cmake;
-      # se omiten respecto del workflow original para ahorrar tiempo de setup.
-      - name: Install Android packages
+      # La imagen de runner ya trae el SDK en /usr/local/lib/android/sdk. La acción
+      # android-actions/setup-android@v3 falló en esta imagen (su `sdkmanager
+      # --licenses` interno termina con exit 1); se maneja el SDK directamente.
+      - name: Install Android packages (preinstalled SDK)
         if: steps.preset.outputs.ready == 'true'
         run: |
-          sdkmanager --install \
+          set -euo pipefail
+          SDK_DIR="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          export ANDROID_SDK_ROOT="$SDK_DIR"
+          echo "ANDROID_SDK_ROOT=$SDK_DIR" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=$SDK_DIR" >> "$GITHUB_ENV"
+          SDKM="$(ls -d "$SDK_DIR"/cmdline-tools/*/bin/sdkmanager | head -n1)"
+          echo "sdkmanager: $SDKM"
+          yes | "$SDKM" --licenses >/dev/null 2>&1 || true
+          "$SDKM" --install \
             "platform-tools" \
             "build-tools;35.0.1" \
             "platforms;android-35"
+          # adb para el paso "Start adb server".
+          echo "$SDK_DIR/platform-tools" >> "$GITHUB_PATH"
 
       - name: Cache Godot editor and export templates
         if: steps.preset.outputs.ready == 'true'
@@ -163,16 +170,22 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
+      # SDK preinstalado del runner; sin android-actions/setup-android (ver job 1).
       - name: Install emulator and system image
         run: |
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager --install \
+          set -euo pipefail
+          SDK_DIR="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          export ANDROID_SDK_ROOT="$SDK_DIR"
+          SDKM="$(ls -d "$SDK_DIR"/cmdline-tools/*/bin/sdkmanager | head -n1)"
+          yes | "$SDKM" --licenses >/dev/null 2>&1 || true
+          "$SDKM" --install \
             "platform-tools" \
             "emulator" \
             "system-images;android-35;google_apis;x86_64" >/dev/null
+          # Poner en PATH las herramientas de los pasos siguientes.
+          echo "$SDK_DIR/platform-tools" >> "$GITHUB_PATH"
+          echo "$SDK_DIR/emulator" >> "$GITHUB_PATH"
+          ls -d "$SDK_DIR"/cmdline-tools/*/bin | head -n1 >> "$GITHUB_PATH"
 
       - name: Check KVM
         run: |
