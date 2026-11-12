@@ -133,8 +133,23 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p artifacts/android
+          adb start-server || true
+          set +e
           "$HOME/.cache/rpg-lba/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" \
             --headless --path . --export-debug "Android Debug" "${APK_REL}"
+          rc=$?
+          set -e
+          # Godot 4.7.2 conocido: tras terminar y verificar el export puede
+          # abortar en el apagado headless ("cannot connect to daemon tcp:5037",
+          # exit 134) si el daemon de adb no responde en ese instante. El APK ya
+          # está completo y firmado antes de ese punto. Se toleran 0 y 134; el
+          # paso siguiente verifica el artefacto de verdad y atrapa cualquier
+          # corrupción real.
+          if [ "$rc" != "0" ] && [ "$rc" != "134" ]; then
+            echo "ERROR: export failed with code $rc" >&2
+            exit 1
+          fi
+          echo "note: export exit code $rc (134 = crash de apagado post-export; tolerado)"
           test -s "${APK_REL}"
 
       - name: Verify APK (static checks)
