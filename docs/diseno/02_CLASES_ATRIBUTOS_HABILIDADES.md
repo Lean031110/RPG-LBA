@@ -176,10 +176,10 @@ Ejemplos:
 | 8 → 9 | 737 |
 | 9 → 10 | 892 |
 | 10 → 11 | 1,063 |
-| 15 → 16 | 2,020 |
-| 20 → 21 | 3,377 |
-| 25 → 26 | 5,132 |
-| 29 → 30 | 6,916 |
+| 15 → 16 | 2,158 |
+| 20 → 21 | 3,653 |
+| 25 → 26 | 5,548 |
+| 29 → 30 | 7,352 |
 
 Los números son hipótesis de pacing. El equipo debe simular cuánto tarda un jugador normal en alcanzar niveles 5, 10, 20 y 30, y ajustar las recompensas de las misiones. No prometer horas de juego hasta medir.
 
