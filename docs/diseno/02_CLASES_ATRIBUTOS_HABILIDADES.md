@@ -1,183 +1,222 @@
-# Clases, atributos y habilidades — RPG LBA
+# Clases, atributos, habilidades y balance — RPG LBA
 
-## Principios de balance
+**Canon de diseño revisado:** seis arquetipos originales de ARPG oscuro caribeño. La inspiración es la claridad de roles de los action RPG clásicos; no se copian clases, nombres, habilidades, siluetas ni iconografía de Diablo u otra franquicia. Las seis clases son caminos de combate, no castas ni representaciones de religiones reales.
 
-Las seis clases deben ser distintas por ritmo, distancia, recursos, movilidad y utilidad de grupo. Ninguna debe ser “la mejor” en todo. Los números siguientes son una **línea base de prototipo**, no balance final. El agente debe implementarlos en datos externos y crear pruebas de daño, costes, cooldowns, escalado y estados.
+## Filosofía de balance
 
-### Atributos
+- Cada clase debe ser poderosa en su especialidad y tener una debilidad que el jugador pueda gestionar.
+- Ninguna clase puede ser la mejor en daño, supervivencia, movilidad y apoyo a la vez.
+- El DPS teórico no es el único criterio: control, interrupción, supervivencia, utilidad y facilidad de ejecución cuentan.
+- Los números de este documento son **baseline de diseño**, no resultados de balance medidos. Se deben validar con simulaciones y pruebas dentro del juego.
+- En solitario todas las clases deben poder completar la campaña. En grupo deben complementarse sin exigir una composición obligatoria.
+- No usar escalado automático para borrar diferencias entre clases. Los encuentros deben permitir varias soluciones.
 
-- **Vida (HP):** daño que puede recibir.
-- **Vigor:** recurso para ataques físicos, esquiva y técnicas.
-- **Fuerza:** daño físico, guardia y armas pesadas.
-- **Destreza:** velocidad, precisión, crítico y recuperación.
-- **Intelecto:** daño arcano, recursos mágicos y potencia de efectos.
-- **Espíritu:** curación, resistencia a corrupción y apoyo.
-- **Armadura:** mitigación física.
-- **Resistencia:** mitigación elemental y a estados.
+## Atributos comunes
 
-Los atributos se muestran en UI con nombre y explicación. No usar únicamente color para distinguir daño o rareza.
+| Atributo | Efecto principal |
+|---|---|
+| Vida (HP) | Daño que puede recibir el personaje |
+| Recurso de clase | Energía propia de cada arquetipo |
+| Fuerza | Daño físico pesado, guardia y ruptura |
+| Destreza | Precisión, crítico, velocidad y recuperación |
+| Intelecto | Potencia arcana, invocaciones y efectos |
+| Espíritu | Curación, barreras y resistencia a corrupción |
+| Armadura | Mitigación física |
+| Resistencia | Mitigación elemental y estados |
 
-## Estadísticas iniciales sugeridas (nivel 1)
+El daño final debe calcularse en un único servicio de combate compartido. Las habilidades solo describen potencia, tipo, coste, alcance y modificadores; no duplican fórmulas por clase.
 
-| Clase | HP | Vigor | Maná/Esencia | Fuerza | Destreza | Intelecto | Espíritu | Rol |
-|---|---:|---:|---:|---:|---:|---:|---:|---|
-| Machetero de la Sierra | 125 | 100 | 35 | 18 | 13 | 8 | 11 | Tanque/combate cercano |
-| Bruja de la Manigua | 85 | 55 | 125 | 7 | 12 | 20 | 16 | Control/daño arcano |
-| Santero de la Luz | 105 | 70 | 115 | 9 | 11 | 15 | 20 | Curación/apoyo |
-| Tirador del Malecón | 90 | 85 | 65 | 12 | 20 | 10 | 10 | Distancia/precisión |
-| Cimarrón Sombrío | 95 | 110 | 50 | 13 | 20 | 12 | 10 | Asesino/movilidad |
-| Bardo del Solar | 100 | 80 | 95 | 10 | 14 | 13 | 18 | Apoyo/control |
+## Las seis clases jugables
 
-**Recurso por clase:** vigor para Machetero y Cimarrón; esencia para Bruja y Santero; concentración para Tirador; compás para Bardo. La interfaz puede normalizar el recurso visual, pero debe conservar reglas propias.
+### 1. Machetero de la Sierra — El Guardián del Batey
+**Fantasía:** combatiente frontal, disciplinado y resistente. Protege a otros y domina el espacio con un machete pesado, escudo improvisado y herramientas de campo.
 
-## 1. Machetero de la Sierra
+- **Rol:** tanque / daño cuerpo a cuerpo sostenido.
+- **Recurso:** Vigor.
+- **Pros:** mucha vida y armadura; interrupciones fiables; protege aliados; excelente contra grupos que se acercan.
+- **Contras:** alcance corto; movilidad limitada; sufre contra enemigos voladores y ataques a distancia; consume vigor si bloquea mal.
+- **Atributos prioritarios:** Fuerza, luego Espíritu y Destreza.
+- **Pasiva — Pulso de monte:** bloquear en el instante correcto recupera vigor y fortalece el siguiente golpe.
+- **Pasiva — Pies de piedra:** reduce empujones, pero no inmuniza contra control de jefes.
+- **Habilidades:** Tajo de Guásima (arco frontal y sangrado leve); Guardia del Bohío (guardia frontal y protección cercana); Carga del Mambí (embestida que interrumpe); Corte de la Ceiba (golpe lento que rompe armadura).
+- **Definitiva — Huracán de Machetes:** secuencia circular de golpes con breve avance y final de ruptura.
+- **Especializaciones:** Guardián del Batey (mitigación y protección) / Hoja de la Sierra (ruptura y contraataques).
+- **Estilo de juego:** anticipar, bloquear y castigar; no quedarse quieto recibiendo daño.
 
-**Fantasía:** defensor de caminos, cortador de maleza y protector de comunidades. Usa machete, sable corto, escudo improvisado y herramientas de campo. Es resistente, directo y domina el espacio cercano.
+### 2. Bruja de la Manigua — La Tejedora de Tormentas
+**Fantasía:** hechicera de control que manipula raíces, viento, lluvia y energía de la manigua. Su magia es ficticia y no representa prácticas religiosas reales.
 
-**Pasivas**
-- *Pulso de monte:* gana vigor al bloquear o esquivar en el momento correcto.
-- *Pies de piedra:* reduce empujones y ralentizaciones.
+- **Rol:** control de masas / daño arcano por zonas.
+- **Recurso:** Esencia.
+- **Pros:** domina grupos; ralentiza y separa enemigos; daño persistente; gran control de zonas y pasillos.
+- **Contras:** poca vida y armadura; vulnerable al ser alcanzada; depende de posicionamiento y gestión de esencia.
+- **Atributos prioritarios:** Intelecto, Espíritu y Destreza.
+- **Pasiva — Oído de la manigua:** revela amenazas cercanas tras permanecer quieta brevemente.
+- **Pasiva — Raíz persistente:** los controles duran más en enemigos ya afectados por naturaleza, con límite contra jefes.
+- **Habilidades:** Espina de Júcaro (proyectil penetrante); Niebla de Yagruma (nube de ralentización); Raíces del Jagüey (inmovilización de área); Mariposa de Ceniza (familiar que marca y hostiga un objetivo).
+- **Definitiva — Manigua Despierta:** crea una tormenta de raíces, hojas y viento que controla el terreno y daña gradualmente.
+- **Especializaciones:** Señora de Raíces (control y debilitaciones) / Hija de la Tormenta (daño elemental y movilidad).
+- **Estilo de juego:** preparar terreno, atraer enemigos a zonas peligrosas y reposicionarse.
 
-**Habilidades**
-1. **Tajo de Guásima** — arco frontal amplio; daño físico medio y sangrado leve.
-2. **Guardia del Bohío** — postura defensiva; reduce daño frontal y protege a un aliado cercano.
-3. **Carga del Mambí** — embestida lineal que interrumpe enemigos ligeros.
-4. **Corte de la Ceiba** — golpe vertical pesado; rompe escudos y armaduras.
-5. **Definitiva: Huracán de Machetes** — combo circular con desplazamiento corto y final de alto impacto; no debe ser una copia de torbellinos de otras franquicias.
+### 3. Sepulturero de Guanabacoa — El Pastor de los Ecos
+**Fantasía:** invocador sombrío que escucha los recuerdos atrapados en objetos funerarios. Convoca ecos ficticios de antiguos combatientes y usa marcas de ceniza. No invoca ni caricaturiza entidades de religiones vivas.
 
-**Debilidad:** alcance corto y dependencia de vigor.  
-**Identidad de equipo:** machetes con marcas artesanales, cuero, lona, metal reparado y amuletos familiares.
+- **Rol:** invocación / desgaste / control táctico.
+- **Recurso:** Ceniza.
+- **Pros:** puede dividir la atención enemiga; excelente en peleas largas; marcas y debilitaciones; las invocaciones crean espacio para lanzar magia.
+- **Contras:** daño personal bajo sin preparación; depende de mantener ecos activos; vulnerable a daño de área y a interrupciones; requiere gestionar posicionamiento de invocaciones.
+- **Atributos prioritarios:** Intelecto, Espíritu y Vida.
+- **Pasiva — Nombre prestado:** al derrotar enemigos marcados obtiene fragmentos de ceniza, con límite de acumulación.
+- **Pasiva — Último encargo:** cuando un eco termina su duración, deja una onda breve; no puede activar cadenas infinitas.
+- **Habilidades:** Llamada del Osario (invoca un guardián espectral temporal); Marca del Último Nombre (debilita y revela un enemigo); Procesión de Hueso y Bronce (los ecos avanzan en línea y empujan); Vela de los Ausentes (sacrifica parte de la duración de una invocación para curar al Sepulturero y recuperar recurso).
+- **Definitiva — El Patio de los que Vuelven:** convoca una procesión de ecos durante una ventana limitada; cada eco tiene salud, objetivo y reglas claras.
+- **Especializaciones:** Capataz de Ecos (más invocaciones y control) / Lector de Ceniza (marcas, detonaciones y daño directo).
+- **Estilo de juego:** preparar marcas, elegir cuándo invocar y sacrificar ecos. No debe jugarse como un mago de proyectiles convencional.
 
-## 2. Bruja de la Manigua
+### 4. Tirador del Malecón — El Ojo del Faro
+**Fantasía:** especialista de precisión con rifle de cerrojo, pistola, trampas y conocimiento del terreno urbano y costero.
 
-**Fantasía:** conocedora de plantas, nieblas y fuerzas antiguas. Su magia es de control del terreno, raíces, viento y espíritus ficticios. No representa ni caricaturiza una religión real.
+- **Rol:** daño a distancia / ejecución de objetivos prioritarios.
+- **Recurso:** Concentración.
+- **Pros:** gran alcance; daño alto a objetivos marcados; interrumpe canalizaciones; puede preparar trampas.
+- **Contras:** vulnerable al ser rodeado; necesita línea de visión; menor daño en movimiento; munición especial y concentración deben administrarse.
+- **Atributos prioritarios:** Destreza, Fuerza e Intelecto.
+- **Pasiva — Ojo de faro:** mantener línea de visión sobre un objetivo aumenta precisión hasta un límite.
+- **Pasiva — Sangre fría:** impactos precisos generan concentración; fallar no concede recurso.
+- **Habilidades:** Disparo de Faro (tiro cargado); Trampa de Red (ralentiza enemigos ligeros); Paso del Muelle (esquiva lateral); Doble Fogonazo (dos disparos rápidos de pistola).
+- **Definitiva — Última Luz del Malecón:** disparo penetrante en línea, con telegráfico y tiempo de preparación.
+- **Especializaciones:** Ojo del Faro (crítico y ejecución) / Trampero del Puerto (trampas, control y preparación).
+- **Estilo de juego:** escoger posición, marcar prioridades y no desperdiciar disparos.
 
-**Pasivas**
-- *Oído de la manigua:* revela enemigos ocultos al permanecer quieta brevemente.
-- *Raíz persistente:* los controles duran más sobre enemigos afectados por naturaleza.
+### 5. Cimarrón Sombrío — La Sombra del Jagüey
+**Fantasía:** explorador, duelista y especialista en infiltración que domina cuevas, tejados, senderos y rutas ocultas. Su narrativa honra libertad y resistencia; nunca trivializa la esclavitud.
 
-**Habilidades**
-1. **Espina de Júcaro** — proyectil de raíz que atraviesa una línea corta.
-2. **Niebla de Yagruma** — nube que ralentiza y reduce precisión enemiga.
-3. **Raíces del Jagüey** — inmoviliza una zona; los enemigos fuertes pueden resistir parcialmente.
-4. **Mariposa de Ceniza** — familiar arcano que marca un objetivo y vuelve con energía.
-5. **Definitiva: Manigua Despierta** — crea un círculo de raíces, viento y hojas oscuras que controla el campo y causa daño gradual.
+- **Rol:** asesino / movilidad / daño explosivo.
+- **Recurso:** Vigor.
+- **Pros:** movilidad superior; gran daño a objetivos aislados; puede evitar ataques y entrar/salir del combate; descubre rutas.
+- **Contras:** poca resistencia; daño cae en peleas largas; exige precisión y posicionamiento; sufre contra grupos con detección.
+- **Atributos prioritarios:** Destreza, Fuerza e Intelecto.
+- **Pasiva — Paso sin huella:** fuera de combate acumula una carga de sigilo.
+- **Pasiva — Oportunidad:** flanquear aplica una marca de vulnerabilidad con límite por objetivo.
+- **Habilidades:** Cuchilla de Jagüey (combo rápido); Sombra entre Palmas (desplazamiento evasivo); Marca del Rastreador (revela debilidad); Cuerda de Garfio (movilidad hacia anclaje o control de enemigos pequeños).
+- **Definitiva — Noche sin Testigos:** secuencia de ataques sobre objetivos marcados; cada objetivo recibe un impacto máximo por ciclo.
+- **Especializaciones:** Cuchilla Silente (crítico y ejecución) / Rastreador Libre (marcas, movilidad y trampas).
+- **Estilo de juego:** elegir el momento de entrada y retirarse antes de quedar rodeado.
 
-**Debilidad:** poca vida y vulnerabilidad cuando enemigos rápidos alcanzan su posición.  
-**Identidad de equipo:** fibras, semillas, madera, telas naturales, frascos y símbolos inventados del mundo.
+### 6. Bardo del Solar — El Corazón del Barrio
+**Fantasía:** músico y narrador que transforma ritmo, voz e instrumentos en ondas de memoria. El compás sincroniza al grupo; no es un simple mago con guitarra.
 
-## 3. Santero de la Luz
+- **Rol:** apoyo / control / daño híbrido.
+- **Recurso:** Compás.
+- **Pros:** mejora a aliados; interrumpe enemigos; control en área; aporta recuperación y utilidad fuera del combate.
+- **Contras:** daño individual moderado; necesita mantener ritmo y cercanía al grupo; pierde eficacia si se interrumpen sus secuencias.
+- **Atributos prioritarios:** Espíritu, Destreza e Intelecto.
+- **Pasiva — Ritmo compartido:** acciones coordinadas de aliados generan compás adicional.
+- **Pasiva — La gente responde:** completar una secuencia musical concede una bonificación breve, con enfriamiento interno.
+- **Habilidades:** Clave de Son (onda de daño y marca); Bolero de Guardia (mitigación para aliados); Rumba de Brío (velocidad temporal); Danzón de Eco (confunde enemigos menores e interrumpe canalizaciones).
+- **Definitiva — El Solar Entero:** crea una zona musical que fortalece al grupo y vuelve vulnerables a los espectros.
+- **Especializaciones:** Voz del Solar (apoyo y recuperación) / Tambor de Guerra (control y daño rítmico).
+- **Estilo de juego:** mantener el compás, leer la pelea y apoyar en el momento oportuno.
 
-**Fantasía:** protector y sanador que canaliza luz, memoria y juramentos. El término de clase es una fantasía original; no debe afirmar que sus poderes describen prácticas religiosas reales. El personaje puede ser reinterpretado visualmente como **Guardián de la Luz** si el equipo narrativo decide evitar confusión cultural.
+## Estadísticas iniciales comparables (nivel 1)
 
-**Pasivas**
-- *Manos que sostienen:* curar a un aliado concede una barrera breve.
-- *Luz contra ceniza:* inflige daño adicional a criaturas de corrupción, con límite para evitar dominación de meta.
+Son valores de arranque para pruebas. Los recursos tienen distinta economía; no comparar sus números como si fueran unidades idénticas.
 
-**Habilidades**
-1. **Lumbre Serena** — proyectil de luz de daño moderado.
-2. **Velo Protector** — escudo a sí mismo o aliado.
-3. **Agua Clara** — curación directa y eliminación de un estado menor.
-4. **Campana del Alba** — pulso que interrumpe espectros y revela enemigos.
-5. **Definitiva: Coro de los Siete** — zona de apoyo que cura gradualmente, reduce corrupción y fortalece resistencia del grupo.
+| Clase | HP | Recurso | Fuerza | Destreza | Intelecto | Espíritu | Armadura base |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Machetero | 125 | 100 Vigor | 18 | 13 | 8 | 11 | 12 |
+| Bruja | 85 | 125 Esencia | 7 | 12 | 20 | 16 | 4 |
+| Sepulturero | 95 | 115 Ceniza | 8 | 11 | 20 | 18 | 6 |
+| Tirador | 90 | 100 Concentración | 12 | 20 | 10 | 10 | 5 |
+| Cimarrón | 95 | 110 Vigor | 13 | 20 | 12 | 10 | 5 |
+| Bardo | 100 | 100 Compás | 10 | 14 | 13 | 20 | 7 |
 
-**Debilidad:** daño explosivo bajo y tiempos de lanzamiento.  
-**Identidad de equipo:** bastón, campanillas, telas claras envejecidas, latón y símbolos de protección originales.
+### Crecimiento por nivel
 
-## 4. Tirador del Malecón
+Cada nivel concede **5 puntos de atributo** para distribuir manualmente. Además, cada clase recibe crecimiento automático moderado:
 
-**Fantasía:** tirador de precisión que mezcla rifle de época, pistola, trampas y movilidad urbana. Armas y munición deben tener estética y manejo compatibles con la ambientación de 1953.
+| Clase | HP por nivel | Recurso máximo por nivel | Armadura por nivel |
+|---|---:|---:|---:|
+| Machetero | +12 | +4 | +1.0 |
+| Bruja | +7 | +6 | +0.3 |
+| Sepulturero | +8 | +6 | +0.4 |
+| Tirador | +8 | +5 | +0.4 |
+| Cimarrón | +8 | +5 | +0.4 |
+| Bardo | +9 | +5 | +0.5 |
 
-**Pasivas**
-- *Ojo de faro:* gana precisión al mantener línea de visión.
-- *Sangre fría:* disparos a objetivos marcados reducen una parte del cooldown de herramienta, con límite.
+Los puntos manuales aumentan estadísticas mediante coeficientes compartidos y visibles. El equipo puede modificar valores, pero no debe anular las fortalezas y debilidades de clase.
 
-**Habilidades**
-1. **Disparo de Faro** — tiro cargado de alto daño a un objetivo.
-2. **Trampa de Red** — inmoviliza o ralentiza enemigos pequeños.
-3. **Paso del Muelle** — esquiva lateral que deja una marca explosiva pequeña.
-4. **Doble Fogonazo** — dos disparos rápidos de pistola.
-5. **Definitiva: Última Luz del Malecón** — apunta a una línea amplia y dispara una descarga penetrante; telegráfico visible para enemigos y aliados.
+## Progresión de experiencia y niveles
 
-**Debilidad:** sufre si lo rodean; necesita gestionar munición o concentración.  
-**Identidad de equipo:** rifle de cerrojo, pistola, cartucheras, gabardina, botas y herramientas de pescador.
+- Nivel máximo del primer arco: **30**, ampliable en futuras temporadas/capítulos.
+- XP por derrotar enemigos: solo la primera muerte/recompensa de un enemigo de misión entrega XP completa; enemigos repetibles usan XP reducida y límite por zona/hora para evitar granjas abusivas.
+- Misiones principales: recompensa alta; secundarias: media; encargos repetibles: baja y con límite diario/local configurable.
+- Exploración: XP por descubrir lugar por primera vez, completar evento y abrir punto de interés; no por caminar repetidamente.
+- Jefes: recompensa única por primera victoria en cada dificultad.
+- En grupo: XP se reparte por participación válida dentro de rango; no se duplica por cantidad de jugadores. Ajustar por dificultad/vida real del encuentro y evitar penalizar apoyo/healing.
+- No conceder XP por daño a aliados, invocaciones propias ni objetivos fuera de nivel/rango.
+- Mostrar barra de XP, XP actual/total necesario, fuente de recompensa y desbloqueo siguiente.
 
-## 5. Cimarrón Sombrío
+### Curva provisional de XP
 
-**Fantasía:** explorador furtivo y duelista que conoce rutas secretas, cuevas y tejados. Su historia honra la resistencia y la libertad; no convierte la esclavitud en estética ni trivializa su memoria.
+XP para pasar del nivel N al N+1:
 
-**Pasivas**
-- *Paso sin huella:* moverse fuera del combate acumula una carga de sigilo.
-- *Oportunidad:* atacar desde flanco o espalda aplica marca de vulnerabilidad limitada.
+`XP_siguiente(N) = redondear(100 + 35(N-1) + 8(N-1)^2)`
 
-**Habilidades**
-1. **Cuchilla de Jagüey** — corte rápido con veneno ficticio de planta.
-2. **Sombra entre Palmas** — desplazamiento corto que evita proyectiles durante una ventana breve.
-3. **Marca del Rastreador** — revela debilidad y aumenta precisión del siguiente ataque.
-4. **Cuerda de Garfio** — atrae al personaje hacia un punto o desplaza enemigos pequeños.
-5. **Definitiva: Noche sin Testigos** — secuencia de golpes a objetivos marcados; cada objetivo puede recibir daño una vez por ciclo.
+Ejemplos:
+| Tramo | XP por nivel |
+|---|---:|
+| 1 → 2 | 100 |
+| 2 → 3 | 143 |
+| 3 → 4 | 202 |
+| 4 → 5 | 277 |
+| 5 → 6 | 368 |
+| 6 → 7 | 475 |
+| 7 → 8 | 598 |
+| 8 → 9 | 737 |
+| 9 → 10 | 892 |
+| 10 → 11 | 1,063 |
+| 15 → 16 | 2,020 |
+| 20 → 21 | 3,377 |
+| 25 → 26 | 5,132 |
+| 29 → 30 | 6,916 |
 
-**Debilidad:** menor resistencia en enfrentamientos prolongados y dependencia de posicionamiento.  
-**Identidad de equipo:** cuero oscuro, telas discretas, cuchillas artesanales, cuerda y herramientas de escalada.
+Los números son hipótesis de pacing. El equipo debe simular cuánto tarda un jugador normal en alcanzar niveles 5, 10, 20 y 30, y ajustar las recompensas de las misiones. No prometer horas de juego hasta medir.
 
-## 6. Bardo del Solar
+## Fórmulas de combate y reglas anti-dominancia
 
-**Fantasía:** músico, narrador y líder de barrio. Usa ritmo, voz, instrumentos y memoria colectiva para apoyar al grupo. No es un “mago músico” genérico: su recurso es el compás y su identidad se basa en sincronizar acciones.
+- Daño físico efectivo = potencia física × coeficiente de habilidad × modificador de atributo × mitigación de armadura.
+- Daño arcano = potencia arcana × coeficiente de habilidad × modificador de Intelecto × mitigación de resistencia.
+- Crítico, bloqueo, evasión y vulnerabilidad tienen límites globales y rendimientos decrecientes.
+- Control de masas sobre jefes usa resistencia acumulativa; nunca bloqueo permanente.
+- Invocaciones comparten presupuesto de entidades activas y reciben límites de daño/vida; no pueden generar XP ni drops por sí mismas.
+- Curación y barreras tienen coeficientes reducidos en PvP futuro; PvP no está autorizado en el MVP.
+- Los telegráficos muestran área, tiempo y severidad; las habilidades no deben causar daño solo por animación.
+- La dificultad aumenta por patrones, combinaciones y presión, no solo inflando HP.
 
-**Pasivas**
-- *Ritmo compartido:* las acciones correctas de aliados cercanos generan compás.
-- *La gente responde:* al completar una secuencia musical, concede una pequeña bonificación de grupo.
+Los coeficientes exactos deben centralizarse en datos configurables y ajustarse con telemetría de pruebas. No fijar fórmulas duplicadas dentro de cada habilidad.
 
-**Habilidades**
-1. **Clave de Son** — onda sonora que daña y marca enemigos.
-2. **Bolero de Guardia** — reduce daño recibido por aliados cercanos.
-3. **Rumba de Brío** — aumenta temporalmente velocidad de movimiento y ataque.
-4. **Danzón de Eco** — confunde enemigos y rompe canalizaciones.
-5. **Definitiva: El Solar Entero** — invoca una zona de música y memoria: cura levemente, fortalece aliados y hace vulnerables a espectros.
+## Equipo, builds y desbloqueos
 
-**Debilidad:** daño individual moderado y dependencia de mantener compás/posición.  
-**Identidad de equipo:** tres, guitarra, claves, maracas, ropa de escenario gastada, pañuelo y accesorios.
+- Cada clase tiene ataque básico, esquiva, cuatro habilidades equipables y una definitiva.
+- Especializaciones desbloqueadas en niveles 10 y 20, con elección reversible mediante coste moderado en refugios.
+- A nivel 5 se desbloquea una pasiva adicional elegible.
+- Armas, armaduras y afijos deben respetar la fantasía de clase.
+- Rarezas: común, poco común, raro, épico y legendario. Los legendarios cambian decisiones de build, no solo suben números.
+- Guardar clase, nivel, XP, atributos asignados, habilidades, especialización y versión de datos con IDs estables.
 
-## Reglas comunes de habilidades
+## Pruebas obligatorias
 
-- Cada clase tiene ataque básico, esquiva, cuatro habilidades y una definitiva inicial.
-- Las habilidades tienen coste, cooldown, alcance, telegráfico, categoría de daño y eventos de prueba.
-- La definitiva se carga con acciones de clase, no solo con tiempo.
-- El jugador puede equipar una selección limitada para móvil; no saturar la pantalla.
-- Cada habilidad debe tener animación anticipatoria, impacto, recuperación, VFX y sonido.
-- Las animaciones no pueden ser la fuente de verdad del daño.
-- El servidor futuro valida objetivo, distancia, cooldown, recurso, estado y resultado.
-- No usar daño aleatorio sin límites; la semilla y los modificadores deben poder reproducirse en pruebas.
+1. Curva XP: monotónica, sin overflow y nivel máximo correcto.
+2. Recompensa de XP por fuente, primera victoria, repetición y grupo.
+3. No duplicar XP por invocaciones, daño repetido ni reconexión.
+4. Crecimiento automático y puntos manuales por nivel.
+5. Coste, cooldown, alcance, interrupción y cancelación de cada habilidad.
+6. Mitigación física/arcana, críticos, bloqueo y resistencias.
+7. Pruebas comparativas de DPS, supervivencia, control y apoyo por clase.
+8. Cada clase puede superar encuentros de campaña en solitario con habilidad razonable.
+9. Las builds de grupo no deben hacer obligatoria una clase.
+10. Perfil Low mantiene legibilidad de invocaciones, telegráficos y VFX.
+11. Guardado/carga y migración de personajes ante cambios de balance.
 
-## Progresión y especializaciones
-
-A niveles 5, 10 y 20 se desbloquean decisiones de especialización. Cada clase puede orientar su build hacia dos estilos, pero no se crean seis subclases completas en el MVP.
-
-| Clase | Especialización A | Especialización B |
-|---|---|---|
-| Machetero | Guardián del Batey (defensa) | Hoja de la Sierra (daño/ruptura) |
-| Bruja | Señora de Raíces (control) | Hija de la Tormenta (daño elemental) |
-| Santero/Guardián | Custodio del Alba (barreras) | Voz de los Siete (curación) |
-| Tirador | Ojo del Faro (crítico) | Trampero del Puerto (control) |
-| Cimarrón | Cuchilla Silente (crítico) | Rastreador Libre (movilidad/marcas) |
-| Bardo | Voz del Solar (apoyo) | Tambor de Guerra (daño/control) |
-
-## Reglas de accesibilidad y UI
-
-- El jugador puede mover botones y ajustar tamaño/opacidad.
-- Mostrar icono, nombre, cooldown numérico y coste.
-- Las habilidades disponibles se distinguen por forma y texto, no solo color.
-- Opción de auto-target y modo manual.
-- Permitir reducir flashes, vibración, sacudida y partículas.
-- Las barras de HP/recurso deben ser legibles sobre fondos claros y oscuros.
-
-## Pruebas obligatorias por clase
-
-1. Cálculo de daño físico/arcano y mitigación.
-2. Coste de recurso antes/después de ejecutar.
-3. Cooldown y cancelación.
-4. Alcance, línea de visión y objetivo inválido.
-5. Interrupción, control y resistencia de élites.
-6. Muerte del jugador durante animación de habilidad.
-7. Modo solo local y futura validación servidor.
-8. Rendimiento de VFX en perfil Low.
+Toda métrica de balance debe acompañarse de escenario, nivel, equipo, build, duración y semilla de prueba. No declarar clases equilibradas solo por inspección de números.
