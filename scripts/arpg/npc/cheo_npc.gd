@@ -22,6 +22,8 @@ func setup(new_npc_id: String) -> void:
 	if npc_data.is_empty():
 		push_error("CheoNPC: NPC desconocido %s" % npc_id)
 		return
+	# Fase 3: grupo para blips del minimapa (consulta por grupo; sin lógica de juego).
+	add_to_group("arpg_npcs")
 	_build_interaction_area()
 	_build_visual()
 
