@@ -1,110 +1,117 @@
 # RPG LBA — Las Cenizas de Lythara
 
-Action RPG 3D móvil de fantasía medieval: cámara elevada/isométrica, mundo por
-regiones, misiones, mazmorras generadas por módulos con semilla determinista,
-botín, seis clases originales y multijugador con servidor dedicado
-autoritativo.
+<p align="center"><img src="assets/branding/rpg-lba-logo.svg" alt="RPG LBA — Las Cenizas de Lythara" width="760"></p>
+<p align="center"><strong>Un action RPG isométrico de fantasía oscura con alma cubana.</strong><br>Cuba, 1953. Una isla viva. Un mal antiguo. Siete recuerdos que no deben perderse.</p>
+<p align="center"><img src="assets/branding/lba-games-logo.svg" alt="LBA Games" width="360"></p>
 
-**Estado actual: Fase 0 (auditoría y base reproducible) completada; esperando
-autorización humana para Fase 1 (vertical slice).**
+## El juego
 
-> Este repositorio NO contiene todavía el juego descrito en el GDD. Contiene la
-> base técnica auditada (plantilla multijugador), el kit de diseño completo y la
-> infraestructura de CI. Consulta `docs/09_ROADMAP_Y_PROMPTS.md` para el plan
-> por fases y `PROVENANCE.md` para la trazabilidad de la plantilla base.
+**Las Cenizas de Lythara** es un action RPG 3D para PC y Android, desarrollado en Godot 4.7.2, con cámara isométrica, combate de acción, seis clases, campaña cinematográfica, misiones, exploración por regiones y criaturas sobrenaturales. La primera campaña se titula **El Eco de Valdeluz** y se desarrolla en una Cuba ficticia de 1953, reinterpretada como fantasía oscura.
 
-## Qué funciona hoy (evidencia en `docs/auditoria/FASE0_INFORME_AUDITORIA.md`)
+> La historia es una ficción alternativa. La cultura cubana es parte central del mundo y se trata con respeto; los sucesos y lugares sobrenaturales inventados no se presentan como hechos históricos reales.
 
-- Proyecto Godot 4.7.2 que importa sin errores críticos (doble pasada).
-- Sesiones multijugador ENet: host, join, servidor dedicado headless (puerto UDP
-  8080, hasta 10 jugadores declarados por la plantilla, 2 probados de forma
-  real y automatizable en CI).
-- Inventario autoritativo en servidor (16 slots + 4 de mochila), equipamiento
-  visible sincronizado, chat con sanitización, lista de jugadores.
-- Movimiento tercera/primera persona con teclado/ratón (NO es el control final
-  del juego; la cámara isométrica y el joystick llegan en Fase 1).
+## Dirección creativa
 
-## Qué NO existe todavía (no lo busques, no está)
+- **Tono:** oscuro, gótico, misterioso y aventurero; esperanza, humor y humanidad entre el horror.
+- **Identidad:** gótico caribeño, arquitectura colonial y art déco, vegetación tropical, tierra roja, piedra caliza, faroles, radios, trenes y música original de inspiración cubana.
+- **Visual:** materiales de terreno distinguibles, cielo visible, ciclo día/noche y clima dinámico.
+- **Referencia de calidad:** claridad de combate y atmósfera de ARPG oscuro moderno, sin copiar interfaces, personajes, mapas, iconos, fuentes o assets de otros juegos.
+- **Plataformas objetivo:** Android de gama baja/media y PC. Rendimiento y compatibilidad física solo se publican tras medirlos.
 
-- Combate: el ataque de la plantilla es **solo animación visual, sin daño**
-  (verificado en código). Sin HP, hitbox, enemigos ni drops.
-- Clases, habilidades, misiones, mundo por regiones, mazmorras, economía,
-  guardado, guilds, trade, controles táctiles, exportación Android.
+## Seis clases
 
-## Reglas del proyecto
+| Clase | Rol |
+|---|---|
+| Machetero de la Sierra | Tanque / combate cercano |
+| Bruja de la Manigua | Control / magia |
+| Santero de la Luz (alternativa de nombre: Guardián de la Luz) | Curación / apoyo |
+| Tirador del Malecón | Distancia / precisión |
+| Cimarrón Sombrío | Asesino / movilidad |
+| Bardo del Solar | Apoyo / control |
 
-- `AGENTS.md` es obligatorio y prevalece.
-- El GDD (`docs/01_GDD.md`) y los ADR (`docs/13_RIESGOS_Y_DECISIONES.md`) son
-  la fuente de verdad. No se inventan features no aprobadas.
-- Trabajo en ramas `agent/<fase>-<tarea>` + Pull Request. Sin push directo a
-  `main`. Una fase por PR.
-- Nada se marca PASS sin ejecución real: se usa PASS / FAIL / SKIPPED / NOT TESTED.
-- Godot 4.7.2 Standard + GDScript + Compatibility Renderer (cambio de renderer
-  pendiente de Fase 1) + Android ARM64.
-- Servidor dedicado autoritativo; el cliente nunca decide daño, inventario,
-  moneda ni recompensas.
-- Cada asset de terceros exige fila en `assets/manifest.csv` con licencia
-  comprobada. Ver `THIRD_PARTY_NOTICES.md`.
+Estadísticas, habilidades, pasivas, definitivas y especializaciones: [Clases y habilidades](docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md).
 
-## Cómo importar y probar (local)
+## Historia y producción narrativa
 
-Requisitos: Godot **4.7.2 Standard** (misma versión que el CI).
+- [Biblia del mundo e historia cinematográfica](docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md)
+- [Misiones principales y cadenas secundarias](docs/narrativa/01_MISIONES_Y_CADENAS.md)
+- [Dirección artística y rediseño UX](docs/direccion-artistica/03_DIRECCION_ARTISTICA_Y_UX.md)
+- [Brief de implementación para agentes](docs/AGENT_BRIEFING_VISION_CUBANA.md)
+- [Índice de visión creativa](docs/CREATIVE_VISION_INDEX.md)
 
+## Estado real del proyecto
+
+**No confundas documentación aprobada con gameplay implementado.** La Fase 1 fue reportada como completada localmente: 48/48 pruebas GdUnit4 y 10 capturas visuales, según el informe entregado el 12-11-2026. Su push/PR todavía debe verificarse en GitHub antes de considerar el código integrado en `main`. APK Android, dispositivo físico y FPS siguen como **NOT TESTED** en ese informe. El nuevo Art Pass, el ciclo día/noche y el rediseño de interfaz están especificados, no implementados todavía.
+
+| Área | Estado |
+|---|---|
+| Base Godot 4.7.2 y auditoría | Fase 0 reportada completada |
+| Vertical slice Fase 1 | Entrega local reportada; verificar PR/CI |
+| Historia y dirección creativa | Documentadas |
+| Rediseño visual y UX | Especificado; pendiente de implementación |
+| Seis clases | Diseño documentado; implementación completa pendiente |
+| Multijugador autoritativo | Preparación arquitectónica; validar por fases |
+| APK / Android físico / FPS | NOT TESTED según informe de Fase 1 |
+
+## Tecnología
+
+- Godot 4.7.2 Standard + GDScript.
+- Compatibility Renderer.
+- GdUnit4 y GitHub Actions.
+- Objetivo móvil ARM64.
+
+No introducir C#, extensiones nativas ni cambiar renderer sin decisión técnica aprobada y ADR.
+
+## Empezar
+
+### Requisitos
+Godot **4.7.2 Standard**, Git y las herramientas indicadas por los scripts de CI.
+
+### Clonar e importar
 ```bash
-# 1) Importar (la primera pasada genera .godot/; la segunda valida)
+git clone https://github.com/Lean031110/RPG-LBA.git
+cd RPG-LBA
 godot --headless --path . --import
 godot --headless --editor --path . --quit
-
-# 2) Abrir en el editor y ejecutar (F5)
-#    Menú -> Host para crear partida, otra instancia -> Join 127.0.0.1
-
-# 3) Servidor dedicado headless (UDP 8080)
-./run_headless_server.sh            # requiere godot en PATH o GODOT_BIN
-
-# 4) Smoke multijugador automatizado: servidor + 2 clientes headless
-GODOT_BIN=/ruta/a/Godot_v4.7.2-stable_linux.x86_64 \
-  bash tests/multiplayer/run_multiplayer_smoke.sh .
-#    (o scripts/local/run_mp_smoke.sh que localiza el binario)
-
-# 5) Pipeline local completo (import + smoke)
-GODOT_BIN=/ruta/a/godot bash scripts/ci/validate_project.sh .
 ```
 
-Nota conocida: la primera importación en un checkout limpio imprime mensajes de
-la fuente `Kurland.ttf` (la UI del editor intenta cargarla antes de importarla).
-Son benignos y desaparecen en la segunda pasada; el CI está diseñado para
-ignorar la primera pasada y validar la segunda.
+Abre el proyecto con Godot y ejecuta F5. Consulta `AGENTS.md`, `scripts/ci/` y `.github/workflows/` para comandos de pruebas. No declares tests aprobados si no los ejecutaste.
 
-## CI (GitHub Actions)
+## Para agentes de IA
 
-- `validate.yml`: import (2 pasadas) + smoke de escena principal + **prueba
-  multijugador servidor/2 clientes** + auditoría del manifiesto de assets +
-  GdUnit4 (se activará cuando existan `addons/gdUnit4` y `tests/` de unidad).
-- `godot-ci.yml` (heredado, actualizado a 4.7.2): gdlint/gdformat + import.
-- `android-debug.yml`: export APK debug — SKIPPED hasta que exista
-  `export_presets.cfg` con preset Android.
-- `release.yml` (heredado): draft de release con ZIP fuente + SHA-256 en tags
-  `vX.Y.Z`.
+1. Leer `AGENTS.md` antes de tocar archivos.
+2. Leer `docs/AGENT_BRIEFING_VISION_CUBANA.md`.
+3. Leer la biblia, misiones, clases y dirección artística.
+4. Inspeccionar rama, commit, árbol, PR y workflows reales.
+5. Crear rama `agent/<fase>-<tarea>`; nunca push directo a `main`.
+6. Una fase por PR; incluir tests y evidencias.
+7. Reportar PASS / FAIL / SKIPPED / NOT TESTED con comandos, logs y enlaces.
+8. No inventar resultados, no borrar sistemas funcionales y no guardar secretos.
+9. No continuar más allá del alcance autorizado.
 
-## Licencias y créditos
+## Organización
 
-- Código de la plantilla base: MIT — Carlos Moreira
-  (devmoreir4/godot-3d-multiplayer-template, tag v2.0.0, commit
-  `51b2614`). Detalle completo en `PROVENANCE.md`.
-- Assets de terceros: CC0 (AGChow, Kenney, Quaternius), CC BY 3.0 (sombreros
-  Poly by Google — atribución obligatoria) y 2 pendientes de verificación
-  (fuente Kurland, icono close.svg). Detalle en `THIRD_PARTY_NOTICES.md` y
-  `assets/manifest.csv`.
-- La licencia del código propio de RPG LBA aún no está decidida (decisión
-  pendiente registrada en `docs/13_RIESGOS_Y_DECISIONES.md`).
+- `assets/branding/` — logos vectoriales de RPG LBA y LBA Games.
+- `docs/narrativa/` — canon, personajes, historia y misiones.
+- `docs/diseno/` — clases, atributos y habilidades.
+- `docs/direccion-artistica/` — arte, mundo, UI, iluminación y criterios visuales.
+- `docs/` — arquitectura, riesgos, QA y guías de agentes.
+- `prompts/` — prompts de producción por fase.
+- `config/` — datos y perfiles.
+- `scenes/`, `scripts/`, `tests/` — implementación Godot.
 
-## Documentación
+## Licencias y propiedad intelectual
 
-| Ruta | Contenido |
-| --- | --- |
-| `AGENTS.md` | Reglas innegociables para agentes/colaboradores |
-| `docs/00…15_*.md` | Kit de diseño completo (GDD, sistemas, arquitectura, QA, CI, criterios) |
-| `prompts/00…08_*.md` | Prompts por fase (ejecutar en orden, uno por PR) |
-| `config/` | Plantillas CSV/JSON de datos de juego y perfiles de calidad |
-| `docs/auditoria/` | Informes de auditoría de fase |
-| `PROVENANCE.md` | Trazabilidad de la plantilla base y del motor |
+La licencia del código propio debe decidirse explícitamente antes de distribuir. La licencia del template upstream no cubre automáticamente assets ni contenido nuevo. Cada recurso externo debe figurar en `assets/manifest.csv` con autor, URL, versión, licencia y atribución. No incorporar recursos sin licencia verificable. Música, textos, personajes, iconos y mapas deben ser originales o contar con permisos explícitos.
+
+## Marca
+
+- **Juego:** RPG LBA — Las Cenizas de Lythara.
+- **Campaña:** El Eco de Valdeluz.
+- **Estudio/productora:** LBA Games.
+- **Lema de estudio:** Creamos mundos · Contamos historias.
+- **Lema de campaña:** Cuba, 1953. Una isla viva. Un mal antiguo.
+
+## Contribuir
+
+Lee `AGENTS.md`, trabaja en una rama y abre PR. Toda propuesta visual incluye capturas en 16:9 y 20:9. Toda propuesta técnica incluye pruebas y estado verificable.
