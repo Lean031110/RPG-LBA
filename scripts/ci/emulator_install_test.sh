@@ -91,14 +91,22 @@ COMPONENT=$(adb shell cmd package resolve-activity --brief "$PACKAGE" | tail -n 
 echo "Launchable component: $COMPONENT" | tee -a "$OUT/install.txt"
 echo "$COMPONENT" | grep -q "/" || { echo "ERROR: sin actividad lanzable." >&2; exit 1; }
 adb shell am start -n "$COMPONENT"
-sleep 25
-PID=$(adb shell pidof "$PACKAGE" | tr -d '\r')
+# Arranque con paciencia (corrida 43493770874: pidof vacio a los 25 s mato el
+# script EN SILENCIO por set -e en la sustitucion; el juego simplemente tardaba).
+PID=""
+deadline=$((SECONDS + 45))
+while [ -z "$PID" ] && [ "$SECONDS" -lt "$deadline" ]; do
+  PID=$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)
+  if [ -z "$PID" ]; then
+    sleep 3
+  fi
+done
 if [ -z "$PID" ]; then
-  echo "ERROR: el proceso no esta vivo 25s tras el lanzamiento." >&2
+  echo "ERROR: el proceso no esta vivo tras ${deadline}s del lanzamiento." >&2
   adb logcat -d | tail -80 >&2
   exit 1
 fi
-echo "Process alive (pid $PID) 25s after launch."
+echo "Process alive (pid $PID) after launch."
 
 _grab() {
   # Captura PNG de pantalla (lo que ve el jugador, con su orientacion real).
