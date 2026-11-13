@@ -342,7 +342,11 @@ if [ "$TRY_VALDELUZ" = "1" ]; then
     mean=$(_luma_center)
     sky=$(_sky_band)
     echo "render probe [valdeluz]: luma=$mean sky=$sky"
-    if [ "$mean" -ge 7 ] && [ "$sky" = "1" ]; then
+    # Escena jugable cargada: o cielo visible, o escena 3D clara (luma>=70).
+    # El menu mide 38-45; la escena cargada 110 (corrida 43497392841: el
+    # discriminante de cielo no casaba con la composicion isometrica: el
+    # horizonte vive en la banda de niebla, no en la franja 4-18%).
+    if [ "$mean" -ge 70 ] || { [ "$sky" = "1" ] && [ "$mean" -ge 7 ]; }; then
       scene_ok=1
       break
     fi
