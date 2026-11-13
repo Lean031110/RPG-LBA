@@ -305,15 +305,19 @@ adb exec-out screencap -p > "$OUT/screenshot_01_menu.png"
 #   Prototipo:     (w/2, 489*escala).  escala = min(w/1280, h/720) en landscape.
 # Los taps caen en el centro de la pantalla: lejos de la zona de gesto del
 # sistema (leccion de la corrida 43339724542).
+# IMPORTANTE: las dimensiones se toman de la CAPTURA REAL (screencap), no de
+# `wm size`: en la corrida 43480672530, wm size informaba 2880x1080 mientras el
+# framebuffer era 1920x1080 y los taps caian fuera de los botones.
+adb exec-out screencap > /tmp/tap_frame.raw || true
+adb shell wm size | tr -d '\r' > "$OUT/wm_size.txt" || true
 read -r T1_X T1_Y T2_X T2_Y T3_X T3_Y <<EOF
 $(python3 - <<'PY'
-import re, subprocess
-out = subprocess.run(['adb', 'shell', 'wm', 'size'], capture_output=True, text=True).stdout
-m = re.search(r'(\d+)x(\d+)', out)
-if not m:
-    raise SystemExit(1)
-a, b = sorted(map(int, m.groups()), reverse=True)  # landscape: el juego fuerza sensor_landscape
-w, h = a, b
+import struct
+d = open('/tmp/tap_frame.raw', 'rb').read()
+w, h, _fmt = struct.unpack('<III', d[:12])
+# landscape: el juego fuerza sensor_landscape; ordenar por si el raw viniera en portrait.
+if w < h:
+    w, h = h, w
 scale = min(w / 1280.0, h / 720.0)
 def pt(x, y):
     return int(round(x * scale)), int(round(y * scale))
@@ -325,7 +329,8 @@ print(t1[0], t1[1], t2[0], t2[1], t3[0], t3[1])
 PY
 )
 EOF
-echo "taps: nueva_partida=($T1_X,$T1_Y) jugar=($T2_X,$T2_Y) prototipo=($T3_X,$T3_Y)"
+echo "taps (pantalla real): nueva_partida=($T1_X,$T1_Y) jugar=($T2_X,$T2_Y) prototipo=($T3_X,$T3_Y)"
+cat "$OUT/wm_size.txt" || true
 
 if [ "$TRY_VALDELUZ" = "1" ]; then
   echo "== Escena jugable: Valdeluz (mejor esfuerzo, fallback a Prototipo) =="
