@@ -73,10 +73,12 @@ grep -q "Success" "$OUT/install.txt" || { echo "ERROR: adb install no reporto Su
 
 echo "== Launch =="
 adb logcat -c
-# Prevenir el aviso "Pantalla completa" (overlay inmersivo que atrapa los taps;
-# corridas 43476646209/43474930008: cubria ~60% superior y no se iba solo).
-# En emuladores, settings put global funciona desde adb shell; si no, seguimos.
-adb shell settings put global immersive_mode_confirm_enabled 0 > /dev/null 2>&1 || true
+# Prevenir el dialogo de consentimiento inmersivo (panel claro que atrapa los
+# taps; corridas 43474930008/43476646209/43478758547: cubria ~60% superior, no se
+# cancela con BACK y todo el flujo daba falsos positivos). Mecanismo canonico
+# AOSP: Settings.Secure.IMMERSIVE_MODE_CONFIRMATIONS = "confirmed" marca el
+# consentimiento como ya dado y el dialogo no llega a mostrarse.
+adb shell settings put secure immersive_mode_confirmations confirmed > /dev/null 2>&1 || true
 COMPONENT=$(adb shell cmd package resolve-activity --brief "$PACKAGE" | tail -n 1 | tr -d '\r')
 echo "Launchable component: $COMPONENT" | tee -a "$OUT/install.txt"
 echo "$COMPONENT" | grep -q "/" || { echo "ERROR: sin actividad lanzable." >&2; exit 1; }
@@ -90,8 +92,10 @@ if [ -z "$PID" ]; then
 fi
 echo "Process alive (pid $PID) 25s after launch."
 
-# Si el overlay inmersivo quedara visible pese a lo anterior, un BACK lo cierra
-# (una sola vez y con registro; el juego no maneja BACK en el menu).
+# Dialogo inmersivo de respaldo: si quedara un panel claro, uiautomator
+# localiza el boton positivo (Allow/Permitir) y lo pulsa; BACK como ultima
+# instancia (lecciones de la corrida 43478758547: el dialogo no se cancela con
+# BACK y central luma quedo clavado en ~179).
 _dismiss_immersive_notice() {
   adb exec-out screencap > /tmp/frame.raw || true
   local top_bright
@@ -117,13 +121,71 @@ except Exception:
     print(0)
 PY
 )
-  # Banda superior brillante (>= 120) sobre fondo de juego oscuro => overlay.
-  if [ "${top_bright:-0}" -ge 120 ]; then
-    echo "NOTE: overlay inmersivo detectado (banda superior luma=$top_bright); enviando BACK."
+  if [ "${top_bright:-0}" -lt 120 ]; then
+    echo "NOTE: sin dialogo inmersivo (banda superior luma=$top_bright)."
+    return 0
+  fi
+  echo "NOTE: dialogo inmersivo presente (banda superior luma=$top_bright); intentando descartarlo."
+  # 1) Pulsar el boton positivo via uiautomator (el dialogo del sistema SI expone
+  #    su jerarquia de accesibilidad, a diferencia de la UI del juego Godot).
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1 || true
+  adb shell cat /sdcard/ui.xml > /tmp/ui.xml 2>/dev/null || true
+  local bounds
+  bounds=$(python3 - <<'PY'
+import re
+try:
+    d = open('/tmp/ui.xml', encoding='utf-8', errors='replace').read()
+    for word in ['Permitir', 'Allow', 'ALLOW', 'permitir']:
+        m = re.search(r'text="[^"]*' + word + r'[^"]*"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', d)
+        if m:
+            x1, y1, x2, y2 = map(int, m.groups())
+            if x2 > x1 and y2 > y1:
+                print((x1 + x2) // 2, (y1 + y2) // 2)
+                break
+except Exception:
+    pass
+PY
+)
+  if [ -n "${bounds:-}" ]; then
+    local bx by
+    read -r bx by <<EOF
+$bounds
+EOF
+    echo "NOTE: pulsando boton positivo del dialogo en ($bx, $by)."
+    adb shell input tap "$bx" "$by"
+    sleep 3
+  fi
+  # 2) Verificar; si sigue el panel, BACK como ultima instancia.
+  adb exec-out screencap > /tmp/frame.raw || true
+  local still
+  still=$(python3 - <<'PY'
+import struct
+try:
+    d = open('/tmp/frame.raw', 'rb').read()
+    w, h, fmt = struct.unpack('<III', d[:12])
+    px = d[12:]
+    x0, x1 = int(w * 0.20), int(w * 0.80)
+    y0, y1 = int(h * 0.06), int(h * 0.30)
+    total = 0
+    count = 0
+    stride = w * 4
+    for y in range(y0, y1, 4):
+        row = px[y * stride:(y + 1) * stride]
+        for x in range(x0, x1, 4):
+            o = x * 4
+            total += (row[o] + row[o + 1] + row[o + 2]) / 3.0
+            count += 1
+    print(int(total / max(count, 1)))
+except Exception:
+    print(0)
+PY
+)
+  if [ "${still:-0}" -ge 120 ]; then
+    echo "NOTE: el panel sigue (luma=$still); BACK como ultima instancia."
     adb shell input keyevent 4
     sleep 3
   else
-    echo "NOTE: sin overlay inmersivo (banda superior luma=$top_bright)."
+    echo "NOTE: dialogo descartado (luma tras el intento: $still)."
   fi
 }
 _dismiss_immersive_notice
