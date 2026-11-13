@@ -86,6 +86,17 @@ if [ -z "$PID" ]; then
 fi
 echo "Process alive (pid $PID) 25s after launch."
 
+_dump_failure_evidence() {
+  # En cualquier fallo: dejar captura, logcat y foco de ventana en $OUT para
+  # poder diagnosticar desde el artefacto (lecciones de las corridas 43474930008
+  # y 43473507397: sin esto, el fallo no deja evidencia).
+  adb exec-out screencap -p > "$OUT/screenshot_failure.png" || true
+  adb shell dumpsys window windows 2>/dev/null | tr -d '\r' | grep -m4 -E 'mCurrentFocus|mFocusedApp' > "$OUT/window_focus.txt" || true
+  adb logcat -d > "$OUT/logcat.txt" || true
+  echo "---- logcat Godot/shader (head) ----"
+  grep -m40 -iE 'godot|shader|ERROR' "$OUT/logcat.txt" || true
+}
+
 _foreground_ok() {
   TOP="$(adb shell dumpsys activity activities 2>/dev/null | tr -d '\r' | grep -m1 -E 'topResumedActivity|mResumedActivity' || true)"
   echo "$TOP" | grep -q "$PACKAGE"
@@ -179,6 +190,7 @@ _wait_render() {
 echo "== Menu render =="
 if ! _wait_render "$RENDER_BUDGET_S" menu; then
   echo "ERROR: el menu no se presento." >&2
+  _dump_failure_evidence
   exit 1
 fi
 adb exec-out screencap -p > "$OUT/screenshot_01_menu.png"
@@ -254,6 +266,7 @@ if [ "$TRY_VALDELUZ" = "1" ]; then
     sleep 25
     if ! _wait_render 120 menu_relance; then
       echo "ERROR: el menu no se presento tras relanzar." >&2
+      _dump_failure_evidence
       exit 1
     fi
     adb shell input tap "$T3_X" "$T3_Y"
@@ -262,6 +275,7 @@ if [ "$TRY_VALDELUZ" = "1" ]; then
       adb exec-out screencap -p > "$OUT/screenshot_02_prototipo.png"
       if cmp -s "$OUT/screenshot_01_menu.png" "$OUT/screenshot_02_prototipo.png"; then
         echo "ERROR: captura del Prototipo identica al menu (el tap no entro)." >&2
+        _dump_failure_evidence
         exit 1
       fi
       echo "playable_capture=prototipo_fallback" | tee -a "$OUT/install.txt"
@@ -276,6 +290,7 @@ echo "== Crashes / telemetria =="
 if adb logcat -d | grep -q "FATAL EXCEPTION"; then
   echo "ERROR: FATAL EXCEPTION en logcat." >&2
   adb logcat -d | grep -A20 "FATAL EXCEPTION" >&2 || true
+  _dump_failure_evidence
   exit 1
 fi
 adb logcat -d | grep "PERF:" > "$OUT/perf_emulator.txt" || true
