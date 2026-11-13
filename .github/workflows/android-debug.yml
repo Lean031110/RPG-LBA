@@ -203,11 +203,24 @@ jobs:
 
       - name: Check KVM
         run: |
+          set -euo pipefail
           if [ ! -e /dev/kvm ]; then
             echo "ERROR: /dev/kvm not available on this runner; cannot hardware-accelerate the emulator." >&2
             exit 1
           fi
-          echo "KVM available."
+          # Que exista NO basta (corrida 43336374165: 'This user doesn't have
+          # permissions to use KVM' con /etc/group [kvm:x:991:] sin miembros).
+          # x86_64 requiere aceleración por hardware: otorgar acceso real.
+          if [ ! -w /dev/kvm ]; then
+            sudo gpasswd -a "$USER" kvm || true
+            sudo chmod 666 /dev/kvm || true
+          fi
+          if [ -w /dev/kvm ]; then
+            echo "KVM accessible for this user."
+          else
+            echo "ERROR: /dev/kvm sigue inaccesible tras el ajuste." >&2
+            exit 1
+          fi
 
       - name: Download APK
         uses: actions/download-artifact@v4
