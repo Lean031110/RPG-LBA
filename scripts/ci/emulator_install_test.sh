@@ -118,6 +118,40 @@ except Exception:
 PY
 }
 
+_sky_probe() {
+  # "1" si la franja superior parece cielo del juego (azul por encima de rojo
+  # y con brillo); "0" si no. Discrimina la escena 3D del menu (fondo casi negro).
+  adb exec-out screencap > /tmp/frame.raw || true
+  python3 - <<'PY'
+import struct
+try:
+    d = open('/tmp/frame.raw', 'rb').read()
+    w, h, fmt = struct.unpack('<III', d[:12])
+    px = d[12:]
+    x0, x1 = int(w * 0.20), int(w * 0.80)
+    y0, y1 = int(h * 0.04), int(h * 0.18)
+    blue = 0
+    red = 0
+    count = 0
+    stride = w * 4
+    for y in range(y0, y1, 4):
+        row = px[y * stride:(y + 1) * stride]
+        for x in range(x0, x1, 4):
+            o = x * 4
+            red += row[o]
+            blue += row[o + 2]
+            count += 1
+    if count == 0:
+        print(0)
+    else:
+        b = blue / count
+        r = red / count
+        print(1 if (b >= 60.0 and b >= r + 10.0) else 0)
+except Exception:
+    print(0)
+PY
+}
+
 # _wait_render <presupuesto_s> <etiqueta>
 # Devuelve 0 si se presento un fotograma no negro; 1 si no (sin exit).
 _wait_render() {
@@ -182,11 +216,38 @@ if [ "$TRY_VALDELUZ" = "1" ]; then
   adb shell input tap "$T1_X" "$T1_Y"
   sleep 2
   adb shell input tap "$T2_X" "$T2_Y"
-  if _wait_render "$RENDER_BUDGET_S" valdeluz; then
+  # Asentamiento: dar tiempo al cambio de escena ANTES de sondear; si no, el
+  # probe ve el menu todavia en pantalla y da un falso positivo (evidenciado en
+  # la corrida 43471820109: capturas identicas byte a byte).
+  sleep 8
+  scene_ok=0
+  deadline=$((SECONDS + RENDER_BUDGET_S))
+  while [ "$SECONDS" -lt "$deadline" ]; do
+    if ! _foreground_ok; then
+      echo "NOTE: el juego salio de primer plano tras los taps." >&2
+      break
+    fi
+    mean=$(_luma_probe)
+    sky=$(_sky_probe)
+    echo "render probe [valdeluz]: luma=$mean sky=$sky"
+    if [ "$mean" -ge 7 ] && [ "$sky" = "1" ]; then
+      scene_ok=1
+      break
+    fi
+    sleep 10
+  done
+  if [ "$scene_ok" = "1" ]; then
     adb exec-out screencap -p > "$OUT/screenshot_02_valdeluz.png"
+    # Guarda extra: si la captura es identica a la del menu, el cambio no ocurrio.
+    if cmp -s "$OUT/screenshot_01_menu.png" "$OUT/screenshot_02_valdeluz.png"; then
+      echo "NOTE: captura de Valdeluz identica al menu (transicion no capturada)." | tee -a "$OUT/install.txt"
+      scene_ok=0
+    fi
+  fi
+  if [ "$scene_ok" = "1" ]; then
     echo "playable_capture=valdeluz" | tee -a "$OUT/install.txt"
   else
-    echo "NOTE: Valdeluz no presento fotograma; relanzo para Prototipo." | tee -a "$OUT/install.txt"
+    echo "NOTE: Valdeluz no presento fotograma con cielo; relanzo para Prototipo." | tee -a "$OUT/install.txt"
     adb shell am force-stop "$PACKAGE"
     sleep 2
     adb shell am start -n "$COMPONENT"
@@ -196,8 +257,13 @@ if [ "$TRY_VALDELUZ" = "1" ]; then
       exit 1
     fi
     adb shell input tap "$T3_X" "$T3_Y"
+    sleep 8
     if _wait_render "$RENDER_BUDGET_S" prototipo; then
       adb exec-out screencap -p > "$OUT/screenshot_02_prototipo.png"
+      if cmp -s "$OUT/screenshot_01_menu.png" "$OUT/screenshot_02_prototipo.png"; then
+        echo "ERROR: captura del Prototipo identica al menu (el tap no entro)." >&2
+        exit 1
+      fi
       echo "playable_capture=prototipo_fallback" | tee -a "$OUT/install.txt"
     else
       echo "ERROR: tampoco el Prototipo presento fotograma." >&2
