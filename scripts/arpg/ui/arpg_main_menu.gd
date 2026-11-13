@@ -5,22 +5,46 @@ extends Control
 
 const LOGO_PATH := "res://assets/branding/rpg-lba-logo.svg"
 
+var _logo: TextureRect = null
+var _subtitle: Label = null
+var _button_box: VBoxContainer = null
+var _footer: Label = null
+
 
 func _ready() -> void:
         set_anchors_preset(Control.PRESET_FULL_RECT)
-        # Fase 4B: esperar a que el layout asigne un tamaño real antes de
-        # construir. En Android, `size` vale (0,0) durante _ready y el menu
-        # quedaba pegado al borde izquierdo (corrida 43482533022: botones en
-        # x 48-224 de 1920). El HUD ya era resiliente (resized -> _layout_hud);
-        # el menu no lo era. Tope de 30 fotogramas para no colgar la escena.
-        var waited := 0
-        while size.x < 1.0 and waited < 30:
-                await get_tree().process_frame
-                waited += 1
         _build_background()
         _build_title()
         _build_buttons()
         _build_footer()
+        # Android: `size` vale (0,0) durante _ready y el menu quedaba pegado al
+        # borde izquierdo (corrida 43482533022). El await no sirvio (la escena se
+        # quedaba en el color de clearance; corridas 43484656222+). Patron del HUD,
+        # probado desde Fase 3: re-layout cuando llega el tamano real (resized).
+        resized.connect(_relayout)
+        _relayout()
+        if OS.is_debug_build():
+                print("ArpgMainMenu: ready size=%s viewport=%s" % [size, get_viewport().get_visible_rect().size])
+
+
+func _relayout() -> void:
+        ## Recoloca las piezas posicionadas a mano al cambiar el tamano real
+        ## (mismo patron que ArpgHUD._layout_hud). Las ancladas (fondo, franja,
+        ## panel de clase PRESET_CENTER) se ajustan solas.
+        if size.x < 1.0:
+                return
+        if _logo != null:
+                _logo.position = Vector2(size.x / 2.0 - 320.0, 56.0)
+        if _subtitle != null:
+                _subtitle.position = Vector2(0, 252.0)
+                _subtitle.size = Vector2(size.x, 26)
+        if _button_box != null:
+                _button_box.position = Vector2(size.x / 2.0 - 150.0, 330.0)
+        if _footer != null:
+                _footer.position = Vector2(16.0, size.y - 64.0)
+                _footer.size = Vector2(size.x - 32.0, 34)
+        if OS.is_debug_build():
+                print("ArpgMainMenu: relayout size=%s" % [size])
 
 
 func _build_background() -> void:
@@ -45,6 +69,7 @@ func _build_title() -> void:
                 logo.custom_minimum_size = Vector2(640, 190)
                 logo.position = Vector2(size.x / 2.0 - 320.0, 56.0)
                 add_child(logo)
+                _logo = logo
         var subtitle := Label.new()
         subtitle.text = "Cuba ficticia, 1953 · Una isla viva. Un mal antiguo. Una historia que todavía no termina."
         subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -53,6 +78,7 @@ func _build_title() -> void:
         subtitle.position = Vector2(0, 252.0)
         subtitle.size = Vector2(size.x, 26)
         add_child(subtitle)
+        _subtitle = subtitle
 
 
 func _build_buttons() -> void:
@@ -60,6 +86,7 @@ func _build_buttons() -> void:
         box.add_theme_constant_override("separation", 12)
         add_child(box)
         box.position = Vector2(size.x / 2.0 - 150.0, 330.0)
+        _button_box = box
         var continue_button := _menu_button("Continuar")
         continue_button.disabled = not SaveSystem.has_save()
         continue_button.pressed.connect(_on_continue_pressed)
@@ -94,6 +121,7 @@ func _build_footer() -> void:
         footer.position = Vector2(16.0, size.y - 64.0)
         footer.size = Vector2(size.x - 32.0, 34)
         add_child(footer)
+        _footer = footer
 
 
 func _on_new_game_pressed() -> void:
