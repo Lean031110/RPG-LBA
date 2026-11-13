@@ -274,21 +274,34 @@ if ! _wait_render "$RENDER_BUDGET_S" menu; then
 fi
 adb exec-out screencap -p > "$OUT/screenshot_01_menu.png"
 
-# Coordenadas de tap desde la CAPTURA REAL (PNG), no desde `wm size` ni desde
-# el raw (corrida 43482533022: wm size 2880x1080 vs framebuffer 1920x1080;
-# los taps caian fuera de los botones).
+# Coordenadas de tap desde `wm size` (autoridad del display: 1080x1920 -> en
+# landscape 1920x1080). El raw Y el PNG de screencap han reportado anchos que no
+# coinciden con el framebuffer (2880 vs 1920; corridas 43482533022/43486543259):
+# las capturas se guardan igual (son contenido real), pero los taps ABSOLUTOS
+# se calculan desde wm size y se registran las dims del PNG para diagnostico.
 # Layout medido (scripts/local/measure_menu_layout.gd; canvas 1280x720):
 #   Nueva partida: (w/2, 423*escala);  Jugar: (w/2+174*esc, h/2+159*esc);
 #   Prototipo:     (w/2, 489*escala).  escala = min(w/1280, h/720) en landscape.
 adb shell wm size | tr -d '\r' > "$OUT/wm_size.txt" || true
+cat "$OUT/wm_size.txt" || true
 _grab
+python3 - <<'PY' > /tmp/png_dims.txt || true
+try:
+    from PIL import Image
+    print('png_dims=%dx%d' % Image.open('/tmp/frame.png').size)
+except Exception as ex:
+    print('png_dims=error:%s' % ex)
+PY
+cat /tmp/png_dims.txt || true
 read -r T1_X T1_Y T2_X T2_Y T3_X T3_Y <<EOF
 $(python3 - <<'PY'
-from PIL import Image
-img = Image.open('/tmp/frame.png')
-w, h = img.size
-if w < h:
-    w, h = h, w  # landscape: el juego fuerza sensor_landscape
+import re, subprocess
+out = subprocess.run(['adb', 'shell', 'wm', 'size'], capture_output=True, text=True).stdout
+m = re.search(r'(\d+)x(\d+)', out)
+if not m:
+    raise SystemExit(1)
+a, b = sorted(map(int, m.groups()), reverse=True)  # landscape: el juego fuerza sensor_landscape
+w, h = a, b
 scale = min(w / 1280.0, h / 720.0)
 def pt(x, y):
     return int(round(x * scale)), int(round(y * scale))
@@ -300,7 +313,7 @@ print(t1[0], t1[1], t2[0], t2[1], t3[0], t3[1])
 PY
 )
 EOF
-echo "taps (captura real): nueva_partida=($T1_X,$T1_Y) jugar=($T2_X,$T2_Y) prototipo=($T3_X,$T3_Y)"
+echo "taps (wm size): nueva_partida=($T1_X,$T1_Y) jugar=($T2_X,$T2_Y) prototipo=($T3_X,$T3_Y)"
 
 if [ "$TRY_VALDELUZ" = "1" ]; then
   echo "== Escena jugable: Valdeluz (mejor esfuerzo, fallback a Prototipo) =="
