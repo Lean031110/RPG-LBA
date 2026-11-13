@@ -312,11 +312,13 @@ a, b = sorted(map(int, m.groups()), reverse=True)  # landscape: el juego fuerza 
 w, h = a, b
 scale = min(w / 1280.0, h / 720.0)
 # OJO: w/2 y h/2 YA estan en pixeles (no se escalan); solo las coordenadas de
-# diseno (423/489/174/159) llevan escala. El bug anterior (corrida 43488263754):
-# pt(w/2, 423) aplicaba escala a w/2 y el primer tap caia en 1440 en vez de 960.
-t1 = (w // 2, int(round(423 * scale)))                       # Nueva partida
-t2 = (int(round(w / 2 + 174 * scale)), int(round(h / 2 + 159 * scale)))  # Jugar
-t3 = (w // 2, int(round(489 * scale)))                       # Prototipo
+# diseno (423/489 y los offsets del panel) llevan escala. El bug anterior
+# (corrida 43488263754): pt(w/2, 423) aplicaba escala a w/2 (1440 en vez de 960).
+# Jugar: panel de clase centrado desde el viewport (corrida 43495554774: el panel
+# quedaba arriba-izquierda); offset final medido: centro + (-152, +44.5).
+t1 = (w // 2, int(round(423 * scale)))                        # Nueva partida
+t2 = (int(round(w / 2 - 152 * scale)), int(round(h / 2 + 44.5 * scale)))  # Jugar
+t3 = (w // 2, int(round(489 * scale)))                        # Prototipo
 print(t1[0], t1[1], t2[0], t2[1], t3[0], t3[1])
 PY
 )

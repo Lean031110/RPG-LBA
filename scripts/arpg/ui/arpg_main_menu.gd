@@ -132,7 +132,6 @@ func _on_new_game_pressed() -> void:
         var panel := PanelContainer.new()
         panel.add_theme_stylebox_override("panel", _panel_style())
         add_child(panel)
-        panel.set_anchors_preset(Control.PRESET_CENTER)
         var box := VBoxContainer.new()
         box.add_theme_constant_override("separation", 8)
         panel.add_child(box)
@@ -170,6 +169,13 @@ func _on_new_game_pressed() -> void:
         var back := _menu_button("Volver")
         back.pressed.connect(func() -> void: panel.queue_free())
         actions.add_child(back)
+        # Fase 4B: centrar desde el rect del viewport (el control del menu puede
+        # seguir a (0,0) en Android y PRESET_CENTER lo pegaba arriba-izquierda;
+        # corrida 43495554774: el tap de Jugar no encontraba el boton).
+        var vs := get_viewport().get_visible_rect().size
+        var ms := panel.get_combined_minimum_size()
+        if vs.x > 1.0 and ms.x > 1.0:
+                panel.position = (vs - ms) / 2.0
 
 
 func _on_continue_pressed() -> void:
