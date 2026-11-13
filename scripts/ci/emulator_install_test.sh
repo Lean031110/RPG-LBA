@@ -303,12 +303,12 @@ if not m:
 a, b = sorted(map(int, m.groups()), reverse=True)  # landscape: el juego fuerza sensor_landscape
 w, h = a, b
 scale = min(w / 1280.0, h / 720.0)
-def pt(x, y):
-    return int(round(x * scale)), int(round(y * scale))
-t1 = pt(w / 2, 423)          # Nueva partida (centro X = w/2)
-t2x, t2y = pt(174, 159)      # Jugar: offset del panel de clase respecto al centro
-t2 = (int(round(w / 2 + t2x)), int(round(h / 2 + t2y)))
-t3 = pt(w / 2, 489)          # Prototipo (Fase 2)
+# OJO: w/2 y h/2 YA estan en pixeles (no se escalan); solo las coordenadas de
+# diseno (423/489/174/159) llevan escala. El bug anterior (corrida 43488263754):
+# pt(w/2, 423) aplicaba escala a w/2 y el primer tap caia en 1440 en vez de 960.
+t1 = (w // 2, int(round(423 * scale)))                       # Nueva partida
+t2 = (int(round(w / 2 + 174 * scale)), int(round(h / 2 + 159 * scale)))  # Jugar
+t3 = (w // 2, int(round(489 * scale)))                       # Prototipo
 print(t1[0], t1[1], t2[0], t2[1], t3[0], t3[1])
 PY
 )
