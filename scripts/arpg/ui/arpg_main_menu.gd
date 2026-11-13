@@ -8,6 +8,15 @@ const LOGO_PATH := "res://assets/branding/rpg-lba-logo.svg"
 
 func _ready() -> void:
         set_anchors_preset(Control.PRESET_FULL_RECT)
+        # Fase 4B: esperar a que el layout asigne un tamaño real antes de
+        # construir. En Android, `size` vale (0,0) durante _ready y el menu
+        # quedaba pegado al borde izquierdo (corrida 43482533022: botones en
+        # x 48-224 de 1920). El HUD ya era resiliente (resized -> _layout_hud);
+        # el menu no lo era. Tope de 30 fotogramas para no colgar la escena.
+        var waited := 0
+        while size.x < 1.0 and waited < 30:
+                await get_tree().process_frame
+                waited += 1
         _build_background()
         _build_title()
         _build_buttons()
