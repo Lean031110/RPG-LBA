@@ -202,9 +202,10 @@ de esa futura variante.
 | Paso | Estado que produce |
 |---|---|
 | Export de las dos variantes + verificación estática (firma v2/v3 con DN y huella de la autofirma del proyecto, zipalign, `resources.arsc` Stored, ABIs exactos por variante, manifiesto, `classes.dex`, libs por ABI, datos del juego embebidos ≥ 100 entradas) | PASS/FAIL por variante |
-| Emulador x86_64 **API 35** con el APK Universal: `adb install -r` → Success, arranque, proceso vivo, sin `FATAL EXCEPTION`, captura del **menú** y de una **escena jugable** (Valdeluz; fallback a Prototipo), telemetría PERF | PASS **en emulador** |
+| Emulador x86_64 **API 35** con el APK Universal: `adb install -r` → Success, arranque, proceso vivo, sin `FATAL EXCEPTION`, captura del **menú** y de una **escena jugable** (Valdeluz con discriminante de cielo + guard de bytes; fallback a Prototipo), telemetría PERF | PASS **en emulador** |
 | Emulador x86_64 **API 36**, mismo guion | PASS **en emulador** |
-| Emulador **arm64** con el APK ARM64 (traducción ARM→x86, presupuesto ampliado) | PASS **en emulador** |
+| Sanity de la variante ARM64 (API 35 y 36): `adb install` del ARM64 en x86_64 debe rechazarse con **exactamente** `INSTALL_FAILED_NO_MATCHING_ABIS` — llegar hasta la comprobación de ABI implica que PackageManager parseó el APK, validó la firma y el manifiesto, y confirmó que solo trae arm64 | PASS **en emulador** (parseo+firma; NO ejecución) |
+| Ejecución del APK ARM64 en arm64 | **PENDIENTE DE HARDWARE**: el emulador se niega a arrancar AVDs arm64 en host x86_64 («Avd's CPU Architecture 'arm64' is not supported by the QEMU2 emulator on x86_64 host», corrida 43471820109). Hace falta teléfono físico, host arm64 o runner autohospedado |
 | Dispositivo físico Redmi 9C | **PENDIENTE DE HARDWARE** |
 | Dispositivo físico Samsung S22 Ultra | **PENDIENTE DE HARDWARE** |
 | No compatible | ninguno declarado; cualquier bloqueo físico se documentará aquí |

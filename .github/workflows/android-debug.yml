@@ -340,11 +340,21 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
-  emulator-arm64:
-    name: Emulador arm64 (API 36) - ARM64
+  arm64-abi-sanity:
+    name: Sanity ARM64 en x86_64 (API ${{ matrix.api }})
     needs: build-sign-verify
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - api: 35
+            tag: google_apis
+          - api: 36
+            tag: default
+    env:
+      ANDROID_IMAGE: "system-images;android-${{ matrix.api }};${{ matrix.tag }};x86_64"
     steps:
       - uses: actions/checkout@v4
 
@@ -354,38 +364,24 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # El APK ARM64 solo trae lib/arm64-v8a: para probarlo de verdad hay que
-      # arrancarlo en una imagen arm64 (traduccion ARM->x86 del emulador; es
-      # lenta: presupuesto de arranque ampliado). Fallback a android-35 si la
-      # imagen 36 no esta disponible.
-      - name: Install emulator and arm64 image (36 con fallback 35)
+      # CONTEXTO: el emulador se niega a arrancar AVDs arm64 en host x86_64
+      # ("Avd's CPU Architecture 'arm64' is not supported by the QEMU2 emulator
+      # on x86_64 host"; corrida 43471820109). Ejecutar la variante ARM64 en CI
+      # no es posible con estos runners: queda PENDIENTE DE HARDWARE. Lo que SI
+      # verificamos: `adb install` llega hasta la comprobacion de ABI, lo que
+      # implica parseo + firma v2/v3 + manifiesto validos, y el rechazo exacto
+      # INSTALL_FAILED_NO_MATCHING_ABIS (la ABI del APK es solo arm64, como debe).
+      - name: Install emulator and x86_64 image
         run: |
           set -euo pipefail
           SDK_DIR="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
           export ANDROID_SDK_ROOT="$SDK_DIR"
           SDKM="$(ls -d "$SDK_DIR"/cmdline-tools/*/bin/sdkmanager | head -n1)"
           yes | "$SDKM" --licenses >/dev/null 2>&1 || true
-          "$SDKM" --install "platform-tools" "emulator" >/dev/null
+          "$SDKM" --install "platform-tools" "emulator" "$ANDROID_IMAGE" >/dev/null
           echo "$SDK_DIR/platform-tools" >> "$GITHUB_PATH"
           echo "$SDK_DIR/emulator" >> "$GITHUB_PATH"
           ls -d "$SDK_DIR"/cmdline-tools/*/bin | head -n1 >> "$GITHUB_PATH"
-          FOUND=""
-          for CAND in "android-36 default arm64-v8a" "android-35 default arm64-v8a"; do
-            set -- $CAND
-            API_V=$1; TAG_V=$2; ABI_V=$3
-            PKG="system-images;$API_V;$TAG_V;$ABI_V"
-            "$SDKM" --install "$PKG" >/dev/null 2>&1 || true
-            if [ -d "$SDK_DIR/system-images/$API_V/$TAG_V/$ABI_V" ]; then
-              FOUND="$PKG"
-              break
-            fi
-          done
-          if [ -z "$FOUND" ]; then
-            echo "ERROR: ninguna imagen arm64-v8a (android-36/35) disponible." >&2
-            exit 1
-          fi
-          echo "ANDROID_IMAGE=$FOUND" >> "$GITHUB_ENV"
-          echo "arm64 image: $FOUND"
 
       - name: Check KVM
         run: |
@@ -411,27 +407,25 @@ jobs:
           name: RPG-LBA-Android-ARM64-debug
           path: dist
 
-      - name: Install, launch and capture (ARM64 en emulador arm64)
+      - name: ABI sanity (install del ARM64 en x86_64)
         env:
           APK: dist/RPG-LBA-Android-ARM64-debug.apk
           OUT: evidence
           PACKAGE: ${{ env.PACKAGE }}
-          BOOT_BUDGET_S: "900"
-          RENDER_BUDGET_S: "300"
-          TRY_VALDELUZ: "1"
-        run: bash scripts/ci/emulator_install_test.sh
+          AVD_NAME: rpglba_sanity_x86
+        run: bash scripts/ci/emulator_abi_sanity.sh
 
-      - name: Upload emulator evidence (arm64)
+      - name: Upload sanity evidence (API ${{ matrix.api }})
         uses: actions/upload-artifact@v4
         with:
-          name: RPG-LBA-Android-emulator-arm64-evidence
+          name: RPG-LBA-Android-arm64-abi-sanity-api${{ matrix.api }}-evidence
           path: evidence
           retention-days: 14
           if-no-files-found: error
 
   informe:
     name: Informe de instalación (emulador vs físico)
-    needs: [build-sign-verify, emulator-x86_64, emulator-arm64]
+    needs: [build-sign-verify, emulator-x86_64, arm64-abi-sanity]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
@@ -444,7 +438,8 @@ jobs:
             echo "|---|---|"
             echo "| Export + verificacion estatica (2 variantes, firma v2/v3, ABIs exactos) | ${{ needs.build-sign-verify.result }} |"
             echo "| Emulador x86_64 API 35 y 36 (Universal: install + arranque + capturas) | ${{ needs.emulator-x86_64.result }} |"
-            echo "| Emulador arm64 (ARM64: install + arranque, traduccion lenta) | ${{ needs.emulator-arm64.result }} |"
+            echo "| Sanity variante ARM64 (rechazo esperado por ABI: parseo+firma validados) | ${{ needs.arm64-abi-sanity.result }} |"
+            echo "| Ejecucion del APK ARM64 en arm64 | PENDIENTE DE HARDWARE (emulador x86_64 se niega a arrancar AVDs arm64) |"
             echo "| Dispositivo fisico Redmi 9C | PENDIENTE DE HARDWARE |"
             echo "| Dispositivo fisico Samsung S22 Ultra | PENDIENTE DE HARDWARE |"
             echo "| No compatible | ninguno declarado; ver matriz en docs/16 |"
