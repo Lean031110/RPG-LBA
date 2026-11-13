@@ -9,7 +9,6 @@ on:
       - 'agent/**'
       - 'feature/**'
     tags: ['v*']
-  pull_request:
 
 permissions:
   contents: read
@@ -220,18 +219,28 @@ jobs:
         run: |
           set -euo pipefail
           echo no | avdmanager create avd -n rpglba_ci -k "system-images;android-35;google_apis;x86_64" --device pixel >/dev/null
-          nohup emulator -avd rpglba_ci -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -accel on > /tmp/emulator.log 2>&1 &
-          adb wait-for-device
+          nohup emulator -avd rpglba_ci -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -accel on -verbose > /tmp/emulator.log 2>&1 &
+          EMU_PID=$!
+          # Nunca esperar sin limite: sondear con tope, detectar la muerte del
+          # emulador y volcar su log para poder diagnosticar.
+          _emu_alive() { kill -0 "$EMU_PID" 2>/dev/null; }
+          _emu_dump() { echo "--- emulator.log (tail) ---" >&2; tail -n 60 /tmp/emulator.log >&2 || true; }
+          deadline=$((SECONDS + 480))
+          while :; do
+            state="$(adb devices 2>/dev/null | awk 'NR>1 && NF {print $2}' | head -n1)"
+            if [ "${state:-}" = "device" ]; then break; fi
+            if ! _emu_alive; then echo "ERROR: el proceso del emulador murió." >&2; _emu_dump; exit 1; fi
+            if [ "$SECONDS" -ge "$deadline" ]; then echo "ERROR: no llegó al estado 'device' en 480 s." >&2; _emu_dump; exit 1; fi
+            sleep 5
+          done
           deadline=$((SECONDS + 480))
           while [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
-            if [ "$SECONDS" -ge "$deadline" ]; then
-              echo "ERROR: emulator did not finish booting within 480s." >&2
-              tail -40 /tmp/emulator.log >&2 || true
-              exit 1
-            fi
+            if ! _emu_alive; then echo "ERROR: el proceso del emulador murió durante el arranque." >&2; _emu_dump; exit 1; fi
+            if [ "$SECONDS" -ge "$deadline" ]; then echo "ERROR: boot_completed no llegó en 480 s." >&2; _emu_dump; exit 1; fi
             sleep 5
           done
           echo "Emulator booted."
+          adb shell input keyevent 82 || true
 
       - name: Install APK (valid to install?)
         run: |
