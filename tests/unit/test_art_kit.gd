@@ -4,6 +4,7 @@ extends GdUnitTestSuite
 ## El contenido es original y procedural: sin licencias de terceros que
 ## verificar (los intentos de descarga externa se documentan en el informe).
 
+
 func test_wind_material_parameters() -> void:
 	var material := ArpgArtKit.wind_material(Color(0.1, 0.2, 0.12), 0.07, 1.9)
 	assert_object(material).is_instanceof(ShaderMaterial)

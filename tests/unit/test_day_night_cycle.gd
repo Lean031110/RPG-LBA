@@ -2,6 +2,7 @@ class_name TestDayNightCycle
 extends GdUnitTestSuite
 ## Pruebas del reloj independiente del árbol de escenas.
 
+
 func test_periods_cover_all_six_day_parts() -> void:
 	var clock := DayNightCycle.new()
 	clock.set_time_hours(6.0)
