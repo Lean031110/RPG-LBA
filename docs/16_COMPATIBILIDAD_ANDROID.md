@@ -59,8 +59,12 @@ del APK. Correcciones aplicadas en esta fase para cerrar esa vía:
    cada ZIP con los pasos y las causas descartadas.
 2. **`SHA256SUMS.txt`** en cada artefacto: el propietario puede verificar que el
    archivo que llega al teléfono es byte a byte el publicado.
-3. El APK **universal** (4 ABIs) se conserva para emuladores y 32 bits; el
-   **ARM64** (más ligero) es el recomendado en teléfono.
+3. El APK **universal** (v7a + arm64 + x86_64) se conserva para emuladores y 32
+   bits ARM; el **ARM64** (más ligero) es el recomendado en teléfono.
+4. Corregido un error de import heredado de Fase 1: `scenes/level/player.tscn`
+   traía una referencia colgante a `Kurland.ttf` (fuente retirada por licencia no
+   verificada). La escena del kit usa ahora la fuente por defecto, como el resto
+   de la UI; el import de CI queda limpio (corrida 43469298703 lo evidenció).
 
 ### Códigos de PackageManager de referencia
 
@@ -165,11 +169,18 @@ más honesto para CI y más parecido a un Redmi 9C que a un S22 Ultra.
 | | `RPG-LBA-Android-ARM64-debug.apk` | `RPG-LBA-Android-Universal-debug.apk` |
 |---|---|---|
 | Preset | `Android Debug ARM64` | `Android Debug Universal` |
-| ABIs | arm64-v8a | arm64-v8a, armeabi-v7a, x86 (x86_32), x86_64 |
-| Público | **Recomendado en teléfono** | Emuladores, pruebas, 32 bits |
+| ABIs | arm64-v8a | arm64-v8a, armeabi-v7a, x86_64 |
+| Público | **Recomendado en teléfono** | Emuladores, pruebas, 32 bits ARM |
 | Package | `com.lbagames.rpglba` (idéntico; no se cambia) | idéntico |
 | Firma | Autofirma del proyecto (v2+v3), idéntica | idéntica |
 | minSdk / targetSdk | 24 / 36 (por defecto del export directo 4.7.2, verificado con `aapt2`) | idéntico |
+
+Nota sobre x86 de 32 bits: con `architectures/x86_32=true` el export 4.7.2 NO
+produce `lib/x86` (corrida 43469298703: el export añade v7a/arm64/x86_64 pero
+jamás `lib/x86`; la plantilla oficial no la trae y/o la clave no aplica en
+4.7.2). El Universal queda en las 3 ABIs verificables; los emuladores actuales
+son x86_64 y la matriz exigida (Redmi 9C, S22 Ultra) es arm64, así que la
+cobertura no cambia. Queda documentado como limitación de la variante.
 
 Reglas respetadas: **no se cambia el package ID ni la firma arbitrariamente**
 (misma autofirma en ambas variantes: se pueden instalar una sobre otra); la
