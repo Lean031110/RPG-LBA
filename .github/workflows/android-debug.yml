@@ -333,12 +333,13 @@ jobs:
         run: bash scripts/ci/emulator_install_test.sh
 
       - name: Upload emulator evidence (API ${{ matrix.api }})
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: RPG-LBA-Android-emulator-api${{ matrix.api }}-x86_64-evidence
           path: evidence
           retention-days: 14
-          if-no-files-found: error
+          if-no-files-found: warn
 
   arm64-abi-sanity:
     name: Sanity ARM64 en x86_64 (API ${{ matrix.api }})
@@ -416,12 +417,13 @@ jobs:
         run: bash scripts/ci/emulator_abi_sanity.sh
 
       - name: Upload sanity evidence (API ${{ matrix.api }})
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: RPG-LBA-Android-arm64-abi-sanity-api${{ matrix.api }}-evidence
           path: evidence
           retention-days: 14
-          if-no-files-found: error
+          if-no-files-found: warn
 
   informe:
     name: Informe de instalación (emulador vs físico)
