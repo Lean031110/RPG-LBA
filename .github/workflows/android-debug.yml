@@ -313,12 +313,22 @@ jobs:
           # "Pantalla completa" sobre negro. Ahora: sondear hasta que la region
           # central (donde va el menu, sin la franja superior del aviso) deje de
           # ser negra, con tope de 180 s, y guardar la captura final.
-          # Descartar el aviso inmersivo (cualquier toque lo cierra) con un toque
-          # en una esquina sin botones; y sondear mas abajo que la franja del aviso.
-          adb shell input tap 180 990 || true
+          # NOTA: no se envia ninguna entrada sintetica. Un toque previo en
+          # (180,990) cayo en la zona de gesto 'inicio' del sistema y mato la
+          # partida (corrida 43339724542: OnGodotTerminating + SIG 9). El aviso
+          # inmersivo vive en la franja superior, excluida de la sonda.
           deadline=$((SECONDS + 180))
           mean=0
           while [ "$SECONDS" -lt "$deadline" ]; do
+            # El juego debe seguir en primer plano; sin esto, el lanzador
+            # (fondo de pantalla claro) da un falso positivo de render.
+            TOP="$(adb shell dumpsys activity activities 2>/dev/null | tr -d '\r' | grep -m1 -E 'topResumedActivity|mResumedActivity' || true)"
+            if ! echo "$TOP" | grep -q "${PACKAGE}"; then
+              echo "ERROR: el juego dejo de estar en primer plano durante la espera." >&2
+              echo "top: $TOP" >&2
+              adb logcat -d | tail -120 >&2
+              exit 1
+            fi
             adb exec-out screencap > /tmp/frame.raw || true
             mean=$(python3 - <<'PY'
           import struct

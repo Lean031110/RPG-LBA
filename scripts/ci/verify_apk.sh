@@ -135,7 +135,13 @@ for ENTRY in \
   "classes.dex" \
   "lib/arm64-v8a/libgodot_android.so" \
   "lib/x86_64/libgodot_android.so" \
-  "assets/scenes/arpg/menu/main_menu.tscn.remap"; do
+  "assets/scenes/arpg/menu/main_menu.tscn.remap" \
+  "assets/config/quality_profiles.json" \
+  "assets/game/data/classes.json" \
+  "assets/game/data/enemies.json" \
+  "assets/game/data/items.json" \
+  "assets/game/data/progression.json" \
+  "assets/game/data/quests.json"; do
   # NOTE: no grep -q here. With set -o pipefail, grep -q can exit before the
   # producer finishes on big listings, SIGPIPE the echo and turn a match into
   # a false FAIL. Plain grep reads to EOF.

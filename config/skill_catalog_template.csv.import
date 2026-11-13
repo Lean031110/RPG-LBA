@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://dld03y135xa3u"
+
+[deps]
+
+files=["res://config/skill_catalog_template.class.translation", "res://config/skill_catalog_template.name.translation", "res://config/skill_catalog_template.slot.translation", "res://config/skill_catalog_template.resource.translation", "res://config/skill_catalog_template.cooldown.translation", "res://config/skill_catalog_template.range.translation", "res://config/skill_catalog_template.area.translation", "res://config/skill_catalog_template.description.translation", "res://config/skill_catalog_template.server.translation"]
+
+source_file="res://config/skill_catalog_template.csv"
+dest_files=["res://config/skill_catalog_template.class.translation", "res://config/skill_catalog_template.name.translation", "res://config/skill_catalog_template.slot.translation", "res://config/skill_catalog_template.resource.translation", "res://config/skill_catalog_template.cooldown.translation", "res://config/skill_catalog_template.range.translation", "res://config/skill_catalog_template.area.translation", "res://config/skill_catalog_template.description.translation", "res://config/skill_catalog_template.server.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

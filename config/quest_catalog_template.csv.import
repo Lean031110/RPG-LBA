@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://djr84juvwsii5"
+
+[deps]
+
+files=["res://config/quest_catalog_template.title.translation", "res://config/quest_catalog_template.type.translation", "res://config/quest_catalog_template.level.translation", "res://config/quest_catalog_template.region.translation", "res://config/quest_catalog_template.prerequisite.translation", "res://config/quest_catalog_template.objectives.translation", "res://config/quest_catalog_template.reward.translation"]
+
+source_file="res://config/quest_catalog_template.csv"
+dest_files=["res://config/quest_catalog_template.title.translation", "res://config/quest_catalog_template.type.translation", "res://config/quest_catalog_template.level.translation", "res://config/quest_catalog_template.region.translation", "res://config/quest_catalog_template.prerequisite.translation", "res://config/quest_catalog_template.objectives.translation", "res://config/quest_catalog_template.reward.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
