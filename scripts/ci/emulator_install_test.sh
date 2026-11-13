@@ -73,6 +73,10 @@ grep -q "Success" "$OUT/install.txt" || { echo "ERROR: adb install no reporto Su
 
 echo "== Launch =="
 adb logcat -c
+# Prevenir el aviso "Pantalla completa" (overlay inmersivo que atrapa los taps;
+# corridas 43476646209/43474930008: cubria ~60% superior y no se iba solo).
+# En emuladores, settings put global funciona desde adb shell; si no, seguimos.
+adb shell settings put global immersive_mode_confirm_enabled 0 > /dev/null 2>&1 || true
 COMPONENT=$(adb shell cmd package resolve-activity --brief "$PACKAGE" | tail -n 1 | tr -d '\r')
 echo "Launchable component: $COMPONENT" | tee -a "$OUT/install.txt"
 echo "$COMPONENT" | grep -q "/" || { echo "ERROR: sin actividad lanzable." >&2; exit 1; }
@@ -85,6 +89,44 @@ if [ -z "$PID" ]; then
   exit 1
 fi
 echo "Process alive (pid $PID) 25s after launch."
+
+# Si el overlay inmersivo quedara visible pese a lo anterior, un BACK lo cierra
+# (una sola vez y con registro; el juego no maneja BACK en el menu).
+_dismiss_immersive_notice() {
+  adb exec-out screencap > /tmp/frame.raw || true
+  local top_bright
+  top_bright=$(python3 - <<'PY'
+import struct
+try:
+    d = open('/tmp/frame.raw', 'rb').read()
+    w, h, fmt = struct.unpack('<III', d[:12])
+    px = d[12:]
+    x0, x1 = int(w * 0.20), int(w * 0.80)
+    y0, y1 = int(h * 0.06), int(h * 0.30)
+    total = 0
+    count = 0
+    stride = w * 4
+    for y in range(y0, y1, 4):
+        row = px[y * stride:(y + 1) * stride]
+        for x in range(x0, x1, 4):
+            o = x * 4
+            total += (row[o] + row[o + 1] + row[o + 2]) / 3.0
+            count += 1
+    print(int(total / max(count, 1)))
+except Exception:
+    print(0)
+PY
+)
+  # Banda superior brillante (>= 120) sobre fondo de juego oscuro => overlay.
+  if [ "${top_bright:-0}" -ge 120 ]; then
+    echo "NOTE: overlay inmersivo detectado (banda superior luma=$top_bright); enviando BACK."
+    adb shell input keyevent 4
+    sleep 3
+  else
+    echo "NOTE: sin overlay inmersivo (banda superior luma=$top_bright)."
+  fi
+}
+_dismiss_immersive_notice
 
 _dump_failure_evidence() {
   # En cualquier fallo: dejar captura, logcat y foco de ventana en $OUT para
