@@ -91,7 +91,28 @@ activo. Esta fase cierra ese hueco de extremo a extremo:
   logcat como artefactos, y desinstalación al final.
 - `verify_apk.sh` es reutilizable en local (es el mismo comando de CI).
 
-### C.3 Bug corregido: pantalla de Créditos
+### C.3 Bug real corregido durante las corridas de CI (adicional)
+
+El propio flujo de verificación, al instalar y lanzar el APK en el emulador,
+detectó dos bugs reales más (ver §C.4 para el de Créditos):
+
+1. **APK sin `config/quality_profiles.json`**: `config/` traía un `.gdignore`
+   del kit base; el editor nunca escanea ese directorio y el export jamás lo
+   empaqueta (`include_filter` NO rescata archivos no escaneados en 4.7.2;
+   probado con `*.json`, `config/*.json` y `res://config/*.json`: 0 archivos
+   añadidos). El juego en el emulador lo evidenció: `GraphicsSettings: falta
+   res://config/quality_profiles.json` (logcat de la corrida 43339724542).
+   Corregido quitando `.gdignore` de `config/`; ahora el escaneo lo incluye,
+   igual que ya pasaba con `game/data/*.json`.
+2. **Corrupción del heap al reimportar (consecuencia del anterior)**: al
+   quedar escaneadas las plantillas `.csv` de `config/`, el importador de
+   traducciones csv de 4.7.2 abortó en CI con `double free or corruption`
+   (exit 134; corrida 43341781476, job gdunit). Solución: las 5 plantillas
+   pasan a `config/templates/` con `.gdignore` propio; `config/` queda
+   escaneado solo con el json que el juego necesita. Reimport desde cero
+   verificado en local: exit 0 y cero avisos csv-translation.
+
+### C.4 Bug corregido: pantalla de Créditos
 - `scripts/arpg/ui/arpg_credits_menu.gd` llamaba `_flat()` (líneas 50-52) sin
   definirlo: error de parseo en el import estricto del export. La pantalla
   habría ido rota dentro del APK (el menú principal sí la enlaza).
@@ -142,10 +163,50 @@ build-tools;35.0.1, platforms;android-35) en `tools/android-sdk`, plantillas
 
 ## F. Evidencia de CI (GitHub Actions)
 
-- Corridas de esta rama: **(se completa con identificadores reales cuando el
-  flujo termine; se añaden en un commit posterior, como en fases anteriores)**
-- Artefactos por corrida: APK firmado, informe de verificación, captura del
-  emulador y logcat (retención 14 días).
+**Estado final en la rama `agent/fase3b-apk-firma-verificacion` (commit ca63d7b):**
+
+- `RPG LBA - Android debug APK (autofirma + verificación de instalación)`,
+  corrida **43343138392**: **SUCCESS** (ambos jobs).
+  - APK de CI: 73.220.098 bytes, sha256
+    `5b813022bd6370a2be6f8fdcef6483b68bf2d04b350d29b84f5d176462aeb4a1`,
+    verificación estática **PASS 21/21**.
+  - Emulador API 35 x86_64 (ANGLE): `adb install` → **Success**; actividad
+    lanzable resuelta (`com.godot.game.GodotAppLauncher`); proceso vivo 25 s
+    sin `FATAL EXCEPTION`; primer fotograma confirmado por sonda de brillo;
+    menú legible en la captura (Continuar / Nueva partida / Prototipo (Fase 2)
+    / Ajustes / Créditos / Salir + subtítulo) revisado también con modelo de
+    visión; artefactos: APK + informe + captura + logcat.
+- `RPG LBA - Validate`, corrida **43343144211** (tras re-ejecutar su único job
+  intermitente): **SUCCESS**. Suite GdUnit4 **171/171, exit 0** dentro del log
+  (la primera ejecución del job dio un `HttpError: Not Found` al PUBLICAR el
+  check-run desde la acción gdUnit4-action@v1 — flake de contabilidad, no de
+  pruebas; las 171 pruebas ya habían pasado en esa misma corrida).
+
+**Historial honesto de iteraciones del flujo (cada fallo con su causa y fix):**
+
+| Corrida | Resultado | Causa | Corrección |
+|---|---|---|---|
+| 43328222489 | failure | Workflow inválido: `tags:['v*']` al nivel de `on:` ("Unexpected value 'tags'") | `tags` movido dentro de `push:` |
+| 43329885795 / 43329880370 | failure | `android-actions/setup-android@v3` aborta en esta imagen (`sdkmanager --licenses` interno exit 1) | SDK preinstalado del runner manejado directamente |
+| 43330436622 / 43330430710 | failure | Godot exit 134 tras export completo ("cannot connect to daemon tcp:5037") | tolerancia 0/134 + verificación dura del artefacto |
+| 43330860408 | failure | `verify_apk.sh` sin bit de ejecución en git (exit 126; `core.fileMode=false` ocultó el chmod) | `git update-index --chmod=+x` |
+| 43331177237 / 43331170827 | cancelled | `adb wait-for-device` sin límite → colgado hasta el timeout de 30 min del job | sondeos acotados que detectan la muerte del emulador y vuelcan su log |
+| 43335712939 | failure | "Unknown AVD name": avdmanager creó el AVD fuera del directorio de búsqueda | `ANDROID_AVD_HOME` fijo + verificación del `.ini` |
+| 43336374165 | failure | "This user doesn't have permissions to use KVM" (`/etc/group [kvm:x:991:]` sin miembros) | `gpasswd` + `chmod 666 /dev/kvm`; se exige `-w /dev/kvm` |
+| 43337151226 | success | Captura a los ~25 s: solo el aviso "Pantalla completa" del sistema sobre negro | sonda de render (ver siguiente) |
+| 43338471841 | success | Sonda falsa-positiva (luma 160 del aviso; captura idéntica a la anterior); logcat: `Fragment shader active uniforms exceed GL_MAX_FRAGMENT_UNIFORM_VECTORS (261)` con SwiftShader | `-gpu angle_indirect` + ventana de sonda bajo la franja del aviso |
+| 43339724542 | success | El toque de descarte (180,990) cayó en la zona de gesto "inicio" → `OnGodotTerminating` + SIG 9, captura del LAUNCHER; logcat reveló el bug real del json ausente | cero entrada sintética + aserción de primer plano en cada sonda + fix de `.gdignore` |
+| 43341775229 | success (APK) | Validate en paralelo abortó: `double free or corruption` del importador csv-translation | plantillas csv a `config/templates/` (§C.3) |
+| 43343138392 | **success** | — | estado final |
+
+Corridas de Validate en la rama: 43328279687 ✓, 43330860400 ✓, 43331177195
+✗ (mismo flake de publicación del check-run; suite 171/171 exit 0 dentro del
+log), 43335720137 ✓, 43338480156 ✓, 43339730995 ✓, 43341781476 ✗ (double
+free, §C.3), 43343144211 ✓ (tras rerun-failed-jobs).
+
+Artefactos por corrida (retención 14 días): APK firmado + informe de
+verificación (`RPG-LBA-Android-debug`) y captura + logcat + install.txt
+(`RPG-LBA-Android-emulator-evidence`).
 
 ## G. Decisiones y dependencias
 
@@ -181,6 +242,16 @@ build-tools;35.0.1, platforms;android-35) en `tools/android-sdk`, plantillas
   cual; pertenece al kit base, no a esta fase.
 - La rotación en emulador/pantalla (sensor_landscape) no se automatiza en CI;
   el setting de proyecto y su prueba de regresión ya lo cubren desde la Fase 3.
+- La captura del emulador muestra artefactos de composición del display durante
+  la rotación (contenido del launcher "girado" dentro del framebuffer 1920x1080
+  y, con el aviso inmersivo encima, el menú descentrado). El menú en sí está
+  bien compuesto (estructura, espaciado y antialias verificados con modelo de
+  visión sobre un recorte); es una peculiaridad del compositor del emulador, no
+  un bug del juego. En dispositivo físico debe corroborarse (NOT TESTED).
+- SwiftShader (GPU por software) no soporta los shaders de escena del
+  Compatibility renderer (261 uniform vectors > su tope); por eso el flujo usa
+  `-gpu angle_indirect`. En GPUs reales no aplica esta limitación, pero tampoco
+  está probado en físico.
 
 ## I. Archivos importantes para el siguiente agente
 

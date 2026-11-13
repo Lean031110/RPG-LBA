@@ -10,7 +10,7 @@ Estados: COMPLETADO · PENDIENTE · BLOQUEADO · NO PROBADO.
 | Subir la Fase 2 a GitHub (rama `feature/phase-2-playable-prototype`) | COMPLETADO | Push directo con credenciales autorizadas; PR#6 abierta sobre `agent/fase1-vertical-slice`. |
 | Verificar que Actions pase en la PR de Fase 2 | COMPLETADO | `validate.yml` verde: import+smoke, multiplayer-smoke, asset-license-audit, gdunit-tests, test-report (5/5). |
 | Sin merge automático (regla del repositorio) | COMPLETADO | PRs abiertas; decisión del propietario. |
-| APK debug desde CI (`android-debug.yml`) | EN CURSO (Fase 3B) | Rama `agent/fase3b-apk-firma-verificacion`: autofirma open source versionada + verificación estática (15 checks) + instalación real en emulador API 35. Local: export exit 0, firma verificada, 171/171. CI: pendiente de corrida; se actualizará con identificadores reales. |
+| APK debug desde CI (`android-debug.yml`) | COMPLETADO (Fase 3B) | PR#8: autofirma open source versionada (keytool/OpenJDK), verificación estática PASS 21/21, instalación real en emulador API 35 con `adb install` Success + arranque sin crashes + menú renderizado (captura revisada con modelo de visión). Corridas finales: 43343138392 (APK) y 43343144211 (Validate) ambas SUCCESS; suite 171/171. Dispositivo físico: NOT TESTED. Dos bugs reales encontrados y corregidos por el propio flujo: `config/.gdignore` dejaba el APK sin `quality_profiles.json`, y `_flat()` ausente rompía la pantalla de Créditos. |
 
 ## HUD y controles (estilo Diablo Immortal / MLBB)
 
