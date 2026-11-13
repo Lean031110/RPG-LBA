@@ -253,7 +253,7 @@ jobs:
           fi
           ls -la "$ANDROID_AVD_HOME" | head -n 6
           emulator -list-avds || true
-          nohup emulator -avd rpglba_ci -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -accel on -verbose > /tmp/emulator.log 2>&1 &
+          nohup emulator -avd rpglba_ci -no-window -gpu angle_indirect -noaudio -no-boot-anim -no-snapshot -accel on -verbose > /tmp/emulator.log 2>&1 &
           EMU_PID=$!
           # Nunca esperar sin limite: sondear con tope, detectar la muerte del
           # emulador y volcar su log para poder diagnosticar.
@@ -313,6 +313,9 @@ jobs:
           # "Pantalla completa" sobre negro. Ahora: sondear hasta que la region
           # central (donde va el menu, sin la franja superior del aviso) deje de
           # ser negra, con tope de 180 s, y guardar la captura final.
+          # Descartar el aviso inmersivo (cualquier toque lo cierra) con un toque
+          # en una esquina sin botones; y sondear mas abajo que la franja del aviso.
+          adb shell input tap 180 990 || true
           deadline=$((SECONDS + 180))
           mean=0
           while [ "$SECONDS" -lt "$deadline" ]; do
