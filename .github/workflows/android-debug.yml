@@ -218,7 +218,28 @@ jobs:
       - name: Boot emulator
         run: |
           set -euo pipefail
+          # Fijar el hogar de los AVD y verificar que el .ini queda ahí:
+          # corrida 43335712939: avdmanager creó el AVD en un directorio que el
+          # emulador no busca ("Unknown AVD name ... no file rpglba_ci.ini in
+          # $HOME/.android/avd").
+          export ANDROID_AVD_HOME="$HOME/.android/avd"
+          mkdir -p "$ANDROID_AVD_HOME"
           echo no | avdmanager create avd -n rpglba_ci -k "system-images;android-35;google_apis;x86_64" --device pixel >/dev/null
+          if [ ! -f "$ANDROID_AVD_HOME/rpglba_ci.ini" ]; then
+            echo "avdmanager no dejó el ini en ANDROID_AVD_HOME; buscando dónde lo puso..."
+            FOUND="$(find "$HOME" /usr/local/lib/android/sdk -name 'rpglba_ci.ini' -not -path '*/proc/*' 2>/dev/null | head -n1 || true)"
+            if [ -n "$FOUND" ]; then
+              SRC_DIR="$(dirname "$FOUND")"
+              echo "Encontrado en $SRC_DIR; copiando a $ANDROID_AVD_HOME"
+              cp -a "$SRC_DIR"/rpglba_ci* "$ANDROID_AVD_HOME"/
+            else
+              echo "ERROR: no se encontró rpglba_ci.ini en ningún sitio." >&2
+              avdmanager list avd || true
+              exit 1
+            fi
+          fi
+          ls -la "$ANDROID_AVD_HOME" | head -n 6
+          emulator -list-avds || true
           nohup emulator -avd rpglba_ci -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -accel on -verbose > /tmp/emulator.log 2>&1 &
           EMU_PID=$!
           # Nunca esperar sin limite: sondear con tope, detectar la muerte del
