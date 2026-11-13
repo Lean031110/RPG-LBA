@@ -176,15 +176,18 @@ func detect_hardware() -> Dictionary:
         if OS.get_name() == "Android":
                 # JavaClassWrapper es singleton del engine en esta version; en escritorio
                 # get_singleton devuelve null y todo queda en sus valores neutros.
+                # API de JavaClass en 4.7.2 (leccion de la corrida 43476646209): los campos
+                # estaticos se leen como PROPIEDADES (Build.VERSION.SDK_INT => .SDK_INT),
+                # no existe get_static_field().
                 var wrapper: Variant = Engine.get_singleton("JavaClassWrapper")
                 if wrapper != null:
                         var build_cls: Variant = wrapper.wrap("android.os.Build")
                         if build_cls != null:
-                                hw["model"] = String(build_cls.get_static_field("MODEL"))
-                                var version_cls: Variant = build_cls.get_static_field("VERSION")
+                                hw["model"] = String(build_cls.MODEL)
+                                var version_cls: Variant = wrapper.wrap("android.os.Build$VERSION")
                                 if version_cls != null:
-                                        hw["api_level"] = int(version_cls.get_static_field("SDK_INT"))
-                                var abis: Variant = build_cls.get_static_field("SUPPORTED_ABIS")
+                                        hw["api_level"] = int(version_cls.SDK_INT)
+                                var abis: Variant = build_cls.SUPPORTED_ABIS
                                 if abis != null:
                                         hw["abis"] = abis
         return hw
