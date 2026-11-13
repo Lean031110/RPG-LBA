@@ -9,6 +9,11 @@ export.cfg
 # android-debug.yml lo busca en el repo). Las credenciales NUNCA se versionan:
 export_credentials.cfg
 *.keystore
+# Fase 3B — excepción: la autofirma debug del proyecto SÍ se versiona.
+# NO es un secreto: es una clave autofirmada de desarrollo con credenciales
+# públicas documentadas (build/android/README.md), comparable al keystore
+# debug universal de Android. Nunca usar para firmar una release pública.
+!build/android/rpglba-debug.keystore
 
 # Build ignores
 builds/
