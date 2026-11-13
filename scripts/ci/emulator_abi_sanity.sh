@@ -65,6 +65,9 @@ echo "Emulator booted."
 adb shell input keyevent 82 || true
 
 echo "== Install del APK ARM64 en x86_64 (rechazo esperado por ABI) =="
+# Pre-consentimiento inmersivo (igual que emulator_install_test.sh): sin el,
+# el dialogo del sistema cubre la captura y atrapa los taps.
+adb shell settings put secure immersive_mode_confirmations confirmed > /dev/null 2>&1 || true
 set +e
 # adb escribe el fallo en STDERR ("adb: failed to install ... Failure
 # [INSTALL_FAILED_NO_MATCHING_ABIS ...]"); sin 2>&1 el informe se queda sin la
