@@ -305,8 +305,50 @@ jobs:
           fi
           adb logcat -d | grep -m1 "Godot Engine" || echo "note: no Godot Engine banner line in logcat (not fatal by itself)."
 
-      - name: Capture screenshot evidence
+      - name: Wait for first render and capture evidence
         run: |
+          set -euo pipefail
+          # SwiftShader puede tardar en presentar el primer fotograma (pck + shaders).
+          # La corrida 43337151226 capturo a los ~25 s: solo el aviso del sistema
+          # "Pantalla completa" sobre negro. Ahora: sondear hasta que la region
+          # central (donde va el menu, sin la franja superior del aviso) deje de
+          # ser negra, con tope de 180 s, y guardar la captura final.
+          deadline=$((SECONDS + 180))
+          mean=0
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            adb exec-out screencap > /tmp/frame.raw || true
+            mean=$(python3 - <<'PY'
+          import struct
+          try:
+              d = open('/tmp/frame.raw', 'rb').read()
+              w, h, fmt = struct.unpack('<III', d[:12])
+              px = d[12:]
+              x0, x1 = int(w * 0.25), int(w * 0.75)
+              y0, y1 = int(h * 0.30), int(h * 0.75)
+              total = 0
+              count = 0
+              stride = w * 4
+              for y in range(y0, y1, 8):
+                  row = px[y * stride:(y + 1) * stride]
+                  for x in range(x0, x1, 8):
+                      o = x * 4
+                      total += row[o] + row[o + 1] + row[o + 2]
+                      count += 3
+              print(int(total / max(count, 1)))
+          except Exception:
+              print(0)
+          PY
+          )
+            echo "render probe: central mean luma = $mean (threshold 7)"
+            if [ "$mean" -ge 7 ]; then break; fi
+            sleep 10
+          done
+          if [ "$mean" -lt 7 ]; then
+            echo "ERROR: el juego no presento fotograma no negro en 180 s (mean=$mean)." >&2
+            adb logcat -d | tail -120 >&2
+            exit 1
+          fi
+          echo "First render confirmed (central mean luma $mean)."
           adb exec-out screencap -p > emulator_screenshot.png
           adb logcat -d > emulator_logcat.txt
           ls -la emulator_screenshot.png
