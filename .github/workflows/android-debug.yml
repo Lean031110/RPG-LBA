@@ -175,7 +175,7 @@ jobs:
           ./scripts/ci/verify_apk.sh \
             "artifacts/android/RPG-LBA-Android-Universal-debug.apk" \
             --report "artifacts/android/RPG-LBA-Android-Universal-debug_verification_report.txt" \
-            --abis "arm64-v8a,armeabi-v7a,x86,x86_64" | tee -a "$GITHUB_STEP_SUMMARY"
+            --abis "arm64-v8a,armeabi-v7a,x86_64" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Write SHA256SUMS and installation guide
         if: steps.preset.outputs.ready == 'true'
