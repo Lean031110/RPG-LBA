@@ -19,22 +19,29 @@ concurrency:
 
 env:
   GODOT_VERSION: "4.7.2"
-  APK_REL: artifacts/android/RPG-LBA-debug.apk
   PACKAGE: com.lbagames.rpglba
+  # Constantes de layout del menu medidas con scripts/local/measure_menu_layout.gd
+  # (canvas 1280x720). Solo documentativas: el script de emulador las recalcula.
+  MENU_TAP_NEW_GAME_Y: "423"
+  MENU_TAP_PLAY_DX: "174"
+  MENU_TAP_PLAY_DY: "159"
+  MENU_TAP_PROTO_Y: "489"
 
 jobs:
   build-sign-verify:
-    name: Export, autofirma open source y verificación estática
+    name: Export, autofirma y verificación estática (ARM64 + Universal)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check Android preset exists
+      - name: Check Android presets exist
         id: preset
         shell: bash
         run: |
-          if [ -f export_presets.cfg ] && grep -q 'name="Android Debug"' export_presets.cfg; then
+          if [ -f export_presets.cfg ] \
+            && grep -q 'name="Android Debug ARM64"' export_presets.cfg \
+            && grep -q 'name="Android Debug Universal"' export_presets.cfg; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
@@ -59,7 +66,6 @@ jobs:
           echo "ANDROID_SDK_ROOT=$SDK_DIR" >> "$GITHUB_ENV"
           echo "ANDROID_HOME=$SDK_DIR" >> "$GITHUB_ENV"
           SDKM="$(ls -d "$SDK_DIR"/cmdline-tools/*/bin/sdkmanager | head -n1)"
-          echo "sdkmanager: $SDKM"
           yes | "$SDKM" --licenses >/dev/null 2>&1 || true
           "$SDKM" --install \
             "platform-tools" \
@@ -67,6 +73,7 @@ jobs:
             "platforms;android-35"
           # adb para el paso "Start adb server".
           echo "$SDK_DIR/platform-tools" >> "$GITHUB_PATH"
+          echo "$SDK_DIR/build-tools/35.0.1" >> "$GITHUB_PATH"
 
       - name: Cache Godot editor and export templates
         if: steps.preset.outputs.ready == 'true'
@@ -127,64 +134,155 @@ jobs:
             --headless --editor --path . --quit
 
       # El directorio de destino debe existir antes del export.
-      - name: Export debug APK (firma con la autofirma del proyecto)
+      - name: Export debug APKs (firma con la autofirma del proyecto)
         if: steps.preset.outputs.ready == 'true'
         run: |
           set -euo pipefail
           mkdir -p artifacts/android
           adb start-server || true
-          set +e
-          "$HOME/.cache/rpg-lba/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" \
-            --headless --path . --export-debug "Android Debug" "${APK_REL}"
-          rc=$?
-          set -e
-          # Godot 4.7.2 conocido: tras terminar y verificar el export puede
-          # abortar en el apagado headless ("cannot connect to daemon tcp:5037",
-          # exit 134) si el daemon de adb no responde en ese instante. El APK ya
-          # está completo y firmado antes de ese punto. Se toleran 0 y 134; el
-          # paso siguiente verifica el artefacto de verdad y atrapa cualquier
-          # corrupción real.
-          if [ "$rc" != "0" ] && [ "$rc" != "134" ]; then
-            echo "ERROR: export failed with code $rc" >&2
-            exit 1
-          fi
-          echo "note: export exit code $rc (134 = crash de apagado post-export; tolerado)"
-          test -s "${APK_REL}"
+          for PRESET in \
+            "Android Debug ARM64:RPG-LBA-Android-ARM64-debug.apk" \
+            "Android Debug Universal:RPG-LBA-Android-Universal-debug.apk"; do
+            NAME="${PRESET%%:*}"
+            FILE="${PRESET##*:}"
+            echo "== export $NAME -> $FILE"
+            set +e
+            "$HOME/.cache/rpg-lba/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" \
+              --headless --path . --export-debug "$NAME" "artifacts/android/$FILE"
+            rc=$?
+            set -e
+            # Godot 4.7.2 conocido: tras terminar y verificar el export puede
+            # abortar en el apagado headless ("cannot connect to daemon tcp:5037",
+            # exit 134) si el daemon de adb no responde en ese instante. El APK ya
+            # esta completo y firmado antes de ese punto. Se toleran 0 y 134; el
+            # paso siguiente verifica el artefacto de verdad y atrapa corrupcion.
+            if [ "$rc" != "0" ] && [ "$rc" != "134" ]; then
+              echo "ERROR: export $NAME failed with code $rc" >&2
+              exit 1
+            fi
+            echo "note: export $NAME exit code $rc (134 = crash de apagado post-export; tolerado)"
+            test -s "artifacts/android/$FILE"
+          done
 
-      - name: Verify APK (static checks)
+      - name: Verify APKs (static checks, per-variant ABIs)
         if: steps.preset.outputs.ready == 'true'
         run: |
           set -euo pipefail
-          ./scripts/ci/verify_apk.sh "${APK_REL}" "${APK_REL%.*}_verification_report.txt" | tee -a "$GITHUB_STEP_SUMMARY"
+          ./scripts/ci/verify_apk.sh \
+            "artifacts/android/RPG-LBA-Android-ARM64-debug.apk" \
+            --report "artifacts/android/RPG-LBA-Android-ARM64-debug_verification_report.txt" \
+            --abis "arm64-v8a" | tee -a "$GITHUB_STEP_SUMMARY"
+          ./scripts/ci/verify_apk.sh \
+            "artifacts/android/RPG-LBA-Android-Universal-debug.apk" \
+            --report "artifacts/android/RPG-LBA-Android-Universal-debug_verification_report.txt" \
+            --abis "arm64-v8a,armeabi-v7a,x86,x86_64" | tee -a "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload APK and report
+      - name: Write SHA256SUMS and installation guide
+        if: steps.preset.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          cd artifacts/android
+          {
+            sha256sum RPG-LBA-Android-ARM64-debug.apk
+            sha256sum RPG-LBA-Android-Universal-debug.apk
+          } > SHA256SUMS.txt
+          cat > LEEME_INSTALACION.txt <<'TXT'
+          RPG LBA - Instalacion del APK debug (Android)
+          ============================================
+
+          QUE ARCHIVO INSTALAR
+          - RPG-LBA-Android-ARM64-debug.apk -> RECOMENDADO en telefono (Redmi 9C,
+            Samsung S22 Ultra y cualquier arm64).
+          - RPG-LBA-Android-Universal-debug.apk -> emuladores, pruebas y
+            dispositivos antiguos de 32 bits. Mas pesado; misma firma y mismo
+            package: se puede instalar encima de la variante ARM64 y viceversa.
+
+          COMO INSTALARLO (pasos exactos)
+          1. Descarga el artefacto ZIP desde la pagina de Actions.
+          2. EXTRAE el ZIP: dentro hay UN archivo .apk y los informes.
+             NO intentes instalar el .zip: un ZIP no es un APK y Android
+             respondera "Error al analizar el paquete" (INSTALL_PARSE_FAILED_NOT_APK).
+          3. Verifica el SHA-256 del .apk contra SHA256SUMS.txt.
+          4. En el telefono: Ajustes -> Seguridad -> "Instalar apps desconocidas"
+             -> permite tu explorador de archivos o tu navegador.
+          5. Abre el .apk EXTRAIDO con el instalador de paquetes.
+
+          SI FALLA LA INSTALACION
+          Causas ya DESCARTADAS en el artefacto (verificacion estatica PASS):
+          firma v2+v3 de la autofirma del proyecto, manifiesto valido
+          (com.lbagames.rpglba, minSdk 24, targetSdk 36), ABIs correctos,
+          zipalign PASS y resources.arsc Stored.
+          Causas posibles:
+          - Instalaste el .zip sin extraer -> extrae primero (causa mas comun).
+          - Descarga truncada o corrupta -> compara SHA-256 y re-descarga.
+          - Resto de una instalacion previa con OTRA firma -> desinstala la
+            anterior (con autorizacion): INSTALL_FAILED_UPDATE_INCOMPATIBLE.
+          - Para obtener el codigo de error exacto:
+            adb install -r RPG-LBA-Android-ARM64-debug.apk
+            y reporta el INSTALL_* que aparezca.
+
+          Este APK es de DEBUG con la autofirma publica del proyecto
+          (build/android/rpglba-debug.keystore). No usar para produccion.
+          TXT
+          # Quitar la sangria del heredoc (indentacion del YAML).
+          sed -i 's/^          //' LEEME_INSTALACION.txt
+          cd - >/dev/null
+          cat artifacts/android/SHA256SUMS.txt | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload ARM64 APK and report
         if: steps.preset.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: RPG-LBA-Android-debug
+          name: RPG-LBA-Android-ARM64-debug
           path: |
-            artifacts/android/RPG-LBA-debug.apk
-            artifacts/android/RPG-LBA-debug_verification_report.txt
+            artifacts/android/RPG-LBA-Android-ARM64-debug.apk
+            artifacts/android/RPG-LBA-Android-ARM64-debug_verification_report.txt
+            artifacts/android/SHA256SUMS.txt
+            artifacts/android/LEEME_INSTALACION.txt
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Upload Universal APK and report
+        if: steps.preset.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: RPG-LBA-Android-Universal-debug
+          path: |
+            artifacts/android/RPG-LBA-Android-Universal-debug.apk
+            artifacts/android/RPG-LBA-Android-Universal-debug_verification_report.txt
+            artifacts/android/SHA256SUMS.txt
+            artifacts/android/LEEME_INSTALACION.txt
           retention-days: 14
           if-no-files-found: error
 
       - name: Report not configured
         if: steps.preset.outputs.ready != 'true'
-        run: 'echo "SKIPPED: no Android Debug preset in export_presets.cfg; nothing to build."'
+        run: 'echo "SKIPPED: presets Android Debug ARM64/Universal not found in export_presets.cfg; nothing to build."'
 
-  emulator-install-test:
-    name: Instalación y arranque en emulador (API 35)
+  emulator-x86_64:
+    name: Emulador x86_64 (API ${{ matrix.api }}) - Universal
     needs: build-sign-verify
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - api: 35
+            tag: google_apis
+          - api: 36
+            tag: default
+    env:
+      ANDROID_IMAGE: "system-images;android-${{ matrix.api }};${{ matrix.tag }};x86_64"
     steps:
+      - uses: actions/checkout@v4
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      # SDK preinstalado del runner; sin android-actions/setup-android (ver job 1).
       - name: Install emulator and system image
         run: |
           set -euo pipefail
@@ -195,8 +293,7 @@ jobs:
           "$SDKM" --install \
             "platform-tools" \
             "emulator" \
-            "system-images;android-35;google_apis;x86_64" >/dev/null
-          # Poner en PATH las herramientas de los pasos siguientes.
+            "$ANDROID_IMAGE" >/dev/null
           echo "$SDK_DIR/platform-tools" >> "$GITHUB_PATH"
           echo "$SDK_DIR/emulator" >> "$GITHUB_PATH"
           ls -d "$SDK_DIR"/cmdline-tools/*/bin | head -n1 >> "$GITHUB_PATH"
@@ -208,9 +305,6 @@ jobs:
             echo "ERROR: /dev/kvm not available on this runner; cannot hardware-accelerate the emulator." >&2
             exit 1
           fi
-          # Que exista NO basta (corrida 43336374165: 'This user doesn't have
-          # permissions to use KVM' con /etc/group [kvm:x:991:] sin miembros).
-          # x86_64 requiere aceleración por hardware: otorgar acceso real.
           if [ ! -w /dev/kvm ]; then
             sudo gpasswd -a "$USER" kvm || true
             sudo chmod 666 /dev/kvm || true
@@ -222,176 +316,144 @@ jobs:
             exit 1
           fi
 
-      - name: Download APK
+      - name: Download Universal APK
         uses: actions/download-artifact@v4
         with:
-          name: RPG-LBA-Android-debug
+          name: RPG-LBA-Android-Universal-debug
           path: dist
 
-      - name: Boot emulator
-        run: |
-          set -euo pipefail
-          # Fijar el hogar de los AVD y verificar que el .ini queda ahí:
-          # corrida 43335712939: avdmanager creó el AVD en un directorio que el
-          # emulador no busca ("Unknown AVD name ... no file rpglba_ci.ini in
-          # $HOME/.android/avd").
-          export ANDROID_AVD_HOME="$HOME/.android/avd"
-          mkdir -p "$ANDROID_AVD_HOME"
-          echo no | avdmanager create avd -n rpglba_ci -k "system-images;android-35;google_apis;x86_64" --device pixel >/dev/null
-          if [ ! -f "$ANDROID_AVD_HOME/rpglba_ci.ini" ]; then
-            echo "avdmanager no dejó el ini en ANDROID_AVD_HOME; buscando dónde lo puso..."
-            FOUND="$(find "$HOME" /usr/local/lib/android/sdk -name 'rpglba_ci.ini' -not -path '*/proc/*' 2>/dev/null | head -n1 || true)"
-            if [ -n "$FOUND" ]; then
-              SRC_DIR="$(dirname "$FOUND")"
-              echo "Encontrado en $SRC_DIR; copiando a $ANDROID_AVD_HOME"
-              cp -a "$SRC_DIR"/rpglba_ci* "$ANDROID_AVD_HOME"/
-            else
-              echo "ERROR: no se encontró rpglba_ci.ini en ningún sitio." >&2
-              avdmanager list avd || true
-              exit 1
-            fi
-          fi
-          ls -la "$ANDROID_AVD_HOME" | head -n 6
-          emulator -list-avds || true
-          nohup emulator -avd rpglba_ci -no-window -gpu angle_indirect -noaudio -no-boot-anim -no-snapshot -accel on -verbose > /tmp/emulator.log 2>&1 &
-          EMU_PID=$!
-          # Nunca esperar sin limite: sondear con tope, detectar la muerte del
-          # emulador y volcar su log para poder diagnosticar.
-          _emu_alive() { kill -0 "$EMU_PID" 2>/dev/null; }
-          _emu_dump() { echo "--- emulator.log (tail) ---" >&2; tail -n 60 /tmp/emulator.log >&2 || true; }
-          deadline=$((SECONDS + 480))
-          while :; do
-            state="$(adb devices 2>/dev/null | awk 'NR>1 && NF {print $2}' | head -n1)"
-            if [ "${state:-}" = "device" ]; then break; fi
-            if ! _emu_alive; then echo "ERROR: el proceso del emulador murió." >&2; _emu_dump; exit 1; fi
-            if [ "$SECONDS" -ge "$deadline" ]; then echo "ERROR: no llegó al estado 'device' en 480 s." >&2; _emu_dump; exit 1; fi
-            sleep 5
-          done
-          deadline=$((SECONDS + 480))
-          while [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
-            if ! _emu_alive; then echo "ERROR: el proceso del emulador murió durante el arranque." >&2; _emu_dump; exit 1; fi
-            if [ "$SECONDS" -ge "$deadline" ]; then echo "ERROR: boot_completed no llegó en 480 s." >&2; _emu_dump; exit 1; fi
-            sleep 5
-          done
-          echo "Emulator booted."
-          adb shell input keyevent 82 || true
+      - name: Install, launch and capture (menu + escena jugable)
+        env:
+          APK: dist/RPG-LBA-Android-Universal-debug.apk
+          OUT: evidence
+          PACKAGE: ${{ env.PACKAGE }}
+          BOOT_BUDGET_S: "480"
+          RENDER_BUDGET_S: "240"
+          TRY_VALDELUZ: "1"
+        run: bash scripts/ci/emulator_install_test.sh
 
-      - name: Install APK (valid to install?)
-        run: |
-          set -euo pipefail
-          adb install -r dist/RPG-LBA-debug.apk | tee install.txt
-          grep -q "Success" install.txt || { echo "ERROR: adb install did not report Success." >&2; exit 1; }
-
-      - name: Launch game and watch for crashes
-        run: |
-          set -euo pipefail
-          adb logcat -c
-          COMPONENT=$(adb shell cmd package resolve-activity --brief "${PACKAGE}" | tail -n 1 | tr -d '\r')
-          echo "Launchable component: $COMPONENT"
-          echo "$COMPONENT" | grep -q "/" || { echo "ERROR: no launchable activity resolved." >&2; exit 1; }
-          adb shell am start -n "$COMPONENT"
-          sleep 25
-          PID=$(adb shell pidof "${PACKAGE}" | tr -d '\r')
-          if [ -z "$PID" ]; then
-            echo "ERROR: process not alive 25s after launch." >&2
-            adb logcat -d | tail -80 >&2
-            exit 1
-          fi
-          echo "Process alive (pid $PID) 25s after launch."
-          if adb logcat -d | grep -q "FATAL EXCEPTION"; then
-            echo "ERROR: FATAL EXCEPTION found in logcat." >&2
-            adb logcat -d | grep -A20 "FATAL EXCEPTION" >&2 || true
-            exit 1
-          fi
-          adb logcat -d | grep -m1 "Godot Engine" || echo "note: no Godot Engine banner line in logcat (not fatal by itself)."
-
-      - name: Wait for first render and capture evidence
-        run: |
-          set -euo pipefail
-          # SwiftShader puede tardar en presentar el primer fotograma (pck + shaders).
-          # La corrida 43337151226 capturo a los ~25 s: solo el aviso del sistema
-          # "Pantalla completa" sobre negro. Ahora: sondear hasta que la region
-          # central (donde va el menu, sin la franja superior del aviso) deje de
-          # ser negra, con tope de 180 s, y guardar la captura final.
-          # NOTA: no se envia ninguna entrada sintetica. Un toque previo en
-          # (180,990) cayo en la zona de gesto 'inicio' del sistema y mato la
-          # partida (corrida 43339724542: OnGodotTerminating + SIG 9). El aviso
-          # inmersivo vive en la franja superior, excluida de la sonda.
-          deadline=$((SECONDS + 180))
-          mean=0
-          while [ "$SECONDS" -lt "$deadline" ]; do
-            # El juego debe seguir en primer plano; sin esto, el lanzador
-            # (fondo de pantalla claro) da un falso positivo de render.
-            TOP="$(adb shell dumpsys activity activities 2>/dev/null | tr -d '\r' | grep -m1 -E 'topResumedActivity|mResumedActivity' || true)"
-            if ! echo "$TOP" | grep -q "${PACKAGE}"; then
-              echo "ERROR: el juego dejo de estar en primer plano durante la espera." >&2
-              echo "top: $TOP" >&2
-              adb logcat -d | tail -120 >&2
-              exit 1
-            fi
-            adb exec-out screencap > /tmp/frame.raw || true
-            mean=$(python3 - <<'PY'
-          import struct
-          try:
-              d = open('/tmp/frame.raw', 'rb').read()
-              w, h, fmt = struct.unpack('<III', d[:12])
-              px = d[12:]
-              x0, x1 = int(w * 0.25), int(w * 0.75)
-              y0, y1 = int(h * 0.30), int(h * 0.75)
-              total = 0
-              count = 0
-              stride = w * 4
-              for y in range(y0, y1, 8):
-                  row = px[y * stride:(y + 1) * stride]
-                  for x in range(x0, x1, 8):
-                      o = x * 4
-                      total += row[o] + row[o + 1] + row[o + 2]
-                      count += 3
-              print(int(total / max(count, 1)))
-          except Exception:
-              print(0)
-          PY
-          )
-            echo "render probe: central mean luma = $mean (threshold 7)"
-            if [ "$mean" -ge 7 ]; then break; fi
-            sleep 10
-          done
-          if [ "$mean" -lt 7 ]; then
-            echo "ERROR: el juego no presento fotograma no negro en 180 s (mean=$mean)." >&2
-            adb logcat -d | tail -120 >&2
-            exit 1
-          fi
-          echo "First render confirmed (central mean luma $mean)."
-          adb exec-out screencap -p > emulator_screenshot.png
-          adb logcat -d > emulator_logcat.txt
-          ls -la emulator_screenshot.png
-
-      - name: Uninstall and shut down
-        run: |
-          adb uninstall "${PACKAGE}" || true
-          adb emu kill || true
-          pkill -f qemu-system || true
-
-      - name: Upload emulator evidence
+      - name: Upload emulator evidence (API ${{ matrix.api }})
         uses: actions/upload-artifact@v4
         with:
-          name: RPG-LBA-Android-emulator-evidence
-          path: |
-            emulator_screenshot.png
-            emulator_logcat.txt
-            install.txt
+          name: RPG-LBA-Android-emulator-api${{ matrix.api }}-x86_64-evidence
+          path: evidence
           retention-days: 14
           if-no-files-found: error
 
-      - name: Summary
+  emulator-arm64:
+    name: Emulador arm64 (API 36) - ARM64
+    needs: build-sign-verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # El APK ARM64 solo trae lib/arm64-v8a: para probarlo de verdad hay que
+      # arrancarlo en una imagen arm64 (traduccion ARM->x86 del emulador; es
+      # lenta: presupuesto de arranque ampliado). Fallback a android-35 si la
+      # imagen 36 no esta disponible.
+      - name: Install emulator and arm64 image (36 con fallback 35)
+        run: |
+          set -euo pipefail
+          SDK_DIR="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          export ANDROID_SDK_ROOT="$SDK_DIR"
+          SDKM="$(ls -d "$SDK_DIR"/cmdline-tools/*/bin/sdkmanager | head -n1)"
+          yes | "$SDKM" --licenses >/dev/null 2>&1 || true
+          "$SDKM" --install "platform-tools" "emulator" >/dev/null
+          echo "$SDK_DIR/platform-tools" >> "$GITHUB_PATH"
+          echo "$SDK_DIR/emulator" >> "$GITHUB_PATH"
+          ls -d "$SDK_DIR"/cmdline-tools/*/bin | head -n1 >> "$GITHUB_PATH"
+          FOUND=""
+          for CAND in "android-36 default arm64-v8a" "android-35 default arm64-v8a"; do
+            set -- $CAND
+            API_V=$1; TAG_V=$2; ABI_V=$3
+            PKG="system-images;$API_V;$TAG_V;$ABI_V"
+            "$SDKM" --install "$PKG" >/dev/null 2>&1 || true
+            if [ -d "$SDK_DIR/system-images/$API_V/$TAG_V/$ABI_V" ]; then
+              FOUND="$PKG"
+              break
+            fi
+          done
+          if [ -z "$FOUND" ]; then
+            echo "ERROR: ninguna imagen arm64-v8a (android-36/35) disponible." >&2
+            exit 1
+          fi
+          echo "ANDROID_IMAGE=$FOUND" >> "$GITHUB_ENV"
+          echo "arm64 image: $FOUND"
+
+      - name: Check KVM
+        run: |
+          set -euo pipefail
+          if [ ! -e /dev/kvm ]; then
+            echo "ERROR: /dev/kvm not available on this runner." >&2
+            exit 1
+          fi
+          if [ ! -w /dev/kvm ]; then
+            sudo gpasswd -a "$USER" kvm || true
+            sudo chmod 666 /dev/kvm || true
+          fi
+          if [ -w /dev/kvm ]; then
+            echo "KVM accessible for this user."
+          else
+            echo "ERROR: /dev/kvm sigue inaccesible tras el ajuste." >&2
+            exit 1
+          fi
+
+      - name: Download ARM64 APK
+        uses: actions/download-artifact@v4
+        with:
+          name: RPG-LBA-Android-ARM64-debug
+          path: dist
+
+      - name: Install, launch and capture (ARM64 en emulador arm64)
+        env:
+          APK: dist/RPG-LBA-Android-ARM64-debug.apk
+          OUT: evidence
+          PACKAGE: ${{ env.PACKAGE }}
+          BOOT_BUDGET_S: "900"
+          RENDER_BUDGET_S: "300"
+          TRY_VALDELUZ: "1"
+        run: bash scripts/ci/emulator_install_test.sh
+
+      - name: Upload emulator evidence (arm64)
+        uses: actions/upload-artifact@v4
+        with:
+          name: RPG-LBA-Android-emulator-arm64-evidence
+          path: evidence
+          retention-days: 14
+          if-no-files-found: error
+
+  informe:
+    name: Informe de instalación (emulador vs físico)
+    needs: [build-sign-verify, emulator-x86_64, emulator-arm64]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resumen honesto
         run: |
           {
-            echo "## Android debug APK — verificación de instalación"
+            echo "## Informe de instalacion Android (Fase 4A)"
             echo ""
-            echo "- Instalación en emulador API 35 (x86_64, SwiftShader): **PASS**"
-            echo "- Lanzamiento del juego y proceso vivo 25 s: **PASS**"
-            echo "- Sin FATAL EXCEPTION en logcat: **PASS**"
-            echo "- Captura y logcat adjuntos como artefactos."
+            echo "| Prueba | Estado |"
+            echo "|---|---|"
+            echo "| Export + verificacion estatica (2 variantes, firma v2/v3, ABIs exactos) | ${{ needs.build-sign-verify.result }} |"
+            echo "| Emulador x86_64 API 35 y 36 (Universal: install + arranque + capturas) | ${{ needs.emulator-x86_64.result }} |"
+            echo "| Emulador arm64 (ARM64: install + arranque, traduccion lenta) | ${{ needs.emulator-arm64.result }} |"
+            echo "| Dispositivo fisico Redmi 9C | PENDIENTE DE HARDWARE |"
+            echo "| Dispositivo fisico Samsung S22 Ultra | PENDIENTE DE HARDWARE |"
+            echo "| No compatible | ninguno declarado; ver matriz en docs/16 |"
             echo ""
-            echo "Esto NO equivale a una prueba en dispositivo físico (queda NOT TESTED en dispositivo real)."
+            echo "- PASS en emulador NO equivale a PASS en dispositivo fisico."
+            echo "- Telemetria PERF en perf_emulator.txt de cada evidencia: datos del"
+            echo "  proceso en EMULADOR; no es un benchmark de telefono."
+            echo "- Protocolo de pruebas fisicas para el propietario:"
+            echo "  docs/16_COMPATIBILIDAD_ANDROID.md (instalacion limpia, primer arranque,"
+            echo "  menu, nueva partida, movimiento, combate, inventario, minimapa,"
+            echo "  orientacion, suspender/reanudar, temperatura 15-30 min, FPS y RAM)."
           } >> "$GITHUB_STEP_SUMMARY"
