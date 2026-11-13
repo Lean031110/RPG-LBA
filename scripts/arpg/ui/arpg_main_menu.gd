@@ -22,29 +22,32 @@ func _ready() -> void:
         # quedaba en el color de clearance; corridas 43484656222+). Patron del HUD,
         # probado desde Fase 3: re-layout cuando llega el tamano real (resized).
         resized.connect(_relayout)
+        get_viewport().connect("size_changed", _relayout)
         _relayout()
         if OS.is_debug_build():
                 print("ArpgMainMenu: ready size=%s viewport=%s" % [size, get_viewport().get_visible_rect().size])
 
 
 func _relayout() -> void:
-        ## Recoloca las piezas posicionadas a mano al cambiar el tamano real
-        ## (mismo patron que ArpgHUD._layout_hud). Las ancladas (fondo, franja,
-        ## panel de clase PRESET_CENTER) se ajustan solas.
-        if size.x < 1.0:
+        ## Recoloca las piezas posicionadas a mano. Fuente de tamano: el RECT
+        ## DEL VIEWPORT (disponible ya en _ready: 1280x720 en el emulador;
+        ## corrida 43491990194: size=(0,0) para siempre y `resized` jamas disparo).
+        ## Las ancladas (fondo, franja, panel de clase PRESET_CENTER) se ajustan solas.
+        var vs := get_viewport().get_visible_rect().size
+        if vs.x < 1.0 or vs.y < 1.0:
                 return
         if _logo != null:
-                _logo.position = Vector2(size.x / 2.0 - 320.0, 56.0)
+                _logo.position = Vector2(vs.x / 2.0 - 320.0, 56.0)
         if _subtitle != null:
                 _subtitle.position = Vector2(0, 252.0)
-                _subtitle.size = Vector2(size.x, 26)
+                _subtitle.size = Vector2(vs.x, 26)
         if _button_box != null:
-                _button_box.position = Vector2(size.x / 2.0 - 150.0, 330.0)
+                _button_box.position = Vector2(vs.x / 2.0 - 150.0, 330.0)
         if _footer != null:
-                _footer.position = Vector2(16.0, size.y - 64.0)
-                _footer.size = Vector2(size.x - 32.0, 34)
+                _footer.position = Vector2(16.0, vs.y - 64.0)
+                _footer.size = Vector2(vs.x - 32.0, 34)
         if OS.is_debug_build():
-                print("ArpgMainMenu: relayout size=%s" % [size])
+                print("ArpgMainMenu: relayout viewport=%s control_size=%s" % [vs, size])
 
 
 func _build_background() -> void:
