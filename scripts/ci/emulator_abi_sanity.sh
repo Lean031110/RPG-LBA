@@ -66,9 +66,13 @@ adb shell input keyevent 82 || true
 
 echo "== Install del APK ARM64 en x86_64 (rechazo esperado por ABI) =="
 set +e
-adb install -r "$APK" | tee "$OUT/install.txt"
-INSTALL_RC=${PIPESTATUS[0]}
+# adb escribe el fallo en STDERR ("adb: failed to install ... Failure
+# [INSTALL_FAILED_NO_MATCHING_ABIS ...]"); sin 2>&1 el informe se queda sin la
+# linea y el diagnostico dice INESPERADO (leccion de la corrida 43473507397).
+adb install -r "$APK" > "$OUT/install.txt" 2>&1
+INSTALL_RC=$?
 set -e
+cat "$OUT/install.txt"
 if grep -q "Success" "$OUT/install.txt"; then
   echo "NOTE: la imagen ACEPTO el APK arm64 (traduccion ARM presente); seguimos con arranque."
   echo "abi_sanity=accepted_with_translation" | tee -a "$OUT/install.txt"
