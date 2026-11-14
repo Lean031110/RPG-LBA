@@ -54,6 +54,17 @@ func _ready() -> void:
 	box.add_child(back)
 
 
+## Caja plana para los botones. Igual a la de otros menús ARPG (p. ej. pausa):
+## fondo dado, borde fino, esquinas suaves.
+func _flat(bg: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = bg
+	style.border_color = Color("2a2e38")
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(6)
+	return style
+
+
 func _sections() -> Array:
 	return [
 		[
