@@ -73,12 +73,25 @@ var _dialog_lines: Array = []
 var _dialog_index := 0
 var _dialog_mode := "info"
 var _dialog_on_accept: Callable
+## Fase 5: barra de habilidades (4 huecos + definitiva), marco de objetivo,
+## números de daño y estados alterados — todo por señales.
+var _heavy_button: Button = null
+var _skill_buttons: Array[Button] = []
+var _skill_overlays: Array[ArpgCooldownOverlay] = []
+var _ultimate_button: Button = null
+var _ultimate_overlay: ArpgCooldownOverlay = null
+var _block_button: Button = null
+var _status_row: HBoxContainer = null
+var _combat_feedback: ArpgCombatFeedback = null
+var _availability_accumulator := 0.0
 
 
 func _ready() -> void:
 	_build_stats_panel()
+	_build_status_chips()
 	_build_quest_tracker()
 	_build_toast()
+	_build_combat_feedback()
 	_build_joystick()
 	_build_action_buttons()
 	_build_interact_button()
@@ -93,9 +106,48 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	## Fase 3: la mochila se abre/cierra con la acción dedicada (tecla I en PC).
+	## Fase 3: mochila con la acción dedicada. Fase 5: teclado completo del
+	## combate (la UI traduce entrada → intención del jugador, igual que los
+	## botones táctiles; el jugador no conoce los controles).
 	if event.is_action_pressed("arpg_inventory"):
 		toggle_inventory()
+		get_viewport().set_input_as_handled()
+		return
+	if _player == null or _actions_blocked():
+		return
+	var arpg_player := _player as ArpgPlayer
+	if event.is_action_pressed("arpg_attack"):
+		arpg_player.try_attack()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("arpg_heavy"):
+		arpg_player.try_heavy_attack()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("arpg_skill"):
+		arpg_player.try_skill_index(0)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("arpg_skill_2"):
+		arpg_player.try_skill_index(1)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("arpg_skill_3"):
+		arpg_player.try_skill_index(2)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("arpg_skill_4"):
+		arpg_player.try_skill_index(3)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("arpg_ultimate"):
+		arpg_player.try_ultimate()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("arpg_dodge"):
+		arpg_player.try_dodge()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("arpg_potion"):
+		arpg_player.try_potion()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("arpg_block"):
+		arpg_player.set_blocking(true)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_released("arpg_block"):
+		arpg_player.set_blocking(false)
 		get_viewport().set_input_as_handled()
 
 
@@ -109,11 +161,33 @@ func bind_player(player: Node) -> void:
 	_resource_label.text = player.get_resource_name()
 	_minimap.set_player(player as Node3D)
 	_inventory_panel.bind_player(player as ArpgPlayer)
+	# Fase 5: barra de habilidades, definitiva, objetivo y estados — por señales.
+	_build_skill_bar()
+	_wire_combat_signals()
 	_refresh_stats()
+
+
+func _wire_combat_signals() -> void:
+	var arpg_player := _player as ArpgPlayer
+	arpg_player.ultimate_charge_changed.connect(_on_ultimate_charge_changed)
+	arpg_player.blocking_changed.connect(_on_blocking_changed)
+	arpg_player.statuses.statuses_changed.connect(_refresh_status_chips)
+	arpg_player.skill_cast.connect(_on_skill_cast)
+	_combat_feedback.bind_targeting(arpg_player.targeting)
+	if not arpg_player.cooldowns.cooldown_started.is_connected(_on_cooldown_started):
+		arpg_player.cooldowns.cooldown_started.connect(_on_cooldown_started)
+	if not arpg_player.cooldowns.cooldown_ended.is_connected(_on_cooldown_ended):
+		arpg_player.cooldowns.cooldown_ended.connect(_on_cooldown_ended)
 
 
 func is_dialog_open() -> bool:
 	return _dialog_panel != null and _dialog_panel.visible
+
+
+func _actions_blocked() -> bool:
+	## Con un diálogo abierto (hablar con Cheo) no se combate: los botones y
+	## el teclado de combate se ignoran hasta cerrarlo.
+	return is_dialog_open()
 
 
 func get_joystick_vector() -> Vector2:
@@ -206,10 +280,11 @@ func _dialog_next() -> void:
 
 
 func _dialog_end_label() -> String:
-	if _dialog_mode == "offer":
-		return "Aceptar misión"
-	if _dialog_mode == "claim":
-		return "Reclamar recompensa"
+	match _dialog_mode:
+		"offer":
+			return "Aceptar misión"
+		"claim":
+			return "Reclamar recompensa"
 	return "Cerrar"
 
 
@@ -225,6 +300,16 @@ func _refresh_stats() -> void:
 
 func _on_leveled_up(new_level: int) -> void:
 	show_toast("¡Nivel %d! La manigua te reconoce." % new_level)
+
+
+func _refresh_skill_availability_throttled() -> void:
+	## La disponibilidad (vigor/candado) se refresca 4 veces por segundo como
+	## máximo; las recargas van por señal, no por sondeo.
+	_availability_accumulator += get_process_delta_time()
+	if _availability_accumulator < 0.25:
+		return
+	_availability_accumulator = 0.0
+	_refresh_skill_availability()
 
 
 func _build_stats_panel() -> void:
@@ -321,25 +406,29 @@ func _build_action_buttons() -> void:
 	_action_cluster.name = "ActionCluster"
 	_action_cluster.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	get_root_control().add_child(_action_cluster)
-	_attack_button = _round_action_button(ICON_ATTACK, "J", 104.0)
-	_skill_button = _round_action_button(ICON_SKILL, "K", 84.0)
-	_dodge_button = _round_action_button(ICON_DODGE, "ESP", 72.0)
-	_potion_button = _round_action_button(ICON_POTION, "Q", 64.0)
-	_skill_cooldown = ArpgCooldownOverlay.new(84.0)
-	_skill_button.add_child(_skill_cooldown)
-	_dodge_cooldown = ArpgCooldownOverlay.new(72.0)
+	_attack_button = _round_action_button(ICON_ATTACK, "J", 100.0)
+	_skill_button = _round_action_button(ICON_SKILL, "K", 58.0)
+	_dodge_button = _round_action_button(ICON_DODGE, "ESP", 64.0)
+	_potion_button = _round_action_button(ICON_POTION, "Q", 58.0)
+	_heavy_button = _round_action_button(ArpgHudIcons.heavy_icon(), "L", 62.0)
+	_block_button = _round_action_button(ArpgHudIcons.block_icon(), "MAY", 58.0)
+	_dodge_cooldown = ArpgCooldownOverlay.new(64.0)
 	_dodge_button.add_child(_dodge_cooldown)
 	_potion_badge = Label.new()
 	_potion_badge.text = "x1"
 	_potion_badge.add_theme_font_size_override("font_size", 13)
 	_potion_badge.add_theme_color_override("font_color", COLOR_TEXT)
 	_potion_button.add_child(_potion_badge)
-	_potion_badge.position = Vector2(36, 2)
+	_potion_badge.position = Vector2(33, 2)
 	_attack_button.pressed.connect(_on_action_pressed.bind("attack"))
 	_skill_button.pressed.connect(_on_action_pressed.bind("skill"))
 	_dodge_button.pressed.connect(_on_action_pressed.bind("dodge"))
 	_potion_button.pressed.connect(_on_action_pressed.bind("potion"))
-	for button: Button in [_attack_button, _skill_button, _dodge_button, _potion_button]:
+	_heavy_button.pressed.connect(_on_action_pressed.bind("heavy"))
+	# El bloqueo se MANTIENE pulsado (hold): button_down/button_up, no pressed.
+	_block_button.button_down.connect(_on_block_down)
+	_block_button.button_up.connect(_on_block_up)
+	for button: Button in [_attack_button, _skill_button, _dodge_button, _potion_button, _heavy_button, _block_button]:
 		_action_cluster.add_child(button)
 
 
@@ -380,17 +469,29 @@ func _round_action_button(icon: Texture2D, key_hint: String, diameter: float) ->
 
 
 func _on_action_pressed(action: String) -> void:
-	if _player == null:
+	if _player == null or _actions_blocked():
 		return
 	match action:
 		"attack":
 			_player.try_attack()
 		"skill":
-			_player.try_skill()
+			_player.try_skill_index(0)
 		"dodge":
 			_player.try_dodge()
 		"potion":
 			_player.try_potion()
+		"heavy":
+			(_player as ArpgPlayer).try_heavy_attack()
+
+
+func _on_block_down() -> void:
+	if _player != null and not _actions_blocked():
+		(_player as ArpgPlayer).set_blocking(true)
+
+
+func _on_block_up() -> void:
+	if _player != null:
+		(_player as ArpgPlayer).set_blocking(false)
 
 
 func _build_minimap() -> void:
@@ -409,29 +510,20 @@ func _build_inventory_button() -> void:
 func _build_pause_button() -> void:
 	## Botón táctil de pausa (iteración 4C): junto al minimapa, arriba-derecha.
 	## El HUD no decide qué es pausar: emite pause_requested y la escena responde.
-	_pause_button = _round_action_button(_pause_icon(), "", 48.0)
+	_pause_button = _round_action_button(ArpgHudIcons.pause_icon(), "", 48.0)
 	_pause_button.name = "PauseButton"
 	_pause_button.pressed.connect(func() -> void: pause_requested.emit())
 	get_root_control().add_child(_pause_button)
 
 
-func _pause_icon() -> ImageTexture:
-	## Icono de pausa (dos barras) dibujado en código: cero dependencias.
-	var image := Image.create(48, 48, false, Image.FORMAT_RGBA8)
-	var color := Color(0.91, 0.89, 0.85, 0.95)
-	for y: int in 48:
-		for x: int in 48:
-			if (x >= 13 and x <= 20 or x >= 27 and x <= 34) and y >= 12 and y <= 35:
-				image.set_pixel(x, y, color)
-	return ImageTexture.create_from_image(image)
-
-
 func _process(_delta: float) -> void:
-	## Sonda de recargas (barata): alimenta los indicadores radiales.
-	if _player == null or _skill_cooldown == null:
+	## Fase 5: rellenos radiales (hasta 6 overlays) + disponibilidad limitada a
+	## 4 Hz. Vida, vigor, XP, objetivo y estados van por señales, sin sondeo.
+	if _player == null or _skill_overlays.is_empty():
 		return
-	_skill_cooldown.set_progress(_player.get_skill_cooldown_left(), _player.get_skill_cooldown_total())
 	_dodge_cooldown.set_progress(_player.get_dodge_cooldown_left(), _player.get_dodge_cooldown_total())
+	_update_skill_radials()
+	_refresh_skill_availability_throttled()
 
 
 func _build_inventory_panel() -> void:
@@ -484,58 +576,227 @@ func _build_dialog_panel() -> void:
 	get_root_control().add_child(_dialog_panel)
 
 
+# ---------------------------------------------------------------------------
+# Fase 5: barra de habilidades, definitiva, objetivo, daño y estados
+# ---------------------------------------------------------------------------
+
+
+func _build_skill_bar() -> void:
+	## Cuatro huecos de habilidad + definitiva, con recarga radial, candado de
+	## desbloqueo y coste visible. Se reconstruye en cada bind (los datos de la
+	## clase no cambian en partida).
+	for button: Button in _skill_buttons:
+		button.queue_free()
+	_skill_buttons.clear()
+	_skill_overlays.clear()
+	if _ultimate_button != null:
+		_ultimate_button.queue_free()
+	var arpg_player := _player as ArpgPlayer
+	var key_hints := ["K", "2", "3", "4"]
+	for index: int in arpg_player.get_skill_count():
+		var def := arpg_player.get_skill_def(index)
+		## El hueco 0 REUTILIZA el botón de habilidad del arco (mismo contrato
+		## de la Fase 3; no hay botones duplicados para la misma habilidad).
+		var button := (
+			_skill_button
+			if index == 0
+			else _round_action_button(ArpgHudIcons.skill_icon(index), String(key_hints[index]), 58.0)
+		)
+		if index > 0:
+			button.name = "Skill%d" % (index + 1)
+			_action_cluster.add_child(button)
+		var overlay := ArpgCooldownOverlay.new(58.0)
+		button.add_child(overlay)
+		var cost_label := Label.new()
+		cost_label.text = "%d" % int(float(def.get("resource_cost", 0)))
+		cost_label.add_theme_font_size_override("font_size", 11)
+		cost_label.add_theme_color_override("font_color", COLOR_VIGOR)
+		cost_label.position = Vector2(4.0, 40.0)
+		button.add_child(cost_label)
+		button.pressed.connect(_on_skill_button_pressed.bind(index))
+		_skill_buttons.append(button)
+		_skill_overlays.append(overlay)
+		if index == 0:
+			_skill_cooldown = overlay
+	# Definitiva: botón mayor con carga (relleno dorado hasta estar lista).
+	_ultimate_button = _round_action_button(ArpgHudIcons.ultimate_icon(), "R", 72.0)
+	_ultimate_button.name = "UltimateButton"
+	_ultimate_overlay = ArpgCooldownOverlay.new(72.0)
+	_ultimate_button.add_child(_ultimate_overlay)
+	_ultimate_button.pressed.connect(
+		func() -> void:
+			if _player != null:
+				(_player as ArpgPlayer).try_ultimate()
+	)
+	_action_cluster.add_child(_ultimate_button)
+	_refresh_skill_availability()
+
+
+func _on_skill_button_pressed(index: int) -> void:
+	if _player != null and not _actions_blocked():
+		(_player as ArpgPlayer).try_skill_index(index)
+
+
+func _on_skill_cast(_skill_id: String) -> void:
+	## Al lanzarse, la barra refresca disponibilidad (coste/bloqueo).
+	_refresh_skill_availability()
+
+
+func _refresh_skill_availability() -> void:
+	## Estados reales por hueco: candado (sin nivel), atenuada (sin vigor),
+	## recarga (overlay). Nada decorativo.
+	var arpg_player := _player as ArpgPlayer
+	if arpg_player == null:
+		return
+	for index: int in _skill_buttons.size():
+		var button := _skill_buttons[index]
+		var def := arpg_player.get_skill_def(index)
+		var unlocked := arpg_player.is_skill_unlocked(index)
+		var affordable := arpg_player.vigor >= float(def.get("resource_cost", 0))
+		button.disabled = not unlocked
+		button.modulate = Color(1, 1, 1, 1.0 if unlocked and affordable else 0.45)
+		if not unlocked:
+			button.tooltip_text = "Se desbloquea al nivel %d" % int(def.get("unlock_level", 1))
+	_on_ultimate_charge_changed(arpg_player.get_ultimate_charge(), arpg_player.get_ultimate_max())
+
+
+func _on_ultimate_charge_changed(current: float, maximum: float) -> void:
+	## Carga de la definitiva: relleno creciente y brillo cuando está lista.
+	if _ultimate_button == null or _player == null:
+		return
+	var arpg_player := _player as ArpgPlayer
+	var ready := arpg_player.is_ultimate_ready()
+	var fraction := clampf(current / maximum, 0.0, 1.0) if maximum > 0.0 else 0.0
+	# El overlay dibuja "lo que queda"; para la carga usamos 1 - fracción.
+	_ultimate_overlay.set_progress((1.0 - fraction) * maximum, maximum)
+	_ultimate_button.modulate = Color(1, 1, 1, 1.0 if ready else 0.75)
+	if ready:
+		_ultimate_button.modulate = Color(1.35, 1.1, 0.8)
+
+
+func _on_blocking_changed(is_blocking: bool) -> void:
+	## Realce del botón de bloqueo mientras se mantiene.
+	if _block_button != null:
+		_block_button.modulate = Color(1, 1, 1, 0.55 if is_blocking else 1.0)
+
+
+func _on_cooldown_started(_id: String, _duration: float) -> void:
+	_refresh_skill_availability()
+
+
+func _on_cooldown_ended(_id: String) -> void:
+	_refresh_skill_availability()
+
+
+func _update_skill_radials() -> void:
+	## Relleno radial de las recargas (sondeo acotado: solo los ~5 overlays
+	## activos; un radial es continuo por naturaleza y las reducciones externas
+	## de recarga deben reflejarse al instante, cosa que un tween no garantiza).
+	var arpg_player := _player as ArpgPlayer
+	if arpg_player == null:
+		return
+	for index: int in _skill_overlays.size():
+		var skill_id := String(arpg_player.get_skill_def(index).get("id", ""))
+		_skill_overlays[index].set_progress(arpg_player.cooldowns.left(skill_id), arpg_player.cooldowns.total(skill_id))
+
+
+func _build_status_chips() -> void:
+	## Chips de estados alterados del JUGADOR (bajo el panel de stats).
+	_status_row = HBoxContainer.new()
+	_status_row.name = "StatusChips"
+	_status_row.add_theme_constant_override("separation", 4)
+	get_root_control().add_child(_status_row)
+
+
+func _build_combat_feedback() -> void:
+	## Capa de feedback (números de daño + marco de objetivo): componente
+	## independiente que se conecta solo a CombatEvents y al TargetingSystem.
+	_combat_feedback = ArpgCombatFeedback.new()
+	_combat_feedback.name = "CombatFeedback"
+	get_root_control().add_child(_combat_feedback)
+
+
+func _refresh_status_chips() -> void:
+	if _status_row == null or _player == null:
+		return
+	for child: Node in _status_row.get_children():
+		child.queue_free()
+	for status_id: String in (_player as ArpgPlayer).get_status_ids():
+		_status_row.add_child(ArpgStatusChips.make(status_id))
+
+
+func _on_status_added(_id: String, _duration: float) -> void:
+	_refresh_status_chips()
+
+
+func _on_status_removed(_id: String) -> void:
+	_refresh_status_chips()
+
+
 func _layout_hud() -> void:
-	## Re-coloca todo el HUD según el tamaño del viewport (landscape 16:9 y 20:9 objetivo;
-	## con anchos pequeños se hace clamp a 8 px). Distribución estilo ARPG móvil:
-	## stats/misión arriba-izquierda, minimapa arriba-derecha, joystick abajo-izquierda,
-	## clúster de acciones en arco abajo-derecha.
+	## Re-coloca todo el HUD según el tamaño del viewport (landscape 16:9 y
+	## 20:9 objetivo; con anchos pequeños se hace clamp a 8 px): stats y
+	## misión arriba-izquierda, objetivo arriba-centro (capa de feedback),
+	## minimapa arriba-derecha, joystick abajo-izquierda y clúster de
+	## acciones en arco abajo-derecha.
 	var root := get_root_control()
 	var viewport_size := root.size
 	if viewport_size.x < 320.0 or viewport_size.y < 240.0:
 		return
-
-		# Minimapa arriba-derecha + botón de mochila debajo (Fase 3).
-
-		# Clúster de acciones en arco alrededor de la esquina inferior-derecha.
-
-		# Minimapa arriba-derecha + botón de mochila debajo (Fase 3).
-
-		# Pausa a la izquierda del minimapa (mismo alto; iteración 4C).
-
-		# Clúster de acciones en arco alrededor de la esquina inferior-derecha.
 	_stats_panel.position = Vector2(16, 14)
-	_quest_panel.position = Vector2(16, 132)
+	_status_row.position = Vector2(18, 112)
+	_quest_panel.position = Vector2(16, 142)
 	_toast_label.position = Vector2(0, 84)
 	_toast_label.size = Vector2(viewport_size.x, 30)
 	_toast_base_y = 84.0
+	_combat_feedback.layout(viewport_size)
 	var joy_size := Vector2(_joystick.radius * 2.0, _joystick.radius * 2.0)
 	_joystick.position = Vector2(150.0, viewport_size.y - 150.0) - joy_size * 0.5
 	_joystick.size = joy_size
-	# Minimapa arriba-derecha + botón de mochila debajo (Fase 3).
 	var map_size := _minimap.custom_minimum_size
 	_minimap.position = Vector2(viewport_size.x - map_size.x - 16.0, 14.0)
 	_minimap.size = map_size
 	_inventory_button.position = Vector2(viewport_size.x - 72.0, 14.0 + map_size.y + 10.0)
-	# Pausa a la izquierda del minimapa (mismo alto; iteración 4C).
 	_pause_button.position = Vector2(viewport_size.x - map_size.x - 16.0 - 56.0, 14.0)
-	# Clúster de acciones en arco alrededor de la esquina inferior-derecha.
-	var corner := Vector2(viewport_size.x - 20.0, viewport_size.y - 20.0)
-	_place_arc_button(_attack_button, corner, 225.0, 128.0)
-	_place_arc_button(_skill_button, corner, 250.0, 226.0)
-	_place_arc_button(_potion_button, corner, 195.0, 220.0)
-	_place_arc_button(_dodge_button, corner, 210.0, 280.0)
+	# Clúster de acciones (Fase 5) en tres filas estilo ARPG móvil: habilidades
+	# arriba (S1-S4), definitiva + pesado + poción en medio, y el ataque GRANDE
+	# abajo-derecha con esquiva y bloqueo. Todo dentro del viewport 16:9/20:9.
+	var cluster_right := viewport_size.x - 24.0
+	_place_button(_skill_button, cluster_right, 460.0)
+	for index: int in range(1, _skill_buttons.size()):
+		## S2-S4 a la izquierda de S1 en la misma fila (paso = ancho + margen).
+		_place_button(_skill_buttons[index], cluster_right - float(index) * 66.0, 460.0)
+	_place_button(_ultimate_button, cluster_right - 8.0, 534.0)
+	_place_button(_heavy_button, cluster_right - 96.0, 540.0)
+	_place_button(_potion_button, cluster_right - 168.0, 544.0)
+	_place_button(_attack_button, cluster_right, 612.0)
+	_place_button(_dodge_button, cluster_right - 112.0, 648.0)
+	_place_button(_block_button, cluster_right - 180.0, 652.0)
 	_interact_button.position = Vector2(viewport_size.x / 2.0 - 90.0, viewport_size.y - 96.0)
 	_dialog_panel.position = Vector2(maxf(viewport_size.x / 2.0 - 300.0, 8.0), maxf(viewport_size.y - 210.0, 8.0))
 	var panel_size := _inventory_panel.custom_minimum_size
 	_inventory_panel.position = Vector2(
-		maxf(viewport_size.x / 2.0 - panel_size.x * 0.5, 8.0), maxf(viewport_size.y / 2.0 - panel_size.y * 0.5, 8.0)
+		maxf(viewport_size.x / 2.0 - panel_size.x * 0.5, 8.0),
+		maxf(viewport_size.y / 2.0 - panel_size.y * 0.5, 8.0),
 	)
 	_inventory_panel.size = panel_size
+	_refresh_skill_availability()
+
+
+func _place_button(button: Button, right_edge: float, top: float) -> void:
+	## Coloca un botón anclado al borde derecho dado (fila del clúster).
+	if button == null:
+		return
+	var size := button.custom_minimum_size
+	button.position = Vector2(right_edge - size.x, top)
+	button.size = size
 
 
 func _place_arc_button(button: Button, corner: Vector2, angle_deg: float, radius: float) -> void:
 	## Coloca un botón circular en un ángulo/radio alrededor de la esquina (0°=este,
-	## 90°=sur); los ángulos 195°-250° quedan arriba-izquierda de la esquina inferior-derecha.
+	## 90°=sur). Los botones que aún no existen (HUD sin jugador atado) se omiten.
+	if button == null:
+		return
 	var angle := deg_to_rad(angle_deg)
 	var button_size := button.custom_minimum_size
 	var center := corner + Vector2(cos(angle), sin(angle)) * radius

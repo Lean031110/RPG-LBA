@@ -32,7 +32,10 @@ func test_slice_assembles_everything() -> void:
 	assert_object(slice.player).is_instanceof(ArpgPlayer)
 	assert_object(slice.cheo).is_instanceof(CheoNPC)
 	assert_object(slice.camera_rig).is_instanceof(IsoCameraRig)
-	assert_int(slice._enemies.size()).is_equal(3)
+	## Fase 5: 6 marcadores (3 sombras de misión + manada + guarapo) dentro del
+	## tope de la matriz de compatibilidad del perfil activo.
+	assert_int(slice._enemies.size()).is_equal(mini(6, GraphicsSettings.max_active_enemies()))
+	assert_int(slice.SPAWN_REGISTRY.size()).is_equal(6)
 	assert_object(slice.hud).is_instanceof(ArpgHUD)
 	# El jugador aparece en el marcador de spawn.
 	assert_float(slice.player.global_position.z).is_less(-23.0)
@@ -46,10 +49,17 @@ func test_full_quest_flow_with_xp_and_claim() -> void:
 	assert_int(player.level).is_equal(1)
 	# Aceptar la mision (camino del dialogo).
 	assert_bool(QuestSystem.accept("VS_P00")).is_true()
-	# Derrotas via el camino real de la slice: XP por instancia + drop de pocion.
+	# Derrotas via el camino real de la slice: las 3 Sombras de Portal de la
+	# misión (la manada y el Guarapo no cuentan para VS_P00).
 	var pickups_before := _count_pickups(slice)
-	for enemy: ShadowOfPortal in slice._enemies:
-		slice._on_enemy_died("sombra_de_portal", enemy.global_position, enemy)
+	var sombras_killed := 0
+	for enemy: ArpgEnemy in slice._enemies.duplicate():
+		if String(enemy.enemy_id) != "sombra_de_portal":
+			continue
+		slice._on_enemy_died(enemy.enemy_id, enemy.global_position, enemy)
+		sombras_killed += 1
+	# 3 primeras victorias de sombra = 54 XP; sus drops (chance 1.0) = 3 pociones.
+	assert_int(sombras_killed).is_equal(3)
 	assert_int(player.xp_into_level).is_equal(54)
 	assert_int(_count_pickups(slice) - pickups_before).is_equal(3)
 	# Fragmentos.
@@ -129,3 +139,51 @@ func test_interact_prompt_follows_range() -> void:
 		await get_tree().physics_frame
 	slice._update_interact_prompt()
 	assert_bool(slice.hud._interact_button.visible).is_true()
+
+
+func test_full_combat_loop_with_real_kit() -> void:
+	## Fase 5: bucle de juego REAL en la escena de verdad — pelear con el kit
+	## completo (combo, habilidad, pesado), cobrar XP, cargar la definitiva y
+	## guardar/recargar sin corromper nada. Sin toques en estado privado.
+	SaveSystem.save_path = "user://tmp/combat_loop_%d.json" % (Time.get_ticks_msec() + randi() % 1000)
+	var slice := _make_slice()
+	var player := slice.player
+	## Un sombra de misión delante del jugador, a distancia de golpe.
+	var sombra: ArpgEnemy = null
+	for enemy: ArpgEnemy in slice._enemies:
+		if String(enemy.enemy_id) == "sombra_de_portal":
+			sombra = enemy
+			break
+	assert_object(sombra).is_not_null()
+	sombra.global_position = player.global_position + Vector3(0, 0, 1.5)
+	player.orient_to_input_or_forward()
+	var hp_before := sombra.hp
+	var charge_before := player.get_ultimate_charge()
+	var xp_before := player.xp_into_level + (player.level - 1) * 100
+	## Combate con la API pública: combo ligero + Tajo de Guásima + pesado.
+	for frame: int in 240:
+		await get_tree().physics_frame
+		if frame % 30 == 0:
+			player.try_attack()
+		if frame == 60:
+			player.try_skill_index(0)
+		if frame == 120:
+			player.try_heavy_attack()
+	## La sombra recibió daño real (o murió con su recompensa de XP) y el
+	## jugador cargó la definitiva golpeando.
+	var xp_after := player.xp_into_level + (player.level - 1) * 100
+	if is_instance_valid(sombra):
+		assert_float(sombra.hp).is_less(hp_before)
+	else:
+		## Murió: primera victoria de sombra = 18 XP reales.
+		assert_int(xp_after - xp_before).is_greater_equal(18)
+	assert_float(player.get_ultimate_charge()).is_greater(charge_before)
+	## Guardado y recarga con los sistemas reales.
+	var payload := SaveSystem.build_payload(player.serialize(), QuestSystem.serialize(), GraphicsSettings.serialize())
+	SaveSystem.save_game(payload)
+	var loaded: Dictionary = SaveSystem.load_game()
+	assert_bool(loaded.is_empty()).is_false()
+	assert_int(int(loaded["player"]["level"])).is_equal(player.level)
+	assert_float(float(loaded["player"]["ultimate_charge"])).is_equal(player.get_ultimate_charge())
+	if FileAccess.file_exists(SaveSystem.save_path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(SaveSystem.save_path))

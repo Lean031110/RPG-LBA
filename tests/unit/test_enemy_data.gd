@@ -4,9 +4,12 @@ extends GdUnitTestSuite
 
 
 func test_sombra_de_portal_data() -> void:
+	## Fase 5: el golpe de la sombra es potencia x coef (mismo motor que el
+	## jugador); el campo plano "damage" desapareció a favor del pipeline.
 	var data := RpgDB.get_enemy("sombra_de_portal")
 	assert_float(float(data["hp"])).is_equal(45.0)
-	assert_float(float(data["damage"])).is_equal(12.0)
+	assert_float(float(data["potency"])).is_equal(9.0)
+	assert_float(float(data["damage_coeff"])).is_equal(1.0)
 	assert_float(float(data["detect_radius"])).is_equal(9.0)
 	assert_float(float(data["lose_radius"])).is_greater(float(data["detect_radius"]))
 	assert_float(float(data["windup_time"])).is_greater(0.3)
@@ -27,10 +30,22 @@ func test_drop_table_is_valid() -> void:
 		assert_dict(RpgDB.get_item(String(drop["item_id"]))).is_not_empty()
 
 
-func test_no_respawn_in_slice() -> void:
-	## La rebanada no respawnea enemigos; el registro first/repeat XP existe para el futuro.
-	var data := RpgDB.get_enemy("sombra_de_portal")
-	assert_bool(bool(data["respawn"])).is_false()
+func test_respawn_policy_is_data_driven() -> void:
+	## Fase 5: las especies de la zona reaparecen (combate continuo tras la
+	## misión) con tiempos por especie; el XP repetible es menor que el primero.
+	for enemy_id: String in ["sombra_de_portal", "perro_de_ceniza", "guarapo_negro"]:
+		var data := RpgDB.get_enemy(enemy_id)
+		assert_bool(bool(data["respawn"])).is_true()
+		assert_float(float(data["respawn_time"])).is_greater_equal(15.0)
+		assert_int(int(data["xp_repeat"])).is_less(int(data["xp_first_kill"]))
+
+
+func test_bestiary_species_exist() -> void:
+	## Monstruario canon §8: las tres especies de la zona tienen datos y texto.
+	for enemy_id: String in ["sombra_de_portal", "perro_de_ceniza", "guarapo_negro"]:
+		var data := RpgDB.get_enemy(enemy_id)
+		assert_dict(data).is_not_empty()
+		assert_str(RpgDB.get_text(String(data["name_key"]))).is_not_empty()
 
 
 func test_enemy_strings_resolve() -> void:

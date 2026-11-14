@@ -67,10 +67,22 @@ func test_class_strings_resolve() -> void:
 
 
 func test_machetero_kit_is_complete_for_slice() -> void:
+	## Fase 5: kit completo del canon — combo de 3 tajos, ataque pesado,
+	## 4 habilidades con nombre canon y definitiva implementada.
 	var data := RpgDB.get_class_data("machetero")
 	assert_dict(data["basic_attack"]).contains_keys("windup")
 	assert_dict(data["basic_attack"]).contains_keys("active_until")
-	assert_array(data["skills"]).has_size(1)
-	assert_float(float(data["skills"][0]["resource_cost"])).is_greater(0.0)
+	assert_array(data["combo_steps"]).has_size(3)
+	assert_dict(data["heavy_attack"]).contains_keys("windup")
+	assert_array(data["skills"]).has_size(4)
+	var expected_ids := ["tajo_guasima", "guardia_del_bohio", "carga_del_mambi", "corte_de_la_ceiba"]
+	for index: int in expected_ids.size():
+		assert_str(String(data["skills"][index]["id"])).is_equal(expected_ids[index])
+		assert_float(float(data["skills"][index]["resource_cost"])).is_greater(0.0)
+		assert_int(int(data["skills"][index]["unlock_level"])).is_greater_equal(1)
+	assert_bool(bool(data["ultimate"]["implemented"])).is_true()
+	assert_str(String(data["ultimate"]["id"])).is_equal("huracan_machetes")
 	assert_dict(data["dodge"]).contains_keys("duration")
+	assert_dict(data["block"]).contains_keys("parry_window")
+	assert_dict(data["ultimate_charge"]).contains_keys("max")
 	assert_array(data["specializations"]).has_size(2)

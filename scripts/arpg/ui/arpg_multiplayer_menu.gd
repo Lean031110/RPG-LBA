@@ -35,6 +35,7 @@ func _ready() -> void:
 	resized.connect(_relayout)
 	get_viewport().connect("size_changed", _relayout)
 	Network.player_connected.connect(_on_player_connected)
+	Network.player_disconnected.connect(_on_player_disconnected)
 	Network.server_disconnected.connect(_on_session_ended)
 	_refresh_room()
 
@@ -42,6 +43,7 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if Network != null:
 		Network.player_connected.disconnect(_on_player_connected)
+		Network.player_disconnected.disconnect(_on_player_disconnected)
 		Network.server_disconnected.disconnect(_on_session_ended)
 
 
@@ -130,7 +132,7 @@ func _build_actions_panel() -> PanelContainer:
 	box.add_child(_field_label("IP del anfitrión (para unirse)"))
 	_ip_field = _style_line_edit(LineEdit.new())
 	_ip_field.text = "192.168.1."
-	_ip_field.placeholder_text = "p. ej. 192.168.1.42"
+	_ip_field.placeholder_text = "p. ej. 192.168.1.42 o 192.168.1.42:8081"
 	_ip_field.custom_minimum_size = Vector2(300, 40)
 	box.add_child(_ip_field)
 
@@ -268,10 +270,18 @@ func _on_host_pressed() -> void:
 		_room_name = "Sala de Valdeluz"
 	var error: Variant = Network.start_host(nick, "blue")
 	if error != null and int(error) != 0:
-		_set_status("No se pudo abrir el puerto 8080 (¿otra sala activa?). Código: %s" % [error], ArpgUiTheme.EMBER)
+		## Código 20 = ERR_CANT_CREATE: el puerto está ocupado por otra app
+		## o (en Android) falta el permiso INTERNET (docs/18_MULTIJUGADOR.md).
+		_set_status(
+			(
+				"No se pudo abrir el puerto %d (código %s). Si persiste: reinicia la app o revisa el WiFi."
+				% [Network.SERVER_PORT, error]
+			),
+			ArpgUiTheme.EMBER
+		)
 		return
 	_room_label.text = _room_name
-	_set_status("Sala creada en LAN · IP: %s:%d" % [_primary_lan_ip(), Network.SERVER_PORT], ArpgUiTheme.PALM)
+	_set_status("Sala creada en LAN · IP: %s:%d" % [_primary_lan_ip(), Network.bound_port], ArpgUiTheme.PALM)
 	_refresh_room()
 
 
@@ -306,6 +316,11 @@ func _on_join_pressed() -> void:
 
 
 func _on_player_connected(_peer_id: int, _info: Dictionary) -> void:
+	_refresh_room()
+
+
+func _on_player_disconnected(_peer_id: int) -> void:
+	## Un jugador se marchó: la lista se actualiza al momento (Fase 5).
 	_refresh_room()
 
 

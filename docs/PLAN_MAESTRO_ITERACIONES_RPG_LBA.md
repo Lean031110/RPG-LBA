@@ -2,9 +2,42 @@
 
 Documento vivo: refleja el estado REAL del proyecto y las prioridades de las
 próximas entregas. Se actualiza al cierre de cada iteración. La fecha de corte
-de esta edición es la iteración 4C-visual (v0.1.1).
+de esta edición es la Fase 5 (sistemas de juego, combate y personaje completos).
 
-## Estado actual (v0.1.1, iteración 4C-visual)
+## Estado actual (Fase 5)
+
+Sistemas completados y verificados por CI (además de todo lo de 4C-visual):
+
+- Motor de combate compartido jugador/enemigos (ArpgCombatant + componentes
+  en scripts/arpg/combat): daño centralizado con inmunidad/crítico por
+  estadísticas/bloqueo con tope/vulnerabilidad/límites, estados alterados
+  (stun, sangrado, rotura de armadura, ralentización, potenciación, prisa),
+  recargas por identificador, hitboxes con línea de visión (nada de golpes a
+  través de muros) y geometría centrada para arcos de 360°, controlador de
+  acciones con ventanas windup/activa/recuperación, buffer de entrada y
+  sistema de objetivo.
+- Machetero de la Sierra COMPLETO según canon: combo ligero de 3 pasos,
+  ataque pesado con perforación de armadura, Tajo de Guásima (sangrado),
+  Guardia del Bohío (postura defensiva), Carga del Mambí (embestida
+  aturdidora), Corte de la Ceiba (rompe armadura) y definitiva Huracán de
+  Machetes (5 golpes + remate) con carga real; pasivas Pulso de monte
+  (parada perfecta) y Pies de piedra; regeneración de vigor; crítico por
+  estadísticas; desbloqueo por nivel; puntos de atributo (5/nivel, canon).
+- Monstruario de 3 especies con IA diferenciada: Sombra de Portal (melee
+  telegráfico), Perro de ceniza (rodea al objetivo, aúlla prisa a la
+  manada) y Guarapo negro (tanque lento, golpe de área con empuje y trampa
+  de resina); FSM común con LOS en detección y golpe, reaparición por datos.
+- HUD completo: barra de 4 habilidades + definitiva con recarga radial,
+  candado por nivel y coste; marco de objetivo (nombre/nivel/vida/estados);
+  números de daño y crítico flotantes; chips de estados; bloqueo mantenido;
+  teclado completo (J/L/K/2-4/R/ESP/Q/MAYÚS); combate bloqueado en diálogos.
+- Multijugador LAN: causa raíz del error 20 corregida (teardown del peer
+  previo + permiso INTERNET en ambos presets de exportación), puertos con
+  respaldo 8080..8084, campo IP con puerto, señal de desconexión de jugador
+  y smoke de 2 procesos reales con doble sala consecutiva.
+
+Pruebas: 294/294 casos (42 suites) en verde; gdlint + gdformat en verde;
+smoke multijugador (2 procesos) en verde.
 
 Sistemas completados y verificados por CI:
 
@@ -58,19 +91,11 @@ distinguir la instalación nueva.
 
 ## Iteraciones
 
-### Iteración actual — 4C-visual (COMPLETADA en esta entrega)
+### Iteración actual — Fase 5: sistemas, combate y personaje (COMPLETADA)
 
-1. [x] Diagnosticar el APK ARM64 (forense + evidencia CI; causa no estructural).
-2. [x] Mantener la Universal funcional (misma estructura; versionCode 2).
-3. [x] Presentación cinematográfica con emblema oficial, salto y transición.
-4. [x] Icono Android adaptativo + heredado + boot splash de marca.
-5. [x] Rediseño del menú principal (composición, jerarquía, animación).
-6. [x] Apartado MULTIJUGADOR visible con pantalla propia y honesta.
-7. [x] Unificación visual de todas las pantallas (ajustes, créditos, pausa,
-       derrota, panel de clase) bajo ArpgUiTheme.
-8. [x] HUD: pausa táctil, recargas radiales, realce de pulsación.
-9. [x] Cámara: oclusión reversible con histéresis; muros visibles.
-10. [x] APK v0.1.1 (ARM64 + Universal), verificación estática y de emulador.
+Sistemas lógicos y jugables terminados (informe completo en
+docs/reportes/FASE_05_SISTEMAS.md). El visual sigue aplazado a propósito:
+sin nuevas texturas, modelos, audio ni efectos de arte en esta fase.
 
 ### Iteración siguiente — mundo y texturas (prioridad principal)
 

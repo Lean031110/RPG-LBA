@@ -1,35 +1,42 @@
 # gdlint: ignore=max-public-methods
-# (Fase 3: 22 metodos publicos. El limite por defecto de gdlint es 20; la clase absorbe
-# inventario de equipo y tiers de locomocion. Excepcion acotada a este archivo y
-# documentada en docs/reportes/FASE_03_PREPARATIVOS.md; la regla global queda intacta.)
+# (Fase 5: el jugador es la fachada del Machetero — exposición completa del kit,
+# consulta del HUD, progresión y persistencia — sobre la base compartida
+# ArpgCombatant y el controlador MacheteroKit. La excepción está acotada a este
+# archivo y documentada en docs/reportes/FASE_05_AUDITORIA.md.)
 class_name ArpgPlayer
-extends CharacterBody3D
-## Jugador de la vertical slice: Machetero de la Sierra (única clase jugable en la rebanada).
-## Definición 100% dirigida por datos (game/data/classes.json); sin fórmulas duplicadas.
-## La animación jamás es fuente de verdad del daño: la hitbox solo está activa en su ventana.
-## Lógica desacoplada de la UI: el HUD escucha señales y llama métodos públicos.
-## Fase 2: movimiento con aceleración/desaceleración y relativo a la cámara (var camera_source);
-## sin fuente de cámara se usa el eje mundial (identidad), como en la Fase 1.
-## Fase 3 (preparativos): tiers de locomoción por magnitud de entrada (caminar/correr con
-## animación diferenciada) e inventario de equipo propio (arma equipable con bonus de daño).
+extends ArpgCombatant
+## Jugador de la vertical slice: Machetero de la Sierra (única clase jugable).
+## Definición 100% dirigida por datos (game/data/classes.json). Arquitectura
+## Fase 5 (todo desacoplado, sin lógica gigante en un archivo):
+##   - ArpgCombatant: motor de combate compartido con los enemigos.
+##   - MacheteroKit: ejecución del kit (combo, pesado, 4 habilidades,
+##     definitiva, bloqueo/parada, esquiva).
+##   - PlayerInputProvider: entrada (teclado + joystick + marco de cámara).
+##   - PlayerEquipment: puente con el inventario de equipo.
+##   - PlayerSaveCodec: persistencia versionada.
+##   - MacheteroPuppet: montaje visual y resolución de poses por estado.
+## Este archivo coordina: progresión, atributos, locomoción y defensa.
+##
+## La animación jamás es fuente de verdad del daño: la hitbox solo está activa
+## en su ventana. Lógica desacoplada de la UI: el HUD escucha señales.
 
-signal stats_changed
 signal leveled_up(new_level: int)
 signal died
 signal dodged
 signal hit_landed(target: Node, amount: float, is_crit: bool)
 signal potion_used(healed: float)
 signal attack_started(kind: String)
+signal action_started(kind: String)
+signal skill_cast(skill_id: String)
+signal ultimate_cast
+signal ultimate_charge_changed(current: float, maximum: float)
+signal blocking_changed(is_blocking: bool)
+signal combo_step_changed(step: int)
+signal stats_changed
 
 const GRAVITY := 18.0
-const HURT_GRACE_TIME := 0.25
-const CRIT_CHANCE := 0.05
-## Fase 2: modelo de movimiento fluido. Valores por defecto en código; si el balance
-## aporta "move_accel"/"move_decel" en classes.json, los datos mandan (mismo patrón que move_speed).
 const DEFAULT_MOVE_ACCEL := 24.0
 const DEFAULT_MOVE_DECEL := 30.0
-## Fase 3: magnitud de entrada que separa caminar de correr. El teclado entrega 1.0
-## (corre, estándar ARPG); el joystick analógico camina con deflexión baja (estilo MLBB).
 const RUN_INPUT_THRESHOLD := 0.6
 const DEFAULT_RUN_MULTIPLIER := 1.55
 const FLOOR_SNAP := 0.25
@@ -43,39 +50,36 @@ var class_data: Dictionary = {}
 var level := 1
 var xp_into_level := 0
 var attribute_points := 0
-var hp := 1.0
-var max_hp := 1.0
 var vigor := 1.0
 var max_vigor := 1.0
-var armor := 0.0
 var potions := 1
-var joystick_vector := Vector2.ZERO
-var is_dodging := false
-## Fase 3: tier de locomoción actual ("idle" | "walk" | "run"), público para HUD/minimapa.
 var move_tier := "idle"
-## Fase 3: inventario de equipo propio (armas; las pociones siguen en contador rápido).
 var inventory: PlayerInventory = null
-## Fuente del marco de movimiento (Fase 2). Asignación directa pública:
-## player.camera_source = rig. Sin asignar (tests, escenas mínimas) es identidad.
-var camera_source: Node3D = null
+var is_dodging := false
 
-var _action := "none"
-var _action_timer := 0.0
-var _action_params: Dictionary = {}
-var _attack_cooldown_left := 0.0
-var _skill_cooldown_left := 0.0
-var _dodge_cooldown_left := 0.0
-var _hurt_grace_left := 0.0
+## Contrato público de fases anteriores (HUD y slice asignan directo); la
+## lectura de la entrada vive en PlayerInputProvider.
+var camera_source: Node3D = null:
+	set(value):
+		camera_source = value
+		input.camera_source = value
+var joystick_vector := Vector2.ZERO:
+	set(value):
+		joystick_vector = value
+		input.joystick_vector = value
+
+var kit := MacheteroKit.new()
+var input := PlayerInputProvider.new()
+var equipment := PlayerEquipment.new()
+var targeting := TargetingSystem.new()
+
+var _puppet: MacheteroPuppet = null
+var _attributes := {}
 var _walk_phase := 0.0
 var _run_blend := 0.0
-var _hitbox_shape: CollisionShape3D = null
-var _hitbox_area: Area3D = null
-var _window_open := false
-var _bodies_hit_this_swing: Array[Node] = []
-var _rng := RandomNumberGenerator.new()
-var _puppet: Dictionary = {}
 var _dodge_direction := Vector3.FORWARD
-var _dead := false
+var _action_params: Dictionary = {}
+var _vigor_regen := 0.0
 
 
 func setup(new_class_id: String) -> void:
@@ -84,29 +88,25 @@ func setup(new_class_id: String) -> void:
 	if class_data.is_empty():
 		push_error("ArpgPlayer: clase desconocida %s" % class_id)
 		return
-
-		# Fase 2: pegado al suelo en bajadas de pendiente/rampa (evita micro-vuelos al bajar).
-
-		# Fase 3: inventario de equipo propio (serializable con el resto del estado).
-
-		# Fase 2: pegado al suelo en bajadas de pendiente/rampa (evita micro-vuelos al bajar).
-
-		# Fase 3: inventario de equipo propio (serializable con el resto del estado).
 	collision_layer = BODY_LAYER
 	collision_mask = BODY_MASK
 	_build_body_shape()
-	# Fase 2: pegado al suelo en bajadas de pendiente/rampa (evita micro-vuelos al bajar).
 	floor_snap_length = FLOOR_SNAP
 	_reset_stats()
-	_build_hitbox()
+	mount_combat(HITBOX_LAYER, HITBOX_MASK)
+	add_child(targeting)
+	targeting.setup(self, ArpgLayers.WORLD)
+	add_child(kit)
+	kit.setup(self)
+	_wire_player_signals()
 	_build_visual()
-	# Fase 3: inventario de equipo propio (serializable con el resto del estado).
 	inventory = PlayerInventory.new()
+	equipment.setup(self)
 
 
 func _build_body_shape() -> void:
-	## Capsula de colision del cuerpo: sin ella no hay fisica de jugador (suelo, muros,
-	## areas enemigas). El error fue detectado por las pruebas de integracion.
+	## Cápsula de colisión del cuerpo: sin ella no hay física de jugador (suelo,
+	## muros, áreas enemigas). El error fue detectado por las pruebas de integración.
 	var shape := CollisionShape3D.new()
 	var capsule := CapsuleShape3D.new()
 	capsule.radius = 0.4
@@ -116,15 +116,35 @@ func _build_body_shape() -> void:
 	add_child(shape)
 
 
+func _wire_player_signals() -> void:
+	## El kit emite sus señales; el jugador las replica para mantener el
+	## contrato del HUD de fases anteriores (fachada estable). El daño y la
+	## curación (base ArpgCombatant) también avisan al HUD vía stats_changed.
+	combatant_damaged.connect(func(_amount: float) -> void: stats_changed.emit())
+	kit.kit_action_started.connect(
+		func(kind: String) -> void:
+			attack_started.emit(kind)
+			action_started.emit(kind)
+	)
+	kit.kit_skill_cast.connect(func(skill_id: String) -> void: skill_cast.emit(skill_id))
+	kit.kit_ultimate_cast.connect(func() -> void: ultimate_cast.emit())
+	kit.kit_charge_changed.connect(
+		func(current: float, maximum: float) -> void: ultimate_charge_changed.emit(current, maximum)
+	)
+	kit.kit_blocking_changed.connect(func(is_blocking: bool) -> void: blocking_changed.emit(is_blocking))
+	kit.kit_combo_step_changed.connect(func(step: int) -> void: combo_step_changed.emit(step))
+
+
 func _reset_stats() -> void:
 	level = 1
 	xp_into_level = 0
 	attribute_points = 0
-	var base: Dictionary = class_data.get("base_stats", {})
+	_attributes = {}
+	for attribute: String in ["fuerza", "destreza", "intelecto", "espiritu"]:
+		_attributes[attribute] = float(class_data.get("base_stats", {}).get(attribute, 10))
 	var resource: Dictionary = class_data.get("resource", {})
-	max_hp = float(base.get("hp", 100))
+	max_hp = float(class_data.get("base_stats", {}).get("hp", 100))
 	hp = max_hp
-	armor = float(base.get("armor", 0))
 	max_vigor = float(resource.get("base", 100))
 	vigor = max_vigor
 	potions = 1
@@ -132,19 +152,40 @@ func _reset_stats() -> void:
 
 
 func _recalculate_from_level() -> void:
-	## Crecimiento automático por clase (docs/diseno/02): HP, recurso y armadura por nivel.
+	## Crecimiento automático por clase (docs/diseno/02) + reconstrucción de las
+	## estadísticas de combate (única fuente de verdad para HUD y DamageSystem).
 	var growth: Dictionary = class_data.get("growth", {})
 	var resource: Dictionary = class_data.get("resource", {})
 	var levels_from_base := maxi(level - 1, 0)
 	max_hp = (
 		float(class_data["base_stats"].get("hp", 100)) + float(growth.get("hp_per_level", 0.0)) * levels_from_base
 	)
-	armor = (
-		float(class_data["base_stats"].get("armor", 0)) + float(growth.get("armor_per_level", 0.0)) * levels_from_base
+	max_vigor = (float(resource.get("base", 100)) + float(resource.get("per_level", 0)) * levels_from_base)
+	_vigor_regen = (
+		float(resource.get("regen_per_second", 0.0)) + float(resource.get("regen_per_level", 0.0)) * levels_from_base
 	)
-	max_vigor = float(resource.get("base", 100)) + float(resource.get("per_level", 0)) * levels_from_base
+	stats = CombatStats.from_class_data(class_data, level, get_attribute("fuerza"))
+	stats.armor += equipment.armor_bonus()
+	stats.attack_power += equipment.potency_bonus()
+	stats.crit_chance += equipment.crit_bonus()
+	stats.block_reduction = kit_block_reduction()
 	hp = minf(hp, max_hp)
 	vigor = minf(vigor, max_vigor)
+	skills.set_attack_speed(stats.attack_speed)
+
+
+func kit_block_reduction() -> float:
+	## Puente para el cálculo del kit (guardia activa) sin romper el encapsulado.
+	return (
+		kit.effective_block_reduction()
+		if kit != null
+		else float(class_data.get("base_stats", {}).get("block_reduction", 0.5))
+	)
+
+
+# ---------------------------------------------------------------------------
+# Consultas públicas (HUD y tests)
+# ---------------------------------------------------------------------------
 
 
 func get_class_name() -> String:
@@ -156,8 +197,19 @@ func get_resource_name() -> String:
 
 
 func get_attribute(attribute: String) -> float:
-	## Atributo actual (base de datos; los puntos manuales se asignan en Fase 2).
-	return float(class_data.get("base_stats", {}).get(attribute, 10))
+	## Atributo actual = base de clase + puntos gastados (Fase 5: progresión canon).
+	return float(_attributes.get(attribute, 10.0))
+
+
+func spend_attribute_point(attribute: String, points := 1) -> bool:
+	## Gasta puntos de atributo ganados al subir de nivel (canon: 5 por nivel).
+	if attribute_points < points or not _attributes.has(attribute):
+		return false
+	attribute_points -= points
+	_attributes[attribute] = float(_attributes[attribute]) + points
+	_recalculate_from_level()
+	stats_changed.emit()
+	return true
 
 
 func get_hp_fraction() -> float:
@@ -180,135 +232,302 @@ func get_potions() -> int:
 	return potions
 
 
-## Recargas restantes y totales (HUD: indicadores radiales de habilidad/esquiva).
+func is_blocking() -> bool:
+	return kit.is_blocking()
+
+
+func get_ultimate_charge() -> float:
+	return kit.get_ultimate_charge()
+
+
+func get_ultimate_charge_fraction() -> float:
+	return kit.get_ultimate_charge_fraction()
+
+
+func get_ultimate_max() -> float:
+	return kit.get_ultimate_max()
+
+
+func is_ultimate_ready() -> bool:
+	return kit.is_ultimate_ready()
+
+
+func get_skill_count() -> int:
+	return class_data.get("skills", []).size()
+
+
+func get_skill_def(index: int) -> Dictionary:
+	var skill_list: Array = class_data.get("skills", [])
+	if index < 0 or index >= skill_list.size():
+		return {}
+	return skill_list[index]
+
+
+func get_ultimate_def() -> Dictionary:
+	return class_data.get("ultimate", {})
+
+
+func get_skill_index_by_id(skill_id: String) -> int:
+	for index: int in get_skill_count():
+		if String(get_skill_def(index).get("id", "")) == skill_id:
+			return index
+	return -1
+
+
+func is_skill_unlocked(index: int) -> bool:
+	return is_skill_def_unlocked(get_skill_def(index))
+
+
+func is_skill_def_unlocked(def: Dictionary) -> bool:
+	## Desbloqueo por nivel (S1:1, S2:2, S3:2, S4:3, Definitiva:3; datos).
+	if def.is_empty():
+		return false
+	if not bool(def.get("implemented", true)):
+		return false
+	return level >= int(def.get("unlock_level", 1))
+
+
+## Recargas restantes y totales (HUD: indicadores radiales). Fase 5: por
+## identificador, con compatibilidad para las consultas de la Fase 3.
 
 
 func get_skill_cooldown_left() -> float:
-	return _skill_cooldown_left
+	return cooldowns.left(_skill_id_at(0))
 
 
 func get_skill_cooldown_total() -> float:
-	var skills: Array = class_data.get("skills", [])
-	if skills.is_empty():
-		return 0.0
-	return float(skills[0].get("cooldown", 5.0))
+	return _cooldown_total_or_data(_skill_id_at(0), get_skill_def(0).get("cooldown", 0.0))
+
+
+func get_skill_cooldown_left_at(index: int) -> float:
+	return cooldowns.left(_skill_id_at(index))
+
+
+func get_skill_cooldown_total_at(index: int) -> float:
+	return _cooldown_total_or_data(_skill_id_at(index), get_skill_def(index).get("cooldown", 0.0))
 
 
 func get_dodge_cooldown_left() -> float:
-	return _dodge_cooldown_left
+	return cooldowns.left("dodge")
 
 
 func get_dodge_cooldown_total() -> float:
-	return float(class_data.get("dodge", {}).get("cooldown", 1.2))
+	return _cooldown_total_or_data("dodge", float(class_data.get("dodge", {}).get("cooldown", 1.2)))
+
+
+func get_heavy_cooldown_left() -> float:
+	return cooldowns.left("heavy")
+
+
+func get_heavy_cooldown_total() -> float:
+	return _cooldown_total_or_data("heavy", float(class_data.get("heavy_attack", {}).get("cooldown", 4.0)))
+
+
+func _cooldown_total_or_data(id: String, data_value: float) -> float:
+	## Total registrado si hay recarga en curso; si no, el valor de datos
+	## (el HUD necesita el total también antes del primer uso).
+	if id.is_empty():
+		return maxf(data_value, 0.0)
+	var recorded := cooldowns.total(id)
+	return recorded if recorded > 0.0 else maxf(data_value, 0.0)
+
+
+func _skill_id_at(index: int) -> String:
+	var def := get_skill_def(index)
+	return String(def.get("id", "")) if not def.is_empty() else ""
+
+
+# ---------------------------------------------------------------------------
+# Progresión
+# ---------------------------------------------------------------------------
 
 
 func add_xp(amount: int) -> void:
-	if amount <= 0 or _dead:
+	if amount <= 0 or is_dead():
 		return
 
-		# Diseño de la rebanada: al subir de nivel se restaura por completo (decisión documentada).
-
-		# Diseño de la rebanada: al subir de nivel se restaura por completo (decisión documentada).
+		# Diseño de la rebanada: al subir de nivel se restaura por completo (documentado).
 	var result := ProgressionService.add_xp(level, xp_into_level, amount, RpgDB.get_progression())
 	xp_into_level = int(result["xp_into_level"])
 	attribute_points += int(result["points_gained"])
 	if int(result["levels_gained"]) > 0:
 		level = int(result["level"])
 		_recalculate_from_level()
-		# Diseño de la rebanada: al subir de nivel se restaura por completo (decisión documentada).
+		# Diseño de la rebanada: al subir de nivel se restaura por completo (documentado).
 		hp = max_hp
 		vigor = max_vigor
 		leveled_up.emit(level)
 	stats_changed.emit()
 
 
-func take_damage(amount: float) -> bool:
-	## Devuelve true si el daño se aplicó; false si fue esquivado o ignorado.
-	if _dead or amount <= 0.0:
-		return false
+# ---------------------------------------------------------------------------
+# Defensa especial del jugador: esquiva, parada (Pulso de monte) y bloqueo
+# ---------------------------------------------------------------------------
+
+
+func _resolve_special_defense(amount: float, context: Dictionary) -> Dictionary:
+	## Orden de resolución: esquiva (invulnerable durante toda la acción) →
+	## parada perfecta (ventana inicial del bloqueo) → bloqueo (reducción).
+	var unblockable := bool(context.get("unblockable", false))
 	if is_dodging:
 		dodged.emit()
+		CombatEvents.attack_evaded.emit(self)
+		return {"handled": true, "applied": false}
+	if unblockable:
+		return {"handled": false, "modified_amount": amount}
+	var attacker := context.get("source") as Node3D
+	if _try_parry(attacker):
+		return {"handled": true, "applied": false}
+	if kit.is_blocking() and not skills.is_busy() and _attacker_in_front(attacker):
+		var pass_factor := CombatService.block_factor(stats.block_reduction)
+		return {"handled": false, "modified_amount": amount * pass_factor}
+	return {"handled": false, "modified_amount": amount}
+
+
+func _try_parry(attacker: Node3D) -> bool:
+	## Pulso de monte (pasiva canon): bloquear JUSTO cuando llega el golpe
+	## anula el daño, restaura vigor y potencia el siguiente golpe. Con la
+	## Guardia del Bohío activa, además aturde al atacante (lo aplica el kit).
+	var block: Dictionary = class_data.get("block", {})
+	var window := float(block.get("parry_window", 0.2))
+	if not kit.is_blocking() or kit.parry_window_elapsed() > window:
 		return false
-	if _hurt_grace_left > 0.0:
+	if attacker != null and not _attacker_in_front(attacker):
 		return false
-	hp = maxf(hp - amount, 0.0)
-	_hurt_grace_left = HURT_GRACE_TIME
-	_visual_hurt_flash()
-	if hp <= 0.0:
-		_dead = true
-		_visual_die()
-		died.emit()
+	kit.parry_triggered(float(_guardia_def_stun()), attacker)
+	CombatEvents.attack_parried.emit(self)
 	stats_changed.emit()
 	return true
 
 
-func heal(amount: float) -> float:
-	var before := hp
-	hp = minf(hp + amount, max_hp)
-	stats_changed.emit()
-	return hp - before
+func _guardia_def_stun() -> float:
+	if class_data.get("skills", []).is_empty():
+		return 1.0
+	for def: Dictionary in class_data.get("skills", []):
+		if String(def.get("id", "")) == "guardia_del_bohio":
+			return float(def.get("stance_parry_stun", 1.0))
+	return 1.0
+
+
+func _attacker_in_front(attacker: Node3D) -> bool:
+	## El bloqueo/parada protegen el frontal (arco de 150°).
+	if attacker == null:
+		return true
+	var to_attacker := attacker.global_position - global_position
+	to_attacker.y = 0.0
+	if to_attacker.length() < 0.05:
+		return true
+	var forward := Vector3(transform.basis.z.x, 0.0, transform.basis.z.z).normalized()
+	return forward.dot(to_attacker.normalized()) >= -0.26
+
+
+func _on_combatant_died() -> void:
+	## Muerte del jugador: el kit suelta todo, presentación y señal del slice.
+	kit.stop_on_death()
+	if _puppet != null:
+		_puppet.play_death()
+	died.emit()
+
+
+func _on_status_periodic_tick(id: String, payload: Dictionary) -> void:
+	## Sangrado y demás daños periódicos: no esquivables ni bloqueables.
+	if id == "bleed":
+		take_damage(
+			float(payload.get("damage_per_tick", 0.0)), {"source": null, "unblockable": true, "bypass_grace": true}
+		)
+
+
+# ---------------------------------------------------------------------------
+# Golpes del jugador (extensiones del canal heredado)
+# ---------------------------------------------------------------------------
+
+
+func _attacker_stats_for_strike() -> CombatStats:
+	## El golpe consume "empowered" (Pulso de monte) si está activo.
+	return DamageSystem.resolve_attacker_empowered(statuses, stats)
+
+
+func _pierce_for_strike(def: Dictionary) -> float:
+	## El ataque pesado ignora parte de la armadura (dato de la técnica).
+	return float(def.get("armor_pierce", 0.0))
+
+
+func _on_strike_landed(target: Node, amount: float, is_crit: bool, _def: Dictionary) -> void:
+	## Golpe conectado: carga de definitiva, señal del slice y foco de objetivo
+	## para el HUD (los estados de la técnica los aplica la base compartida).
+	kit.gain_ultimate_charge(float(class_data.get("ultimate_charge", {}).get("per_hit_dealt", 0.0)))
+	hit_landed.emit(target, amount, is_crit)
+	targeting.notify_hit(target as Node3D)
+	if target is Node3D:
+		var impact_color := Color(1.0, 0.72, 0.35) if is_crit else Color(0.95, 0.85, 0.6)
+		ArpgArtKit.hit_spark(self, (target as Node3D).global_position + Vector3(0, 1.2, 0), impact_color)
+
+
+# ---------------------------------------------------------------------------
+# Acciones de combate (delegación al kit; fachada estable para HUD y slice)
+# ---------------------------------------------------------------------------
 
 
 func try_attack() -> bool:
-	return _start_action("attack", class_data.get("basic_attack", {}))
+	return kit.try_attack()
+
+
+func try_heavy_attack() -> bool:
+	return kit.try_heavy_attack()
 
 
 func try_skill() -> bool:
-	var skills: Array = class_data.get("skills", [])
-	if skills.is_empty():
-		return false
-	return _start_action("skill", skills[0])
+	return kit.try_skill_index(0)
+
+
+func try_skill_index(index: int) -> bool:
+	return kit.try_skill_index(index)
+
+
+func try_ultimate() -> bool:
+	return kit.try_ultimate()
+
+
+func set_blocking(active: bool) -> void:
+	kit.set_blocking(active)
 
 
 func try_dodge() -> bool:
-	if _dead or not _action_params.is_empty() or is_dodging:
-		return false
+	return kit.try_dodge()
 
-		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
 
-		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
-
-		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
-
-		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
-	if _dodge_cooldown_left > 0.0:
-		return false
-
-		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
-
-		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
-
-		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
-	var cost := float(class_data.get("dodge", {}).get("cost", 15))
-	if vigor < cost:
-		return false
-
-		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
-
-		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
-	var dodge: Dictionary = class_data.get("dodge", {})
-	var input_dir := _input_direction()
-	_dodge_direction = input_dir if input_dir.length() > 0.1 else transform.basis.z
-	_action = "dodge"
-	_action_timer = 0.0
-	_action_params = dodge
+func begin_dodge(dodge: Dictionary) -> void:
+	## Arranque físico de la esquiva (lo llama el kit tras validar coste/recarga).
+	var direction := _input_direction()
+	_dodge_direction = direction if direction.length() > 0.1 else transform.basis.z
 	is_dodging = true
-	vigor -= cost
-	_dodge_cooldown_left = float(dodge.get("cooldown", 1.2))
-	stats_changed.emit()
-	# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
-	ArpgArtKit.dust_burst(self, global_position + Vector3(0, 0.1, 0))
-	return true
+	_action_params = dodge
+
+
+func orient_to_input_or_forward() -> void:
+	## Orientación de las técnicas con avance (Carga/Huracán): de frente a la
+	## dirección de entrada, o al frente actual si no hay entrada.
+	var direction := _input_direction()
+	_face_towards(direction if direction.length() > 0.1 else transform.basis.z, 1.0)
+
+
+func heal(amount: float) -> float:
+	## Curación con aviso al HUD (la base no conoce las señales del jugador).
+	var healed := super(amount)
+	if healed > 0.0:
+		stats_changed.emit()
+	return healed
 
 
 func try_potion() -> bool:
-	if _dead or potions <= 0 or hp >= max_hp:
+	if is_dead() or potions <= 0 or hp >= max_hp:
 		return false
 	var item := RpgDB.get_item("pocion_curativa")
 	var heal_amount := float(item.get("heal_amount", 40))
 	potions -= 1
 	var healed := heal(heal_amount)
 	potion_used.emit(healed)
+	stats_changed.emit()
 	return true
 
 
@@ -318,212 +537,146 @@ func add_potion(count := 1) -> void:
 
 
 func receive_item(item_id: String, count := 1) -> bool:
-	## Guarda un objeto de equipo/misión en el inventario propio (Fase 3). Las pociones
-	## siguen en el contador rápido de la rebanada (decisión documentada). False si no hay
-	## hueco o el objeto no existe en datos.
-	if inventory == null or count <= 0:
-		return false
-	if RpgDB.get_item(item_id).is_empty():
-		push_error("ArpgPlayer: objeto desconocido %s" % item_id)
-		return false
-	var index := inventory.get_first_empty_slot()
-	if index < 0:
-		return false
-	var slot := inventory.get_slot(index)
-	slot.item_id = item_id
-	slot.quantity = count
-	return true
+	## Guarda un objeto de equipo/misión en el inventario propio (delega en
+	## PlayerEquipment). Las pociones siguen en el contador rápido (decisión
+	## documentada de la rebanada).
+	return equipment.receive_item(item_id, count)
 
 
 func try_equip_weapon(slot_index := -1) -> bool:
-	## slot_index >= 0: equipa el arma de ese hueco (swap con la equipada). -1: desequipa
-	## al primer hueco libre. Valida kind=weapon y la restricción de clase del dato.
-	## El bonus de potencia se aplica en la hitbox (data-driven, sin fórmulas nuevas).
-	if inventory == null:
-		return false
-	if slot_index < 0:
-		return _unequip_weapon_to_free_slot()
-	return _equip_weapon_from_slot(slot_index)
+	## Equipa/desequipa el arma del hueco (delega en PlayerEquipment; valida
+	## kind=weapon y restricción de clase, y aplica bonuses a las estadísticas).
+	return equipment.try_equip_weapon(slot_index)
 
 
-func _start_action(kind: String, params: Dictionary) -> bool:
-	if _dead or not _action_params.is_empty() or is_dodging:
-		return false
-	if params.is_empty():
-		return false
-	if kind == "attack" and _attack_cooldown_left > 0.0:
-		return false
-	if kind == "skill" and _skill_cooldown_left > 0.0:
-		return false
-	if kind == "skill":
-		var cost := float(params.get("resource_cost", 0))
-		if vigor < cost:
-			return false
-		vigor -= cost
-		stats_changed.emit()
-	_action = kind
-	_action_timer = 0.0
-	_action_params = params
-	_bodies_hit_this_swing = []
-	attack_started.emit(kind)
-	return true
+# ---------------------------------------------------------------------------
+# Entrada y movimiento
+# ---------------------------------------------------------------------------
 
 
 func _input_direction() -> Vector3:
-	## Dirección de movimiento en XZ desde teclado + joystick virtual (HUD), normalizada
-	## en diagonal y expresada en el marco de la cámara (Fase 2). Sin cámara asignada,
-	## el marco es la identidad: exactamente el eje mundial de la Fase 1 (compatibilidad).
-	var combined := _raw_input()
-	if combined.length() > 1.0:
-		combined = combined.normalized()
-	return _to_camera_space(combined)
+	## Dirección de movimiento en XZ (teclado + joystick, marco de la cámara).
+	return input.direction()
 
 
 func _raw_input() -> Vector3:
-	## Entrada combinada SIN normalizar: su magnitud separa caminar de correr (Fase 3).
-	var keyboard := Vector3(
-		Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
-		0,
-		Input.get_action_strength("move_backward") - Input.get_action_strength("move_forward")
-	)
-	return keyboard + Vector3(joystick_vector.x, 0, joystick_vector.y)
-
-
-func _unequip_weapon_to_free_slot() -> bool:
-	## Devuelve el arma equipada al primer hueco libre (no desequipa si no hay hueco).
-	if inventory.equipped_weapon.is_empty():
-		return false
-	var free := inventory.get_first_empty_slot()
-	if free < 0:
-		return false
-	var target := inventory.get_slot(free)
-	target.item_id = inventory.equipped_weapon.item_id
-	target.quantity = inventory.equipped_weapon.quantity
-	inventory.equipped_weapon.clear()
-	_update_weapon_visual()
-	stats_changed.emit()
-	return true
-
-
-func _equip_weapon_from_slot(slot_index: int) -> bool:
-	## Equipa el arma del hueco indicado dejando la anterior en ese mismo hueco.
-	if not inventory.is_slot_active(slot_index):
-		return false
-	var slot := inventory.get_slot(slot_index)
-	if slot == null or slot.is_empty():
-		return false
-	var item_data := RpgDB.get_item(slot.item_id)
-	if String(item_data.get("kind", "")) != "weapon":
-		return false
-	var required_class := String(item_data.get("class_id", ""))
-	if required_class != "" and required_class != class_id:
-		return false
-	var swap_id := inventory.equipped_weapon.item_id
-	var swap_qty := inventory.equipped_weapon.quantity
-	inventory.equipped_weapon.item_id = slot.item_id
-	inventory.equipped_weapon.quantity = slot.quantity
-	slot.item_id = swap_id
-	slot.quantity = swap_qty
-	if slot.is_empty():
-		slot.clear()
-	_update_weapon_visual()
-	stats_changed.emit()
-	return true
-
-
-func _to_camera_space(direction: Vector3) -> Vector3:
-	## Proyecta la base de la cámara al plano XZ: "arriba en pantalla" sigue siendo arriba
-	## del mundo aunque la cámara gane yaw en fases futuras. Pitch no afecta (se aplana).
-	if camera_source == null or not is_instance_valid(camera_source):
-		return direction
-	var basis := camera_source.global_transform.basis
-	var right := Vector3(basis.x.x, 0.0, basis.x.z)
-	var back := Vector3(basis.z.x, 0.0, basis.z.z)
-	if right.length_squared() < 0.001 or back.length_squared() < 0.001:
-		return direction
-	return right.normalized() * direction.x + back.normalized() * direction.z
+	## Entrada combinada sin normalizar (magnitud = caminar/correr).
+	return input.raw_input()
 
 
 func _physics_process(delta: float) -> void:
 	if class_data.is_empty():
 		return
-
-		# Fase 3: el tier de locomoción (caminar/correr) sale de la magnitud de entrada;
-		# la velocidad objetivo del tier se persigue con la aceleración de la Fase 2.
-
-		# Giro y ciclo de pasos siguen la velocidad REAL del cuerpo: sin deslizamiento visual.
-
-		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
-
-		# Fase 3: el tier de locomoción (caminar/correr) sale de la magnitud de entrada;
-		# la velocidad objetivo del tier se persigue con la aceleración de la Fase 2.
-
-		# Giro y ciclo de pasos siguen la velocidad REAL del cuerpo: sin deslizamiento visual.
-
-		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
-
-		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
-	_tick_timers(delta)
-	_update_run_blend(delta)
-	if not is_dodging and _action_params.is_empty():
-		# Fase 3: el tier de locomoción (caminar/correr) sale de la magnitud de entrada;
-		# la velocidad objetivo del tier se persigue con la aceleración de la Fase 2.
-		var direction := _input_direction()
-		var target := direction * _tier_target_speed()
-		var accel := float(class_data.get("move_accel", DEFAULT_MOVE_ACCEL))
-		var decel := float(class_data.get("move_decel", DEFAULT_MOVE_DECEL))
-		var rate := decel if target.length() < 0.05 else accel
-		var planar := Vector3(velocity.x, 0, velocity.z).move_toward(target, rate * delta)
-		velocity.x = planar.x
-		velocity.z = planar.z
-		var planar_speed := planar.length()
-		if planar_speed > 0.05:
-			# Giro y ciclo de pasos siguen la velocidad REAL del cuerpo: sin deslizamiento visual.
-			_face_towards(planar.normalized(), delta)
-			_walk_phase += delta * planar_speed * (2.4 + _run_blend * 0.8)
-			_animate_walk(_walk_phase)
-
-			# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
-		else:
-			_animate_idle(delta)
-
-			# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
-
-		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
-	else:
-		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
-		_animate_walk(_walk_phase)
+	tick_combat(delta)
+	targeting.tick(delta)
+	kit.tick(delta)
+	if is_dead():
 		velocity.x = 0.0
 		velocity.z = 0.0
-	if is_dodging:
-		var duration := maxf(float(_action_params.get("duration", 0.3)), 0.05)
-		var dodge_speed := float(_action_params.get("distance", 4.0)) / duration
-		var dodge_motion := _dodge_direction * dodge_speed
-		velocity.x = dodge_motion.x
-		velocity.z = dodge_motion.z
-		_face_towards(_dodge_direction, delta)
+		if not is_on_floor():
+			velocity.y -= GRAVITY * delta
+		move_and_slide()
+		return
+	if not statuses.can_move():
+		kit.end_action()
+		kit.set_blocking(false)
+	skills.advance(delta)
+	_update_run_blend(delta)
+	_apply_motion(delta)
 	if not is_on_floor():
 		velocity.y -= GRAVITY * delta
 	else:
 		velocity.y = 0.0
 	move_and_slide()
-	if not _action_params.is_empty():
-		_process_action(delta)
 	_animate_action(delta)
 
 
+func _apply_motion(delta: float) -> void:
+	## Movimiento por capas: acción especial (esquiva/carga/huracán) > empuje
+	## recibido > bloqueo > locomoción normal por tiers.
+	var special := _special_motion()
+	if special != Vector3.INF:
+		velocity.x = special.x
+		velocity.z = special.z
+		_face_motion(velocity, delta)
+		return
+	var knockback := consume_knockback()
+	if knockback.length() > 0.05:
+		velocity.x = knockback.x
+		velocity.z = knockback.z
+		_face_motion(velocity, delta)
+		return
+	if kit.is_blocking():
+		_animate_walk(_walk_phase)
+		var block_speed := float(class_data.get("block", {}).get("move_speed_multiplier", 0.55))
+		var direction := _input_direction()
+		var target := direction * stats.move_speed * block_speed * statuses.move_speed_multiplier()
+		var planar := Vector3(velocity.x, 0, velocity.z).move_toward(target, DEFAULT_MOVE_DECEL * delta)
+		velocity.x = planar.x
+		velocity.z = planar.z
+		if planar.length() > 0.05:
+			_face_towards(planar.normalized(), delta)
+		return
+	if skills.is_busy() and not is_dodging:
+		_animate_walk(_walk_phase)
+		velocity.x = 0.0
+		velocity.z = 0.0
+		return
+	var direction := _input_direction()
+	var target := direction * _tier_target_speed() * statuses.move_speed_multiplier()
+	var accel := float(class_data.get("move_accel", DEFAULT_MOVE_ACCEL))
+	var decel := float(class_data.get("move_decel", DEFAULT_MOVE_DECEL))
+	var rate := decel if target.length() < 0.05 else accel
+	var planar := Vector3(velocity.x, 0, velocity.z).move_toward(target, rate * delta)
+	velocity.x = planar.x
+	velocity.z = planar.z
+	var planar_speed := planar.length()
+	if planar_speed > 0.05:
+		_face_towards(planar.normalized(), delta)
+		_walk_phase += delta * planar_speed * (2.4 + _run_blend * 0.8)
+		_animate_walk(_walk_phase)
+	else:
+		_animate_idle(delta)
+	if _vigor_regen > 0.0 and vigor < max_vigor:
+		vigor = minf(vigor + _vigor_regen * delta, max_vigor)
+		stats_changed.emit()
+
+
+func _face_motion(motion: Vector3, delta: float) -> void:
+	var planar := Vector3(motion.x, 0, motion.z)
+	if planar.length() > 0.05:
+		_face_towards(planar.normalized(), delta)
+
+
+func _special_motion() -> Vector3:
+	## Movimiento de acciones especiales: esquiva (toda su duración), Carga del
+	## Mambí y avance del Huracán (solo durante su ventana ACTIVA; el windup
+	## frena el cuerpo). Vector3.INF = sin movimiento especial.
+	if is_dodging:
+		var duration := maxf(float(_action_params.get("duration", 0.3)), 0.05)
+		var dodge_speed := float(_action_params.get("distance", 4.0)) / duration
+		return _dodge_direction * dodge_speed
+	var def := skills.current_def()
+	if def.is_empty():
+		return Vector3.INF
+	var kind := String(def.get("kind", ""))
+	if kind == "dash" or kind == "spin":
+		if skills.phase_name() != "active":
+			return Vector3.ZERO
+		var motion_duration := maxf(float(def.get("dash_duration", def.get("spin_duration", 0.35))), 0.05)
+		var motion_distance := float(def.get("dash_distance", def.get("spin_advance", 7.0)))
+		return transform.basis.z * (motion_distance / motion_duration)
+	return Vector3.INF
+
+
 func _update_run_blend(delta: float) -> void:
-	## Fundido visual caminar<->correr: persigue el tier actual para transiciones suaves.
 	_run_blend = move_toward(_run_blend, 1.0 if move_tier == "run" else 0.0, delta * 4.0)
 
 
 func _tier_target_speed() -> float:
-	## Velocidad objetivo según el tier (Fase 3). Caminar: base_speed (la deflexión
-	## analógica ya escala la VELOCIDAD a través del vector dirección, que conserva la
-	## magnitud < 1; multiplicarla aquí duplicaría el efecto). Correr: base_speed x
-	## run_multiplier (dato por clase). Actualiza move_tier como único efecto lateral.
+	## Velocidad objetivo según el tier. Caminar: base; correr: base x mult.
 	var raw_magnitude := _raw_input().length()
-	var base_speed := float(class_data.get("move_speed", 4.0))
+	var base_speed := stats.move_speed if stats != null else float(class_data.get("move_speed", 4.0))
 	if raw_magnitude >= RUN_INPUT_THRESHOLD:
 		move_tier = "run"
 		return base_speed * float(class_data.get("run_multiplier", DEFAULT_RUN_MULTIPLIER))
@@ -534,173 +687,6 @@ func _tier_target_speed() -> float:
 	return 0.0
 
 
-func _tick_timers(delta: float) -> void:
-	_attack_cooldown_left = maxf(_attack_cooldown_left - delta, 0.0)
-	_skill_cooldown_left = maxf(_skill_cooldown_left - delta, 0.0)
-	_dodge_cooldown_left = maxf(_dodge_cooldown_left - delta, 0.0)
-	_hurt_grace_left = maxf(_hurt_grace_left - delta, 0.0)
-
-
-func _process_action(delta: float) -> void:
-	_action_timer += delta
-	if _action == "dodge":
-		var duration := float(_action_params.get("duration", 0.3))
-		if _action_timer >= duration:
-			_end_action()
-		return
-	var windup := float(_action_params.get("windup", 0.12))
-	var active_until := float(_action_params.get("active_until", 0.3))
-	var total := float(_action_params.get("total_time", 0.55))
-	if not _window_open and _action_timer >= windup:
-		_open_hitbox_window()
-	if _window_open and _action_timer <= active_until:
-		_apply_hitbox_damage(_action_params)
-	if _window_open and _action_timer > active_until:
-		_close_hitbox_window()
-	if _action_timer >= total:
-		if _action == "attack":
-			_attack_cooldown_left = float(_action_params.get("cooldown", 0.9))
-		elif _action == "skill":
-			_skill_cooldown_left = float(_action_params.get("cooldown", 5.0))
-		_end_action()
-
-
-func _end_action() -> void:
-	_action = "none"
-	_action_params = {}
-	_action_timer = 0.0
-	is_dodging = false
-	_close_hitbox_window()
-
-
-func _build_hitbox() -> void:
-	## Hitbox frontal real: la colisión solo existe dentro de la ventana activa (prompt 01).
-	_hitbox_area = Area3D.new()
-	_hitbox_area.name = "AttackHitbox"
-	_hitbox_area.collision_layer = HITBOX_LAYER
-	_hitbox_area.collision_mask = HITBOX_MASK
-	_hitbox_area.monitoring = true
-	_hitbox_shape = CollisionShape3D.new()
-	var box := BoxShape3D.new()
-	box.size = Vector3(2.0, 2.2, 2.4)
-	_hitbox_shape.shape = box
-	_hitbox_shape.disabled = true
-	_hitbox_shape.position = Vector3(0, 1.0, 1.4)
-	_hitbox_area.add_child(_hitbox_shape)
-	add_child(_hitbox_area)
-
-
-func _open_hitbox_window() -> void:
-	var reach := float(_action_params.get("range", 2.6))
-	var arc_deg := float(_action_params.get("arc_deg", 100.0))
-	var chord := 2.0 * reach * sin(deg_to_rad(arc_deg) * 0.5)
-	var box := _hitbox_shape.shape as BoxShape3D
-	box.size = Vector3(maxf(chord, 1.2), 2.2, reach)
-	_hitbox_shape.position = Vector3(0, 1.0, reach * 0.5)
-	_hitbox_shape.disabled = false
-	_window_open = true
-	# Art Pass: estela visual del tajo (la hitbox y su ventana no cambian).
-	ArpgArtKit.slash_trail(
-		self,
-		global_position + transform.basis * Vector3(0.24, 1.25, 0.35),
-		global_position + transform.basis * Vector3(0.24, 1.05, reach * 0.92)
-	)
-
-
-func _close_hitbox_window() -> void:
-	if _hitbox_shape != null:
-		_hitbox_shape.disabled = true
-	_window_open = false
-
-
-func _apply_hitbox_damage(params: Dictionary) -> void:
-	if _hitbox_area == null:
-		return
-
-		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
-
-		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
-
-		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
-
-		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
-
-		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
-
-		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
-
-		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
-
-		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
-	for body: Node in _hitbox_area.get_overlapping_bodies():
-		if body == self or body in _bodies_hit_this_swing:
-			continue
-
-			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
-
-			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
-
-			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
-
-			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
-
-			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
-
-			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
-		if not body.has_method("take_damage"):
-			continue
-
-			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
-
-			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
-
-			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
-
-			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
-		_bodies_hit_this_swing.append(body)
-		var defense := _target_defense(body, params)
-		var attacker_attribute := get_attribute(String(params.get("attribute", "fuerza")))
-		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
-		var attack_params := params.duplicate()
-		attack_params["potency"] = float(params.get("potency", 0.0)) + _weapon_potency_bonus()
-		var damage := CombatService.damage_from_data(attack_params, attacker_attribute, defense)
-		var crit := CombatService.crit_roll(damage, CRIT_CHANCE, _rng)
-		body.take_damage(float(crit["damage"]))
-		hit_landed.emit(body, float(crit["damage"]), bool(crit["crit"]))
-		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
-		if body is Node3D:
-			var impact_color := Color(1.0, 0.72, 0.35) if bool(crit["crit"]) else Color(0.95, 0.85, 0.6)
-			ArpgArtKit.hit_spark(self, (body as Node3D).global_position + Vector3(0, 1.2, 0), impact_color)
-
-
-func _weapon_potency_bonus() -> float:
-	## Bonus de potencia del arma equipada (items.json "potency_bonus"; 0 sin arma).
-	if inventory == null or inventory.equipped_weapon.is_empty():
-		return 0.0
-	return float(RpgDB.get_item(inventory.equipped_weapon.item_id).get("potency_bonus", 0.0))
-
-
-func _update_weapon_visual() -> void:
-	## Reflejo visual del arma equipada (Fase 3): brillo cálido sutil del acero cuando hay
-	## arma equipada; apagado al desequipar. La silueta no cambia (el Art Pass trae modelos).
-	if _puppet.is_empty():
-		return
-	var blade_mesh := _puppet.get("blade_mesh") as MeshInstance3D
-	if blade_mesh == null:
-		return
-	if _weapon_potency_bonus() > 0.0:
-		VisualKit.set_emission(blade_mesh, VisualKit.MAT_BRONZE_GLOW, 0.55)
-	else:
-		VisualKit.clear_emission(blade_mesh)
-
-
-func _target_defense(body: Node, params: Dictionary) -> float:
-	var enemy_data: Dictionary = body.get("enemy_data") if body.get("enemy_data") != null else {}
-	if String(params.get("damage_type", "physical")) == "arcane":
-		return float(enemy_data.get("resistance", 2))
-	return float(enemy_data.get("armor", 2))
-
-
 func _face_towards(direction: Vector3, delta: float) -> void:
 	if direction.length() < 0.05:
 		return
@@ -709,248 +695,115 @@ func _face_towards(direction: Vector3, delta: float) -> void:
 
 
 func revive(at_position: Vector3) -> void:
-	## Respawn tras derrota en la rebanada: conservar progreso de misión y XP (diseño slice).
-	if not _dead:
+	## Respawn tras derrota en la rebanada: conservar progreso de misión y XP.
+	if not is_dead():
 		return
-	_dead = false
-	hp = max_hp
+	revive_combatant()
 	vigor = max_vigor
-	_hurt_grace_left = 0.0
-	_end_action()
+	kit.stop_on_death()
 	global_position = at_position
-	if not _puppet.is_empty():
-		var root := _puppet["root"] as Node3D
-		root.rotation = Vector3.ZERO
-		root.position = Vector3.ZERO
+	if _puppet != null:
+		_puppet.reset_pose()
 	stats_changed.emit()
 
 
+# ---------------------------------------------------------------------------
+# Persistencia (códec versionado en PlayerSaveCodec)
+# ---------------------------------------------------------------------------
+
+
 func serialize() -> Dictionary:
-	return {
-		"class_id": class_id,
-		"level": level,
-		"xp_into_level": xp_into_level,
-		"attribute_points": attribute_points,
-		"hp": hp,
-		"vigor": vigor,
-		"potions": potions,
-		"position": [global_position.x, global_position.y, global_position.z],
-		"inventory": inventory.to_dict() if inventory != null else {},
-	}
+	return PlayerSaveCodec.serialize(self)
 
 
 func restore(data: Dictionary) -> void:
-	class_id = String(data.get("class_id", class_id))
-	class_data = RpgDB.get_class_data(class_id)
-	if class_data.is_empty():
-		return
+	PlayerSaveCodec.restore(self, data)
 
-		# Fase 3: el inventario llega en partidas guardadas nuevas; en las viejas queda vacío.
 
-		# Fase 3: el inventario llega en partidas guardadas nuevas; en las viejas queda vacío.
-	_reset_stats()
-	level = int(data.get("level", 1))
-	xp_into_level = int(data.get("xp_into_level", 0))
-	attribute_points = int(data.get("attribute_points", 0))
+# ---------------------------------------------------------------------------
+# Puentes públicos para los componentes extraídos (equipo y guardado usan
+# solo esta superficie; la lógica vive en sus archivos).
+# ---------------------------------------------------------------------------
+
+
+func recalculate_stats() -> void:
 	_recalculate_from_level()
-	hp = clampf(float(data.get("hp", max_hp)), 1.0, max_hp)
-	vigor = clampf(float(data.get("vigor", max_vigor)), 0.0, max_vigor)
-	potions = int(data.get("potions", 1))
-	# Fase 3: el inventario llega en partidas guardadas nuevas; en las viejas queda vacío.
-	var inventory_data: Dictionary = data.get("inventory", {})
-	if inventory != null and not inventory_data.is_empty():
-		inventory.from_dict(inventory_data)
-	var position_data: Array = data.get("position", [0, 0, 0])
-	if position_data.size() == 3:
-		global_position = Vector3(position_data[0], position_data[1], position_data[2])
+
+
+func notify_equipment_changed() -> void:
 	_update_weapon_visual()
 	stats_changed.emit()
 
 
+func load_class_data() -> void:
+	class_data = RpgDB.get_class_data(class_id)
+
+
+func reset_for_restore() -> void:
+	_reset_stats()
+
+
+func restore_spent_attributes(spent: Dictionary) -> void:
+	for attribute: String in _attributes.keys():
+		_attributes[attribute] = float(_attributes[attribute]) + float(spent.get(attribute, 0.0))
+
+
+func spent_attributes() -> Dictionary:
+	var spent := {}
+	for attribute: String in _attributes.keys():
+		var base := float(class_data.get("base_stats", {}).get(attribute, 10))
+		spent[attribute] = float(_attributes[attribute]) - base
+	return spent
+
+
+func set_ultimate_charge(value: float) -> void:
+	kit.set_charge(value)
+
+
 # ---------------------------------------------------------------------------
-# Montaje visual procedural (original, sin assets de terceros). El Art Pass
-# (Fase 1B) sustituye este bloque por dirección artística aprobada.
+# Presentación: la marioneta visual (montaje y poses) está desacoplada en
+# MacheteroPuppet. Aquí solo la delegación por estado REAL del combate.
 # ---------------------------------------------------------------------------
 
 
 func _build_visual() -> void:
-	var puppet := Node3D.new()
-	puppet.name = "MacheteroPuppet"
-	add_child(puppet)
-	var shirt := VisualKit.flat_material(VisualKit.MAT_SHIRT_OLD)
-	var skin := VisualKit.flat_material(VisualKit.MAT_SKIN)
-	var pants := VisualKit.flat_material(VisualKit.MAT_PANTS)
-	var boots := VisualKit.flat_material(VisualKit.MAT_BOOT)
-	var hat := VisualKit.noise_material(VisualKit.MAT_HAT_STRAW, 0.5, 3)
-	var blade := VisualKit.flat_material(VisualKit.MAT_BLADE)
-	# Torso: guayabera de trabajo.
-	VisualKit.add_box(puppet, Vector3(0.52, 0.62, 0.32), Vector3(0, 1.12, 0), shirt)
-	VisualKit.add_sphere(puppet, 0.17, Vector3(0, 1.52, 0), skin)
-	VisualKit.add_box(puppet, Vector3(0.46, 0.34, 0.30), Vector3(0, 0.72, 0), pants)
-	# Sombrero de yarey ancho: silueta reconocible desde cámara alta.
-	VisualKit.add_cylinder(puppet, 0.24, 0.16, Vector3(0, 1.64, 0), hat, 10)
-	var brim := VisualKit.add_cylinder(puppet, 0.55, 0.05, Vector3(0, 1.60, 0), hat, 12)
-	brim.scale = Vector3(1.0, 1.0, 1.0)
-	# Piernas con pivote en la cadera para el ciclo de caminar.
-	var leg_l := Node3D.new()
-	leg_l.position = Vector3(-0.14, 0.62, 0)
-	puppet.add_child(leg_l)
-	VisualKit.add_box(leg_l, Vector3(0.17, 0.52, 0.19), Vector3(0, -0.28, 0), pants)
-	VisualKit.add_box(leg_l, Vector3(0.19, 0.12, 0.27), Vector3(0, -0.55, 0.04), boots)
-	var leg_r := Node3D.new()
-	leg_r.position = Vector3(0.14, 0.62, 0)
-	puppet.add_child(leg_r)
-	VisualKit.add_box(leg_r, Vector3(0.17, 0.52, 0.19), Vector3(0, -0.28, 0), pants)
-	VisualKit.add_box(leg_r, Vector3(0.19, 0.12, 0.27), Vector3(0, -0.55, 0.04), boots)
-	# Brazos con pivote en el hombro; el derecho porta el machete.
-	var arm_l := Node3D.new()
-	arm_l.position = Vector3(-0.34, 1.34, 0)
-	puppet.add_child(arm_l)
-	VisualKit.add_box(arm_l, Vector3(0.14, 0.48, 0.16), Vector3(0, -0.22, 0), shirt)
-	VisualKit.add_sphere(arm_l, 0.09, Vector3(0, -0.5, 0), skin)
-	var arm_r := Node3D.new()
-	arm_r.position = Vector3(0.34, 1.34, 0)
-	puppet.add_child(arm_r)
-	VisualKit.add_box(arm_r, Vector3(0.14, 0.48, 0.16), Vector3(0, -0.22, 0), shirt)
-	VisualKit.add_sphere(arm_r, 0.09, Vector3(0, -0.5, 0), skin)
-	# Machete: hoja de acero con cabo de madera.
-	var machete := Node3D.new()
-	machete.position = Vector3(0, -0.52, 0.06)
-	machete.rotation_degrees.x = -12.0
-	arm_r.add_child(machete)
-	VisualKit.add_box(
-		machete, Vector3(0.05, 0.16, 0.06), Vector3(0, 0.02, 0), VisualKit.flat_material(VisualKit.MAT_WOOD)
-	)
-	var blade_mesh := VisualKit.add_box(machete, Vector3(0.045, 0.52, 0.11), Vector3(0, 0.4, 0.08), blade)
-	# ---- Art Pass (Fase 4B): detalles del Machetero, solo nodos visuales ----
-	# Mangas arremangadas: antebrazos con la piel al aire (guajiro de trabajo).
-	VisualKit.add_box(arm_l, Vector3(0.13, 0.2, 0.15), Vector3(0, -0.42, 0), skin)
-	VisualKit.add_box(arm_r, Vector3(0.13, 0.2, 0.15), Vector3(0, -0.42, 0), skin)
-	# Cara legible desde la cámara isométrica: ojos y bigote bajo el ala del sombrero.
-	var eye_mat := VisualKit.flat_material(Color(0.09, 0.07, 0.06))
-	VisualKit.add_box(puppet, Vector3(0.05, 0.05, 0.03), Vector3(-0.06, 1.5, 0.19), eye_mat)
-	VisualKit.add_box(puppet, Vector3(0.05, 0.05, 0.03), Vector3(0.06, 1.5, 0.19), eye_mat)
-	var mustache_mat := VisualKit.flat_material(Color(0.14, 0.1, 0.08))
-	VisualKit.add_box(puppet, Vector3(0.13, 0.045, 0.05), Vector3(0, 1.43, 0.21), mustache_mat)
-	# Cinta del sombrero: acento oscuro bajo la copa.
-	var band_mat := VisualKit.flat_material(Color(0.14, 0.1, 0.07))
-	VisualKit.add_cylinder(puppet, 0.245, 0.05, Vector3(0, 1.6, 0), band_mat, 10)
-	# Talega al hombro: correa diagonal + bolsillo (lee "viajero").
-	var strap_mat := VisualKit.flat_material(VisualKit.MAT_WOOD.darkened(0.15))
-	var strap := VisualKit.add_box(puppet, Vector3(0.08, 0.78, 0.05), Vector3(0.1, 1.1, 0), strap_mat)
-	strap.rotation_degrees.z = 24.0
-	var bag_mat := VisualKit.flat_material(VisualKit.MAT_HAT_STRAW.darkened(0.3))
-	VisualKit.add_box(puppet, Vector3(0.24, 0.18, 0.1), Vector3(-0.2, 0.94, 0), bag_mat)
-	# Vaina del machete en la cadera izquierda: el de la mano es el de combate.
-	var sheath := Node3D.new()
-	sheath.position = Vector3(-0.3, 0.78, -0.12)
-	sheath.rotation_degrees = Vector3(6.0, 18.0, 12.0)
-	puppet.add_child(sheath)
-	var sheath_mat := VisualKit.flat_material(VisualKit.MAT_WOOD.darkened(0.25))
-	VisualKit.add_box(sheath, Vector3(0.07, 0.5, 0.12), Vector3(0, 0.24, 0), sheath_mat)
-	# Yuntas/botas con suela: masa visual abajo, mejor lectura de apoyo.
-	var sole_mat := VisualKit.flat_material(Color(0.1, 0.07, 0.05))
-	VisualKit.add_box(leg_l, Vector3(0.2, 0.05, 0.28), Vector3(0, -0.61, 0.05), sole_mat)
-	VisualKit.add_box(leg_r, Vector3(0.2, 0.05, 0.28), Vector3(0, -0.61, 0.05), sole_mat)
-	_puppet = {
-		"root": puppet,
-		"leg_l": leg_l,
-		"leg_r": leg_r,
-		"arm_l": arm_l,
-		"arm_r": arm_r,
-		"brim": brim,
-		"torso_mat": shirt,
-		"blade_mesh": blade_mesh,
-	}
+	_puppet = MacheteroPuppet.new()
+	add_child(_puppet)
 
 
 func _animate_walk(phase: float) -> void:
-	## Ciclo compartido caminar/correr (Fase 3): amplitud, inclinación y bombeo de brazos
-	## escalan con _run_blend; la frecuencia ya escala con la velocidad real del cuerpo.
-	## Fase 4B: rebote vertical (dos apoyos por ciclo) que da peso al paso.
-	if _puppet.is_empty():
-		return
-	var swing := sin(phase) * lerpf(0.55, 0.88, _run_blend)
-	var root := _puppet["root"] as Node3D
-	root.rotation.x = lerpf(root.rotation.x, 0.14 * _run_blend, 0.15)
-	root.position.y = absf(sin(phase)) * 0.05 * lerpf(0.6, 1.0, _run_blend)
-	(_puppet["leg_l"] as Node3D).rotation.x = swing
-	(_puppet["leg_r"] as Node3D).rotation.x = -swing
-	(_puppet["arm_l"] as Node3D).rotation.x = -swing * (0.7 + 0.25 * _run_blend)
-	if _action_params.is_empty() and not is_dodging:
-		(_puppet["arm_r"] as Node3D).rotation.x = -swing * (0.7 + 0.25 * _run_blend)
+	if _puppet != null:
+		_puppet.animate_walk(phase, _run_blend)
 
 
 func _animate_idle(delta: float) -> void:
-	if _puppet.is_empty():
-		return
-
-		# Fase 4B: el rebote del paso vuelve al suelo en reposo.
-
-		# Fase 4B: el rebote del paso vuelve al suelo en reposo.
-	_walk_phase += delta * 1.6
-	var breathe := sin(_walk_phase) * 0.04
-	var root := _puppet["root"] as Node3D
-	root.rotation.x = lerpf(root.rotation.x, 0.0, 0.15)
-	# Fase 4B: el rebote del paso vuelve al suelo en reposo.
-	root.position.y = lerpf(root.position.y, 0.0, 0.2)
-	(_puppet["leg_l"] as Node3D).rotation.x = lerp_angle((_puppet["leg_l"] as Node3D).rotation.x, 0.0, 0.2)
-	(_puppet["leg_r"] as Node3D).rotation.x = lerp_angle((_puppet["leg_r"] as Node3D).rotation.x, 0.0, 0.2)
-	(_puppet["arm_l"] as Node3D).rotation.x = breathe
-	if _action_params.is_empty() and not is_dodging:
-		(_puppet["arm_r"] as Node3D).rotation.x = breathe
+	if _puppet != null:
+		_puppet.animate_idle(delta)
 
 
 func _animate_action(delta: float) -> void:
-	if _puppet.is_empty():
+	## El jugador SOLO describe su estado real; la marioneta decide la pose
+	## (sistema de estados y sistema visual desacoplados; mismo mapa servirá
+	## para un AnimationPlayer futuro sin tocar la lógica).
+	if _puppet == null:
 		return
-
-		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
-
-		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
-
-		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
-
-		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
-
-		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
-	var arm_r := _puppet["arm_r"] as Node3D
-	if not _action_params.is_empty() and (_action == "attack" or _action == "skill"):
-		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
-		var windup := float(_action_params.get("windup", 0.12))
-		var total := float(_action_params.get("total_time", 0.55))
-		var progress := clampf(_action_timer / maxf(total, 0.05), 0.0, 1.0)
-		if _action_timer < windup:
-			arm_r.rotation.x = lerp_angle(arm_r.rotation.x, -1.5, minf(delta * 18.0, 1.0))
-		else:
-			arm_r.rotation.x = lerp_angle(-1.5, 1.1, progress)
-	elif is_dodging:
-		arm_r.rotation.x = lerp_angle(arm_r.rotation.x, -0.9, minf(delta * 14.0, 1.0))
-	elif _action_params.is_empty():
-		arm_r.rotation.x = lerp_angle(arm_r.rotation.x, 0.0, minf(delta * 10.0, 1.0))
-
-
-func _visual_hurt_flash() -> void:
-	if _puppet.is_empty():
-		return
-	var torso := _puppet["torso_mat"] as StandardMaterial3D
-	if torso == null:
-		return
-	torso.emission_enabled = true
-	torso.emission = Color(0.9, 0.1, 0.1)
-	torso.emission_energy_multiplier = 0.8
-	var timer := get_tree().create_timer(0.15)
-	timer.timeout.connect(
-		func() -> void:
-			if torso != null:
-				torso.emission_energy_multiplier = 0.0
+	var def := skills.current_def()
+	(
+		_puppet
+		. animate_combat_state(
+			delta,
+			{
+				"blocking": kit.is_blocking(),
+				"action_kind": String(def.get("kind", "")),
+				"phase": skills.phase_name(),
+				"progress": clampf(skills.elapsed() / maxf(float(def.get("total_time", 0.55)), 0.05), 0.0, 1.0),
+				"dodging": is_dodging,
+				"busy": skills.is_busy(),
+			}
+		)
 	)
 
 
-func _visual_die() -> void:
-	if _puppet.is_empty():
-		return
-	var root := _puppet["root"] as Node3D
-	var tween := create_tween()
-	tween.tween_property(root, "rotation:x", -PI / 2.0, 0.45)
-	tween.parallel().tween_property(root, "position:y", 0.18, 0.45)
+func _update_weapon_visual() -> void:
+	if _puppet != null:
+		_puppet.set_blade_glow(equipment.potency_bonus() > 0.0)

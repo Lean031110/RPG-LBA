@@ -1,16 +1,39 @@
+# gdlint: ignore=max-public-methods
 extends Node
+## Autoload Network (Fase 5): lobby LAN con ENet de ciclo de vida ROBUSTO.
+##
+## CAUSA RAIZ del error 20 corregida (docs/18_MULTIJUGADOR.md):
+##   ERR_CANT_CREATE (20) al crear sala tenía DOS causas reales:
+##   1. EN ESCRITORIO: crear una segunda sala sin cerrar el peer anterior
+##      (el puerto 8080 seguía enlazado). start_host/join ahora hacen
+##      SIEMPRE teardown del peer previo antes de crear el nuevo.
+##   2. EN ANDROID: los presets de exportación no pedían el permiso
+##      INTERNET, así que el sandbox bloqueaba el socket UDP. Ambos presets
+##      lo incluyen ahora (permissions/internet=true).
+##   Además el puerto es configurable con respaldo (8080..8084): si el
+##   preferido está ocupado por OTRA aplicación, la sala se abre en el
+##   siguiente y se comunica al cliente (el campo IP acepta "ip:puerto").
+##
+## El resto del contrato público se mantiene (start_host/join_game/
+## leave_game/players/server_disconnected) para no romper el menú ni las
+## pruebas existentes.
 
-signal player_connected(peer_id, player_info)
+signal player_connected(peer_id: int, player_info: Dictionary)
+signal player_disconnected(peer_id: int)
 signal server_disconnected
+signal session_started(role: String, bound_port: int)
 
 const SERVER_ADDRESS: String = "127.0.0.1"
 const SERVER_PORT: int = 8080
+const PORT_ATTEMPTS: int = 5
 const MAX_PLAYERS: int = 10
 const MAX_NICK_LENGTH := 24
 const MAX_ADDRESS_LENGTH := 253
 
-var players = {}
-var player_info = {"nick": "host", "skin": Character.SkinColor.BLUE}
+var players := {}
+var player_info := {"nick": "host", "skin": Character.SkinColor.BLUE}
+var bound_port := SERVER_PORT
+
 var _session_active := false
 
 
@@ -22,104 +45,187 @@ func _ready() -> void:
 	multiplayer.connected_to_server.connect(_on_connected_ok)
 
 
-func start_host(nickname: String, skin_color_str: String):
-	var peer = ENetMultiplayerPeer.new()
-	var error = peer.create_server(SERVER_PORT, MAX_PLAYERS)
-	if error:
-		return error
+# ---------------------------------------------------------------------------
+# Ciclo de vida de sesión (teardown SIEMPRE antes de crear)
+# ---------------------------------------------------------------------------
 
-	peer.host.compress(ENetConnection.COMPRESS_RANGE_CODER)
-	multiplayer.multiplayer_peer = peer
-	_session_active = true
 
+func start_host(nickname: String, skin_color_str: String, preferred_port := SERVER_PORT) -> int:
+	## Crea la sala. Devuelve OK o el código de error de ENet/Godot. Antes de
+	## crear el peer nuevo, cierra y libera CUALQUIER sesión anterior (la causa
+	## del error 20 en escritorio). Prueba hasta PORT_ATTEMPTS puertos.
+	_teardown_session("rehost")
 	player_info["nick"] = sanitize_nickname(nickname, "Host_" + str(multiplayer.get_unique_id()))
 	player_info["skin"] = skin_str_to_e(skin_color_str)
+	for attempt: int in PORT_ATTEMPTS:
+		var port := preferred_port + attempt
+		var peer := ENetMultiplayerPeer.new()
+		var error := peer.create_server(port, MAX_PLAYERS)
+		if error != OK:
+			## Puerto ocupado (u otra causa): liberar este peer y probar el
+			## siguiente. El último error se devuelve al final.
+			peer.close()
+			teardown_peer(peer)
+			if attempt == PORT_ATTEMPTS - 1:
+				push_warning(
+					(
+						"Network: no se pudo abrir ningún puerto %d..%d (código %d = ERR_CANT_CREATE si 20). "
+						% [preferred_port, port, error]
+					)
+				)
+				return error
+			continue
+		peer.host.compress(ENetConnection.COMPRESS_RANGE_CODER)
+		multiplayer.multiplayer_peer = peer
+		_session_active = true
+		bound_port = port
+		## El anfitrión SIEMPRE ocupa el hueco 1 (también en headless: el
+		## lobby es el mismo; el guardado antiguo era un artefacto de la
+		## plantilla y dejaba la lista vacía en CI).
+		players[1] = player_info.duplicate()
+		player_connected.emit(1, players[1])
+		session_started.emit("server", bound_port)
+		return OK
+	return ERR_CANT_CREATE
 
-	if DisplayServer.get_name() == "headless":
-		return
 
-	players[1] = player_info
-	player_connected.emit(1, player_info)
-
-
-func join_game(nickname: String, skin_color_str: String, address: String = SERVER_ADDRESS):
-	address = sanitize_address(address)
-	if address.is_empty():
+func join_game(nickname: String, skin_color_str: String, address: String = SERVER_ADDRESS) -> int:
+	## Se une a una sala por IP o "ip:puerto". Devuelve OK o el error (la
+	## conexión fallida llega además por la señal del multiplayer).
+	_teardown_session("rejoin")
+	var parsed := _parse_address(address)
+	if parsed.is_empty():
 		return ERR_INVALID_PARAMETER
-
-	var peer = ENetMultiplayerPeer.new()
-	var error = peer.create_client(address, SERVER_PORT)
-	if error:
+	player_info["nick"] = sanitize_nickname(nickname, "Player_" + str(multiplayer.get_unique_id()))
+	player_info["skin"] = skin_str_to_e(skin_color_str)
+	var peer := ENetMultiplayerPeer.new()
+	var error := peer.create_client(parsed["address"], parsed["port"])
+	if error != OK:
+		teardown_peer(peer)
 		return error
-
 	peer.host.compress(ENetConnection.COMPRESS_RANGE_CODER)
 	multiplayer.multiplayer_peer = peer
 	_session_active = true
-
-	player_info["nick"] = sanitize_nickname(nickname, "Player_" + str(multiplayer.get_unique_id()))
-	player_info["skin"] = skin_str_to_e(skin_color_str)
-
-
-func _on_connected_ok():
-	var peer_id = multiplayer.get_unique_id()
-	players[peer_id] = player_info
-	player_connected.emit(peer_id, player_info)
-	_register_player.rpc_id(1, player_info)
+	bound_port = parsed["port"]
+	session_started.emit("client", bound_port)
+	return OK
 
 
-func _on_player_connected(id):
+func leave_game() -> void:
+	## Salir de la sala (anfitrión o invitado) liberando el peer YA: la sala
+	## puede volver a crearse inmediatamente sin reiniciar la aplicación.
+	_teardown_session("leave")
+
+
+func _teardown_session(_reason: String) -> void:
+	## Cierre total y ordenado de cualquier sesión previa: peer cerrado,
+	## desasignado del multiplayer y lista de jugadores limpia. Idempotente.
+	var peer := multiplayer.multiplayer_peer
+	if peer != null:
+		teardown_peer(peer)
+		multiplayer.multiplayer_peer = null
+	var had_session := _session_active or not players.is_empty()
+	_session_active = false
+	players.clear()
+	if had_session:
+		## Aviso a la UI para que refresque (la lista queda vacía).
+		server_disconnected.emit()
+
+
+func teardown_peer(peer: MultiplayerPeer) -> void:
+	## Cierra y libera un peer ENet (close + desreferencia para que el socket
+	## suelte el puerto de inmediato).
+	if peer == null:
+		return
+	if peer is ENetMultiplayerPeer:
+		(peer as ENetMultiplayerPeer).close()
+	peer.close()
+
+
+func _parse_address(address: String) -> Dictionary:
+	## Acepta "192.168.1.42", "192.168.1.42:8081" y valida el formato.
+	var clean := sanitize_address(address)
+	if clean.is_empty():
+		return {}
+	if ":" in clean:
+		var parts := clean.split(":")
+		if parts.size() != 2 or not parts[1].is_valid_int():
+			return {}
+		var port := int(parts[1])
+		if port < 1 or port > 65535:
+			return {}
+		return {"address": parts[0], "port": port}
+	return {"address": clean, "port": SERVER_PORT}
+
+
+# ---------------------------------------------------------------------------
+# Señales del multiplayer
+# ---------------------------------------------------------------------------
+
+
+func _on_connected_ok() -> void:
+	var peer_id := multiplayer.get_unique_id()
+	players[peer_id] = player_info.duplicate()
+	player_connected.emit(peer_id, players[peer_id])
+	_register_player.rpc_id(1, player_info.duplicate())
+
+
+func _on_player_connected(id: int) -> void:
 	if not multiplayer.is_server():
 		return
-	for peer_id in players:
+	for peer_id: int in players:
 		_sync_registered_player.rpc_id(id, peer_id, players[peer_id])
 
 
 @rpc("any_peer", "reliable")
-func _register_player(new_player_info):
+func _register_player(new_player_info: Dictionary) -> void:
 	if not multiplayer.is_server():
 		return
 	if not (new_player_info is Dictionary):
 		return
-	var new_player_id = multiplayer.get_remote_sender_id()
+	var new_player_id := multiplayer.get_remote_sender_id()
 	if new_player_id == 0:
 		return
 	if players.has(new_player_id):
 		return
-	var sanitized_info = sanitize_player_info(new_player_info, "Player_" + str(new_player_id))
-	players[new_player_id] = sanitized_info
-	player_connected.emit(new_player_id, sanitized_info)
-	_sync_registered_player.rpc(new_player_id, sanitized_info)
+	var sanitized := sanitize_player_info(new_player_info, "Player_" + str(new_player_id))
+	players[new_player_id] = sanitized
+	player_connected.emit(new_player_id, sanitized)
+	_sync_registered_player.rpc(new_player_id, sanitized)
 
 
-func _on_player_disconnected(id):
-	players.erase(id)
+func _on_player_disconnected(id: int) -> void:
+	## Un jugador se fue: la lista se actualiza y la UI se entera (señal nueva
+	## de la Fase 5; antes la lista se quedaba con el fantasma).
+	if players.erase(id):
+		player_disconnected.emit(id)
 
 
-func _on_connection_failed():
-	_finish_session()
+func _on_connection_failed() -> void:
+	_teardown_session("connection_failed")
 
 
-func _on_server_disconnected():
-	_finish_session()
+func _on_server_disconnected() -> void:
+	_teardown_session("server_disconnected")
 
 
-func leave_game() -> void:
-	var peer := multiplayer.multiplayer_peer
-	if peer:
-		peer.close()
-	_finish_session()
+@rpc("authority", "reliable")
+func _sync_registered_player(peer_id: int, registered_player_info: Dictionary) -> void:
+	if multiplayer.is_server():
+		return
+	if players.has(peer_id):
+		return
+	var sanitized := sanitize_player_info(registered_player_info, "Player_" + str(peer_id))
+	players[peer_id] = sanitized
+	player_connected.emit(peer_id, sanitized)
 
 
-func _finish_session() -> void:
-	var had_session := _session_active or multiplayer.multiplayer_peer != null or not players.is_empty()
-	_session_active = false
-	multiplayer.multiplayer_peer = null
-	players.clear()
-	if had_session:
-		server_disconnected.emit()
+# ---------------------------------------------------------------------------
+# Validación (contrato público intacto)
+# ---------------------------------------------------------------------------
 
 
-func skin_str_to_e(s):
+func skin_str_to_e(s: Variant) -> Character.SkinColor:
 	match str(s).strip_edges().to_lower():
 		"blue":
 			return Character.SkinColor.BLUE
@@ -133,35 +239,23 @@ func skin_str_to_e(s):
 			return Character.SkinColor.BLUE
 
 
-@rpc("authority", "reliable")
-func _sync_registered_player(peer_id: int, registered_player_info: Dictionary):
-	if multiplayer.is_server():
-		return
-	if players.has(peer_id):
-		return
-	var sanitized_info = sanitize_player_info(registered_player_info, "Player_" + str(peer_id))
-	players[peer_id] = sanitized_info
-	player_connected.emit(peer_id, sanitized_info)
-
-
 func sanitize_player_info(info: Dictionary, fallback_nick: String) -> Dictionary:
 	return {
 		"nick": sanitize_nickname(str(info.get("nick", "")), fallback_nick),
-		"skin": sanitize_skin_value(info.get("skin", Character.SkinColor.BLUE))
+		"skin": sanitize_skin_value(info.get("skin", Character.SkinColor.BLUE)),
 	}
 
 
 func sanitize_nickname(nickname: String, fallback: String) -> String:
 	var clean := ""
 	var last_was_space := false
-	for i in range(nickname.length()):
+	for i: int in range(nickname.length()):
 		var codepoint := nickname.unicode_at(i)
 		if codepoint <= 31 or codepoint == 127:
 			if not last_was_space:
 				clean += " "
 				last_was_space = true
 			continue
-
 		var character := nickname.substr(i, 1)
 		if character == " ":
 			if last_was_space:
@@ -170,7 +264,6 @@ func sanitize_nickname(nickname: String, fallback: String) -> String:
 		else:
 			last_was_space = false
 		clean += character
-
 	clean = clean.strip_edges()
 	if clean.is_empty():
 		clean = fallback.strip_edges()
@@ -182,21 +275,25 @@ func sanitize_nickname(nickname: String, fallback: String) -> String:
 
 
 func sanitize_address(address: String) -> String:
-	var clean = address.strip_edges()
+	var clean := address.strip_edges()
 	if clean.is_empty():
 		return SERVER_ADDRESS
 	if clean.length() > MAX_ADDRESS_LENGTH:
 		return ""
-	if clean.contains("://") or clean.contains("/") or clean.contains("\\") or clean.contains(":"):
+	if clean.contains("://") or clean.contains("/") or clean.contains("\\"):
 		return ""
 	return clean
 
 
-func sanitize_skin_value(value) -> Character.SkinColor:
+func sanitize_skin_value(value: Variant) -> Character.SkinColor:
 	if value is int:
-		match value:
-			Character.SkinColor.BLUE, Character.SkinColor.YELLOW, Character.SkinColor.GREEN, Character.SkinColor.RED:
-				return value
-			_:
-				return Character.SkinColor.BLUE
+		var as_int := int(value)
+		if (
+			as_int
+			in [
+				Character.SkinColor.BLUE, Character.SkinColor.YELLOW, Character.SkinColor.GREEN, Character.SkinColor.RED
+			]
+		):
+			return value
+		return Character.SkinColor.BLUE
 	return skin_str_to_e(str(value))

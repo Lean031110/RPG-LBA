@@ -43,12 +43,15 @@ func test_cooldown_overlays_track_player_values() -> void:
 	# Sin recarga: los overlays se ocultan.
 	assert_bool(hud._skill_cooldown.visible).is_false()
 	# Recarga real de la habilidad (datos de clase): el overlay se enciende.
-	player._skill_cooldown_left = player.get_skill_cooldown_total()
+	## Fase 5: la recarga vive en CooldownController (start por identificador);
+	## la duración se toma del dato de la habilidad (cooldown 5.0 s).
+	var skill_total := float(player.get_skill_def(0).get("cooldown", 5.0))
+	player.cooldowns.start("tajo_guasima", skill_total)
 	hud._process(0.016)
 	assert_bool(hud._skill_cooldown.visible).is_true()
 	assert_float(hud._skill_cooldown.progress).is_equal_approx(1.0, 0.01)
-	# Y baja conforme corre el tiempo.
-	player._skill_cooldown_left = player.get_skill_cooldown_total() * 0.5
+	# Y baja conforme corre el tiempo (una reducción externa se refleja al instante).
+	player.cooldowns.reduce("tajo_guasima", skill_total * 0.5)
 	hud._process(0.016)
 	assert_float(hud._skill_cooldown.progress).is_equal_approx(0.5, 0.02)
 

@@ -20,7 +20,7 @@ class DummyEnemy:
 		shape.shape = capsule
 		add_child(shape)
 
-	func take_damage(amount: float) -> bool:
+	func take_damage(amount: float, _context: Dictionary = {}) -> bool:
 		hp -= amount
 		hits += 1
 		return true
@@ -49,13 +49,13 @@ func _make_dummy(position: Vector3) -> DummyEnemy:
 func test_hitbox_disabled_outside_window() -> void:
 	var player := _make_player()
 	# Sin accion: la forma de la hitbox esta deshabilitada.
-	assert_bool(player._hitbox_shape.disabled).is_true()
+	assert_bool(player.hitbox.is_open()).is_false()
 	var dummy := _make_dummy(Vector3(0, 0.5, 1.4))
 	player.try_attack()
-	# Durante el windup (0.12 s ~ 7 frames) todavia no hay golpe.
-	await _frames(5)
+	# Durante el windup todavia no hay golpe ni ventana abierta.
+	await _frames(3)
 	assert_int(dummy.hits).is_equal(0)
-	assert_bool(player._hitbox_shape.disabled).is_true()
+	assert_bool(player.hitbox.is_open()).is_false()
 
 
 func test_damage_lands_inside_window_once() -> void:
@@ -73,9 +73,9 @@ func test_damage_lands_inside_window_once() -> void:
 func test_damage_uses_combat_service_values() -> void:
 	var player := _make_player()
 	var dummy := _make_dummy(Vector3(0, 0.5, 1.4))
-	var expected := CombatService.damage_from_data(
-		player.class_data["basic_attack"], player.get_attribute("fuerza"), 2.0
-	)
+	var combo_steps: Array = player.class_data.get("combo_steps", [])
+	var first_step: Dictionary = combo_steps[0] if not combo_steps.is_empty() else player.class_data["basic_attack"]
+	var expected := CombatService.damage_from_data(first_step, player.get_attribute("fuerza"), 2.0)
 	player.try_attack()
 	await _frames(40)
 	assert_int(dummy.hits).is_equal(1)
@@ -104,8 +104,9 @@ func test_far_enemy_is_not_hit() -> void:
 func test_attack_cooldown() -> void:
 	var player := _make_player()
 	player.try_attack()
-	await _frames(40)
-	# 0.55 s de accion termino; cooldown 0.9 s activo.
+	## Fase 5: puerta de combo de 0.55 s por paso (combo más fluido que la
+	## Fase 1). A 20 frames (0.33 s) la acción/cooldown sigue activa.
+	await _frames(20)
 	assert_bool(player.try_attack()).is_false()
 	await _frames(60)
 	assert_bool(player.try_attack()).is_true()

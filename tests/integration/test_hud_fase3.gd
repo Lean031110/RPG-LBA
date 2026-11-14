@@ -23,10 +23,12 @@ func _rect(button: Button) -> Rect2:
 
 func test_action_buttons_are_circular_and_sized() -> void:
 	var hud := _make_hud()
-	assert_float(hud._attack_button.custom_minimum_size.x).is_equal(104.0)
-	assert_float(hud._skill_button.custom_minimum_size.x).is_equal(84.0)
-	assert_float(hud._dodge_button.custom_minimum_size.x).is_equal(72.0)
-	assert_float(hud._potion_button.custom_minimum_size.x).is_equal(64.0)
+	## Fase 5: el clúster creció (pesado, bloqueo, barra de habilidades y
+	## definitiva); los tamaños bajan para que quepa todo en 16:9 y 20:9.
+	assert_float(hud._attack_button.custom_minimum_size.x).is_equal(100.0)
+	assert_float(hud._skill_button.custom_minimum_size.x).is_equal(58.0)
+	assert_float(hud._dodge_button.custom_minimum_size.x).is_equal(64.0)
+	assert_float(hud._potion_button.custom_minimum_size.x).is_equal(58.0)
 	# El ataque es el botón más grande del clúster (referencia Diablo Immortal/MLBB).
 	assert_float(hud._attack_button.custom_minimum_size.x).is_greater(hud._skill_button.custom_minimum_size.x)
 

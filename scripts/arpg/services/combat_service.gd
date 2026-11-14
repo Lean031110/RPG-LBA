@@ -55,13 +55,25 @@ static func damage_from_data(skill_data: Dictionary, attacker_attribute: float, 
 	return physical_damage(potency, coeff, attacker_attribute, target_defense)
 
 
-static func crit_roll(damage: float, crit_chance: float, rng: RandomNumberGenerator) -> Dictionary:
+static func crit_roll(
+	damage: float, crit_chance: float, rng: RandomNumberGenerator, crit_multiplier := CRIT_DAMAGE_MULTIPLIER
+) -> Dictionary:
 	## Devuelve {damage, crit} aplicando el tope global de probabilidad de crítico.
+	## Fase 5: el multiplicador llega por parámetro (estadísticas del atacante);
+	## el valor por defecto mantiene compatibilidad con las llamadas existentes.
 	var chance := clampf(crit_chance, 0.0, CRIT_CHANCE_CAP)
 	var is_crit := rng.randf() < chance
 	if is_crit:
-		return {"damage": damage * CRIT_DAMAGE_MULTIPLIER, "crit": true}
+		return {"damage": damage * maxf(crit_multiplier, 1.0), "crit": true}
 	return {"damage": damage, "crit": false}
+
+
+static func block_factor(block_reduction: float) -> float:
+	## Fracción de daño que ATRAVIESA el bloqueo (Fase 5). block_reduction es la
+	## fracción bloqueada por las estadísticas (0..1, con tope del 80% para que
+	## bloquear nunca sea inmunidad total).
+	var blocked := clampf(block_reduction, 0.0, 0.8)
+	return 1.0 - blocked
 
 
 static func is_in_telegraph_window(elapsed: float, windup: float, active_until: float) -> bool:
