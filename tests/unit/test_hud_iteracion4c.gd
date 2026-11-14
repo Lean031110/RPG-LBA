@@ -50,7 +50,7 @@ func test_cooldown_overlays_track_player_values() -> void:
 	hud._process(0.016)
 	assert_bool(hud._skill_cooldown.visible).is_true()
 	assert_float(hud._skill_cooldown.progress).is_equal_approx(1.0, 0.01)
-	# Y baja conforme corre el tiempo.
+	# Y baja conforme corre el tiempo (una reducción externa se refleja al instante).
 	player.cooldowns.reduce("tajo_guasima", skill_total * 0.5)
 	hud._process(0.016)
 	assert_float(hud._skill_cooldown.progress).is_equal_approx(0.5, 0.02)

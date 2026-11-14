@@ -236,10 +236,6 @@ func is_blocking() -> bool:
 	return kit.is_blocking()
 
 
-func get_status_ids() -> Array[String]:
-	return statuses.active_ids()
-
-
 func get_ultimate_charge() -> float:
 	return kit.get_ultimate_charge()
 

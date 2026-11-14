@@ -77,6 +77,11 @@ func get_status_controller() -> StatusEffectController:
 	return statuses
 
 
+func get_status_ids() -> Array[String]:
+	## Estados activos (chips del HUD del jugador y del marco de objetivo).
+	return statuses.active_ids()
+
+
 func apply_status(id: String, duration: float, params: Dictionary = {}) -> void:
 	## API de estados alterados (la usan las habilidades y otros combatientes).
 	if _dead or duration <= 0.0:

@@ -97,6 +97,19 @@ func set_target(target: Node3D) -> void:
 	_target = target
 
 
+func get_display_name() -> String:
+	## Nombre legible para el marco de objetivo del HUD.
+	return RpgDB.get_text(String(enemy_data.get("name_key", "")), "es")
+
+
+func get_level() -> int:
+	return int(enemy_data.get("level", 1))
+
+
+func get_hp_fraction() -> float:
+	return clampf(hp / max_hp, 0.0, 1.0) if max_hp > 0.0 else 0.0
+
+
 func get_state_name() -> String:
 	## Nombre del estado para HUD, pruebas y depuración.
 	return String(STATE_NAMES.get(state, "idle"))
