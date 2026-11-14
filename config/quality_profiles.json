@@ -1,39 +1,77 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "renderer": "gl_compatibility",
   "profiles": {
     "low": {
       "target_fps": 30,
       "render_scale_initial": 0.70,
-      "dynamic_shadows": false,
+      "dynamic_resolution": {
+        "min": 0.50,
+        "max": 0.75,
+        "step": 0.05,
+        "down_after_s": 2.0,
+        "up_after_s": 6.0
+      },
+      "shadow_mode": "player_only",
+      "shadow_max_distance": 14.0,
+      "msaa": 0,
       "max_visible_particles": 40,
+      "max_active_enemies": 4,
       "vegetation_density": 0.45,
       "view_distance_multiplier": 0.65,
-      "post_processing": false,
-      "note": "Valores de arranque sujetos a medición en hardware real. No declarar 30 FPS sin benchmark sostenido."
+      "texture_note": "Conjunto unico de texturas del proyecto; en LOW el objetivo 512/1024 se aproxima con escala de render + distancia de vista. Sin variantes de textura por perfil todavia (pendiente Art Pass).",
+      "note": "Referencia de diseño. Objetivo 30 FPS como tope (cap), no promesa. Medir en hardware real antes de declarar nada (AGENTS.md §7)."
     },
     "medium": {
-      "target_fps": 30,
+      "target_fps": 60,
       "render_scale_initial": 0.85,
-      "dynamic_shadows": "one_directional_light_if_benchmark_passes",
+      "dynamic_resolution": {
+        "min": 0.70,
+        "max": 0.90,
+        "step": 0.05,
+        "down_after_s": 2.0,
+        "up_after_s": 5.0
+      },
+      "shadow_mode": "one_directional",
+      "shadow_max_distance": 40.0,
+      "msaa": 2,
       "max_visible_particles": 80,
+      "max_active_enemies": 6,
       "vegetation_density": 0.75,
       "view_distance_multiplier": 0.85,
-      "post_processing": "minimal"
+      "texture_note": "Objetivo 30-60 FPS adaptativos: la resolucion dinamica ajusta dentro de la ventana del perfil.",
+      "note": "Telefono ARM64 intermedio. Sin promesas de FPS sin medicion."
     },
     "high": {
       "target_fps": 60,
       "render_scale_initial": 1.0,
-      "dynamic_shadows": "limited_if_benchmark_passes",
+      "dynamic_resolution": {
+        "min": 0.85,
+        "max": 1.0,
+        "step": 0.05,
+        "down_after_s": 3.0,
+        "up_after_s": 8.0
+      },
+      "shadow_mode": "high_quality",
+      "shadow_max_distance": 60.0,
+      "msaa": 2,
       "max_visible_particles": 140,
+      "max_active_enemies": 8,
       "vegetation_density": 1.0,
       "view_distance_multiplier": 1.0,
-      "post_processing": "selective"
-    },
-    "adaptive": {
-      "initial_profile": "low",
-      "policy": "adjust_on_sustained_frame_time_and_thermal_signals_with_hysteresis",
-      "note": "No existe garantía de acceso a temperatura en todos los dispositivos. Evitar cambios bruscos de calidad."
+      "texture_note": "Objetivo texturas 1K/2K del Art Pass; hoy se aproxima con escala 1.0 + MSAA 2x. Variantes 2K pendientes de Art Pass.",
+      "note": "S22 Ultra y superiores por matriz (ABI+RAM+GPU+resolucion), no por nombre comercial. 60 FPS como tope con limites adaptativos."
     }
+  },
+  "detection": {
+    "enabled_on_android": true,
+    "fallback_profile": "low",
+    "gpu_tier_low": ["powervr", "adreno<600", "swiftshader", "llvmpipe", "softpipe"],
+    "gpu_tier_high": ["adreno>=700", "xclipse", "mali-g7", "immortalis"],
+    "ram_gb_low": 3.0,
+    "ram_gb_high": 5.0,
+    "screen_long_px_medium": 1600,
+    "screen_long_px_high": 2200,
+    "note": "El perfil sugerido es el mas restrictivo de los tres criterios (RAM, GPU, resolucion). El usuario puede cambiarlo en Ajustes y persiste en user://settings.json. La temperatura no es accesible de forma fiable desde Godot en todos los dispositivos; la resolucion dinamica usa tiempo de fotograma sostenido con histeresis."
   }
 }
