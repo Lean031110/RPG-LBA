@@ -61,6 +61,22 @@ func _build() -> void:
 		_profile_option.set_item_metadata(_profile_option.item_count - 1, String(pair[0]))
 	profile_row.add_child(_profile_option)
 	_profile_option.item_selected.connect(_on_profile_selected)
+	var dyn_row := HBoxContainer.new()
+	box.add_child(dyn_row)
+	var dyn_label := Label.new()
+	dyn_label.text = "Resolución dinámica"
+	dyn_label.add_theme_font_size_override("font_size", 14)
+	dyn_label.add_theme_color_override("font_color", Color("e8e4d8"))
+	dyn_row.add_child(dyn_label)
+	var dyn_check := CheckButton.new()
+	dyn_check.button_pressed = GraphicsSettings.dynamic_resolution
+	dyn_check.toggled.connect(
+		func(pressed: bool) -> void:
+			GraphicsSettings.set_dynamic_resolution_enabled(pressed)
+			GraphicsSettings.apply_profile(GraphicsSettings.active_profile)
+			GraphicsSettings.persist_settings()
+	)
+	dyn_row.add_child(dyn_check)
 	var volume_row := HBoxContainer.new()
 	box.add_child(volume_row)
 	var volume_label := Label.new()

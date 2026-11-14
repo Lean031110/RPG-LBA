@@ -5,6 +5,11 @@ extends Control
 
 const LOGO_PATH := "res://assets/branding/rpg-lba-logo.svg"
 
+var _logo: TextureRect = null
+var _subtitle: Label = null
+var _button_box: VBoxContainer = null
+var _footer: Label = null
+
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -12,6 +17,37 @@ func _ready() -> void:
 	_build_title()
 	_build_buttons()
 	_build_footer()
+	# Android: `size` vale (0,0) durante _ready y el menu quedaba pegado al
+	# borde izquierdo (corrida 43482533022). El await no sirvio (la escena se
+	# quedaba en el color de clearance; corridas 43484656222+). Patron del HUD,
+	# probado desde Fase 3: re-layout cuando llega el tamano real (resized).
+	resized.connect(_relayout)
+	get_viewport().connect("size_changed", _relayout)
+	_relayout()
+	if OS.is_debug_build():
+		print("ArpgMainMenu: ready size=%s viewport=%s" % [size, get_viewport().get_visible_rect().size])
+
+
+func _relayout() -> void:
+	## Recoloca las piezas posicionadas a mano. Fuente de tamano: el RECT
+	## DEL VIEWPORT (disponible ya en _ready: 1280x720 en el emulador;
+	## corrida 43491990194: size=(0,0) para siempre y `resized` jamas disparo).
+	## Las ancladas (fondo, franja, panel de clase PRESET_CENTER) se ajustan solas.
+	var vs := get_viewport().get_visible_rect().size
+	if vs.x < 1.0 or vs.y < 1.0:
+		return
+	if _logo != null:
+		_logo.position = Vector2(vs.x / 2.0 - 320.0, 56.0)
+	if _subtitle != null:
+		_subtitle.position = Vector2(0, 252.0)
+		_subtitle.size = Vector2(vs.x, 26)
+	if _button_box != null:
+		_button_box.position = Vector2(vs.x / 2.0 - 150.0, 330.0)
+	if _footer != null:
+		_footer.position = Vector2(16.0, vs.y - 64.0)
+		_footer.size = Vector2(vs.x - 32.0, 34)
+	if OS.is_debug_build():
+		print("ArpgMainMenu: relayout viewport=%s control_size=%s" % [vs, size])
 
 
 func _build_background() -> void:
@@ -36,6 +72,7 @@ func _build_title() -> void:
 		logo.custom_minimum_size = Vector2(640, 190)
 		logo.position = Vector2(size.x / 2.0 - 320.0, 56.0)
 		add_child(logo)
+		_logo = logo
 	var subtitle := Label.new()
 	subtitle.text = "Cuba ficticia, 1953 · Una isla viva. Un mal antiguo. Una historia que todavía no termina."
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -44,6 +81,7 @@ func _build_title() -> void:
 	subtitle.position = Vector2(0, 252.0)
 	subtitle.size = Vector2(size.x, 26)
 	add_child(subtitle)
+	_subtitle = subtitle
 
 
 func _build_buttons() -> void:
@@ -51,6 +89,7 @@ func _build_buttons() -> void:
 	box.add_theme_constant_override("separation", 12)
 	add_child(box)
 	box.position = Vector2(size.x / 2.0 - 150.0, 330.0)
+	_button_box = box
 	var continue_button := _menu_button("Continuar")
 	continue_button.disabled = not SaveSystem.has_save()
 	continue_button.pressed.connect(_on_continue_pressed)
@@ -78,12 +117,17 @@ func _build_buttons() -> void:
 
 func _build_footer() -> void:
 	var footer := Label.new()
-	footer.text = "Vertical slice — Fase 1 · Prototipo de movimiento — Fase 2 · Godot 4.7.2 · Compatibility Renderer"
+	footer.text = (
+		"Vertical slice — Fase 1 · Prototipo — Fase 2 · Preparativos — Fase 3"
+		+ " · Compatibilidad Android — Fase 4A · Godot 4.7.2 · Compatibility Renderer"
+	)
 	footer.add_theme_font_size_override("font_size", 12)
 	footer.add_theme_color_override("font_color", Color("6f757b"))
+	footer.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	footer.position = Vector2(16.0, size.y - 64.0)
-	footer.size = Vector2(size.x - 32.0, 20)
+	footer.size = Vector2(size.x - 32.0, 34)
 	add_child(footer)
+	_footer = footer
 
 
 func _on_new_game_pressed() -> void:
@@ -91,7 +135,6 @@ func _on_new_game_pressed() -> void:
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", _panel_style())
 	add_child(panel)
-	panel.set_anchors_preset(Control.PRESET_CENTER)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 8)
 	panel.add_child(box)
@@ -129,6 +172,13 @@ func _on_new_game_pressed() -> void:
 	var back := _menu_button("Volver")
 	back.pressed.connect(func() -> void: panel.queue_free())
 	actions.add_child(back)
+	# Fase 4B: centrar desde el rect del viewport (el control del menu puede
+	# seguir a (0,0) en Android y PRESET_CENTER lo pegaba arriba-izquierda;
+	# corrida 43495554774: el tap de Jugar no encontraba el boton).
+	var vs := get_viewport().get_visible_rect().size
+	var ms := panel.get_combined_minimum_size()
+	if vs.x > 1.0 and ms.x > 1.0:
+		panel.position = (vs - ms) / 2.0
 
 
 func _on_continue_pressed() -> void:

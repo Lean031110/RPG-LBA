@@ -53,6 +53,7 @@ Los atributos, poderes, especializaciones, XP, curva de niveles y pruebas de bal
 | Prototipo de movimiento y controles | Fase 2 del propietario implementada en `feature/phase-2-playable-prototype` (PR pendiente; 132/132 pruebas; export Android debug verificada, dispositivo NO PROBADO) |
 | HUD móvil (arco Diablo/MLBB), minimapa, correr/caminar e inventario de armas | Preparativos Fase 3 en `agent/fase3-preparativos-hud-minimap` (PR pendiente; 170/170 pruebas; capturas reales en `screenshots/arpg/`) |
 | APK debug con autofirma open source y verificación de instalación | Fase 3B en `agent/fase3b-apk-firma-verificacion` (PR#8; 171/171 pruebas; CI verde con instalación en emulador API 35 y menú renderizado; corridas 43343138392 y 43343144211; dispositivo físico NO PROBADO) |
+| Compatibilidad Android Redmi 9C + S22 Ultra (diagnóstico del APK, matriz por hardware, perfiles LOW/MEDIUM/HIGH, ARM64+Universal, CI con emuladores API 35/36 y capturas reales) | Fase 4A en `agent/fase4a-android-compat-matriz` (PR#9; 183/183 pruebas en Validate; android-debug 43499106389 en verde con sanity ARM64 por ABI; menú y escena jugable capturados de verdad; dispositivo físico PENDIENTE según protocolo docs/16 §E) |
 | Dirección creativa y narrativa | Documentadas |
 | Clases, XP y balance | Diseño revisado; implementación y simulación pendientes |
 | Art Pass / ciclo día-noche / UX | Especificados; implementación pendiente |

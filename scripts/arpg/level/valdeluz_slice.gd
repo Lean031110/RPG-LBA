@@ -74,7 +74,11 @@ func _spawn_cheo() -> void:
 
 
 func _spawn_enemies() -> void:
+	## La matriz de compatibilidad (docs/16) limita enemigos simultaneos por perfil;
+	## en la rebanada hay 3 marcadores y el tope LOW es 4, asi que el layout no cambia.
 	for marker_path: String in ["EnemySpawn1", "EnemySpawn2", "EnemySpawn3"]:
+		if _enemies.size() >= GraphicsSettings.max_active_enemies():
+			break
 		var marker: Marker3D = get_node(marker_path)
 		var enemy := ShadowOfPortal.new()
 		enemy.name = marker_path
@@ -213,10 +217,14 @@ func _claim_quest() -> void:
 	var rewards := QuestSystem.claim(QUEST_ID)
 	if rewards.is_empty():
 		return
+
+		# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
 	player.add_xp(int(rewards.get("xp", 0)))
 	for item: Dictionary in rewards.get("items", []):
 		if String(item.get("item_id", "")) == "pocion_curativa":
 			player.add_potion(int(item.get("count", 1)))
+
+			# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
 		elif player.receive_item(String(item.get("item_id", "")), int(item.get("count", 1))):
 			# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
 			var item_data := RpgDB.get_item(String(item.get("item_id", "")))

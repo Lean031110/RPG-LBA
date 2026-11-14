@@ -1,7 +1,8 @@
 class_name ArpgSettingsMenu
 extends Control
-## Ajustes de la vertical slice: perfil gráfico y volumen. Controles completos,
-## accesibilidad y más categorías llegan con el UX Pass (Fase 1B) y fases posteriores.
+## Ajustes de la vertical slice: perfil gráfico, resolución dinámica y volumen.
+## El perfil inicial lo sugiere la matriz de compatibilidad (docs/16) según el hardware
+## detectado; el usuario puede cambiarlo aquí y persiste (user://settings.json).
 
 
 func _ready() -> void:
@@ -22,7 +23,52 @@ func _ready() -> void:
 	title.add_theme_font_size_override("font_size", 26)
 	title.add_theme_color_override("font_color", Color("b08d3c"))
 	box.add_child(title)
-	# Perfil gráfico.
+	# Información de hardware detectado y perfil sugerido (matriz docs/16).
+	var hw := GraphicsSettings.hardware_report
+	var hw_lines: Array = [
+		"Dispositivo: %s" % String(hw.get("model", "?")),
+		(
+			"GPU: %s · RAM: %.1f GB · Pantalla: %d px"
+			% [
+				String(hw.get("gpu", "?")),
+				float(hw.get("ram_total_gb", 0.0)),
+				int(hw.get("screen_long_px", 0)),
+			]
+		),
+	]
+	if String(hw.get("platform", "")) == "Android":
+		(
+			hw_lines
+			. append(
+				(
+					"Android API %s · ABI: %s"
+					% [
+						str(hw.get("api_level", "?")),
+						str(hw.get("abis", [])).substr(1, 40),
+					]
+				)
+			)
+		)
+
+		# Perfil gráfico.
+
+		# Resolución dinámica.
+
+		# Volumen.
+	hw_lines.append("Perfil sugerido: %s (cambiable abajo; se recuerda)." % GraphicsSettings.suggested_profile)
+	for line: String in hw_lines:
+		var hw_label := Label.new()
+		hw_label.text = line
+		hw_label.add_theme_font_size_override("font_size", 12)
+		hw_label.add_theme_color_override("font_color", Color("9aa0a6"))
+		hw_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		hw_label.custom_minimum_size = Vector2(460, 0)
+		box.add_child(hw_label)
+		# Perfil gráfico.
+
+		# Resolución dinámica.
+
+		# Volumen.
 	var profile_row := HBoxContainer.new()
 	box.add_child(profile_row)
 	_add_spacer(profile_row, 12)
@@ -36,20 +82,45 @@ func _ready() -> void:
 	for pair: Array in [["low", "Bajo"], ["medium", "Medio"], ["high", "Alto"]]:
 		option.add_item(String(pair[1]))
 		option.set_item_metadata(option.item_count - 1, String(pair[0]))
+
+		# Resolución dinámica.
+
+		# Volumen.
 	option.selected = _profile_index()
 	option.item_selected.connect(_on_profile_selected.bind(option))
 	profile_row.add_child(option)
 	_add_spacer(profile_row, 12)
 	var profile_note := Label.new()
 	profile_note.text = (
-		"El perfil Bajo es la referencia de diseño. No se promete FPS ni compatibilidad Android"
-		+ " sin medir en hardware real."
+		"El perfil Bajo es la referencia de diseño. Sin promesas de FPS sin medir" + " en hardware real (AGENTS.md §7)."
 	)
 	profile_note.add_theme_font_size_override("font_size", 12)
 	profile_note.add_theme_color_override("font_color", Color("9aa0a6"))
 	profile_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	profile_note.custom_minimum_size = Vector2(460, 0)
 	box.add_child(profile_note)
+	# Resolución dinámica.
+	var dyn_row := HBoxContainer.new()
+	box.add_child(dyn_row)
+	_add_spacer(dyn_row, 12)
+	var dyn_label := Label.new()
+	dyn_label.text = "Resolución dinámica"
+	dyn_label.custom_minimum_size = Vector2(160, 0)
+	dyn_label.add_theme_font_size_override("font_size", 15)
+	dyn_label.add_theme_color_override("font_color", Color("e8e4d8"))
+	dyn_row.add_child(dyn_label)
+	var dyn_check := CheckButton.new()
+	dyn_check.button_pressed = GraphicsSettings.dynamic_resolution
+	dyn_check.toggled.connect(_on_dynamic_resolution_toggled)
+	dyn_row.add_child(dyn_check)
+	_add_spacer(dyn_row, 12)
+	var dyn_note := Label.new()
+	dyn_note.text = "Ajusta la escala de render dentro de la ventana del perfil con histéresis."
+	dyn_note.add_theme_font_size_override("font_size", 12)
+	dyn_note.add_theme_color_override("font_color", Color("9aa0a6"))
+	dyn_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	dyn_note.custom_minimum_size = Vector2(460, 0)
+	box.add_child(dyn_note)
 	# Volumen.
 	var volume_row := HBoxContainer.new()
 	box.add_child(volume_row)
@@ -87,6 +158,12 @@ func _profile_index() -> int:
 func _on_profile_selected(index: int, option: OptionButton) -> void:
 	var profile_id := String(option.get_item_metadata(index))
 	GraphicsSettings.apply_profile(profile_id)
+	GraphicsSettings.persist_settings()
+
+
+func _on_dynamic_resolution_toggled(pressed: bool) -> void:
+	GraphicsSettings.set_dynamic_resolution_enabled(pressed)
+	GraphicsSettings.apply_profile(GraphicsSettings.active_profile)
 	GraphicsSettings.persist_settings()
 
 
