@@ -3,6 +3,8 @@ extends CanvasLayer
 ## HUD provisional de la vertical slice (tema gótico caribeño; el rediseño completo
 ## llega en el Art Pass + UX Pass de la Fase 1B). Lógica desacoplada: solo escucha
 ## señales del jugador/misiones y expone el vector del joystick. Sin lógica de juego.
+## Fase 2: el joystick vive en ArpgVirtualJoystick (control autónomo) y todo el HUD se
+## re-coloca al cambiar la resolución del viewport (16:9 y 20:9, landscape).
 
 signal joystick_changed(vector: Vector2)
 signal dialog_accepted
@@ -17,14 +19,12 @@ const COLOR_VIGOR := Color("c98a2d")
 const COLOR_XP := Color("b08d3c")
 const COLOR_ACCENT := Color("1e3a4a")
 const COLOR_DANGER := Color("e0503e")
-const JOY_RADIUS := 92.0
-const JOY_KNOB := 38.0
 
 var _player: Node = null
 var _joystick_vector := Vector2.ZERO
-var _joy_center := Vector2.ZERO
-var _joy_active := false
 
+var _stats_panel: PanelContainer = null
+var _quest_panel: PanelContainer = null
 var _hp_bar: ProgressBar = null
 var _vigor_bar: ProgressBar = null
 var _xp_bar: ProgressBar = null
@@ -37,7 +37,8 @@ var _quest_lines: VBoxContainer = null
 var _quest_hint: Label = null
 var _toast_label: Label = null
 var _interact_button: Button = null
-var _joystick: Control = null
+var _joystick: ArpgVirtualJoystick = null
+var _action_cluster: VBoxContainer = null
 var _dialog_panel: PanelContainer = null
 var _dialog_name: Label = null
 var _dialog_line: Label = null
@@ -56,6 +57,9 @@ func _ready() -> void:
 	_build_action_buttons()
 	_build_interact_button()
 	_build_dialog_panel()
+	var root := get_root_control()
+	root.resized.connect(_layout_hud)
+	_layout_hud()
 
 
 func bind_player(player: Node) -> void:
@@ -166,12 +170,12 @@ func _on_leveled_up(new_level: int) -> void:
 
 
 func _build_stats_panel() -> void:
-	var panel := PanelContainer.new()
-	panel.name = "StatsPanel"
-	panel.add_theme_stylebox_override("panel", _panel_style())
+	_stats_panel = PanelContainer.new()
+	_stats_panel.name = "StatsPanel"
+	_stats_panel.add_theme_stylebox_override("panel", _panel_style())
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 3)
-	panel.add_child(box)
+	_stats_panel.add_child(box)
 	_class_label = Label.new()
 	_class_label.text = ""
 	_class_label.add_theme_font_size_override("font_size", 15)
@@ -195,18 +199,16 @@ func _build_stats_panel() -> void:
 	box.add_child(_hp_bar)
 	box.add_child(_vigor_bar)
 	box.add_child(_xp_bar)
-	var root := get_root_control()
-	root.add_child(panel)
-	panel.position = Vector2(16, 14)
+	get_root_control().add_child(_stats_panel)
 
 
 func _build_quest_tracker() -> void:
-	var panel := PanelContainer.new()
-	panel.name = "QuestPanel"
-	panel.add_theme_stylebox_override("panel", _panel_style())
+	_quest_panel = PanelContainer.new()
+	_quest_panel.name = "QuestPanel"
+	_quest_panel.add_theme_stylebox_override("panel", _panel_style())
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 2)
-	panel.add_child(box)
+	_quest_panel.add_child(box)
 	_quest_title = Label.new()
 	_quest_title.text = ""
 	_quest_title.add_theme_font_size_override("font_size", 14)
@@ -221,9 +223,7 @@ func _build_quest_tracker() -> void:
 	_quest_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_quest_hint.custom_minimum_size = Vector2(240, 0)
 	box.add_child(_quest_hint)
-	var root := get_root_control()
-	root.add_child(panel)
-	panel.position = Vector2(16, 132)
+	get_root_control().add_child(_quest_panel)
 
 
 func _build_toast() -> void:
@@ -234,80 +234,31 @@ func _build_toast() -> void:
 	_toast_label.add_theme_color_override("font_color", COLOR_XP)
 	_toast_label.modulate.a = 0.0
 	_toast_label.custom_minimum_size = Vector2(0, 26)
-	var root := get_root_control()
-	root.add_child(_toast_label)
-	_toast_label.position = Vector2(0, 84)
-	_toast_label.size = Vector2(root.size.x, 30)
+	get_root_control().add_child(_toast_label)
 
 
 func _build_joystick() -> void:
-	_joystick = Control.new()
+	_joystick = ArpgVirtualJoystick.new()
 	_joystick.name = "VirtualJoystick"
-	_joystick.custom_minimum_size = Vector2(JOY_RADIUS * 2.0, JOY_RADIUS * 2.0)
-	_joystick.size = Vector2(JOY_RADIUS * 2.0, JOY_RADIUS * 2.0)
-	_joystick.draw.connect(_draw_joystick)
-	var root := get_root_control()
-	root.add_child(_joystick)
-	_joy_center = Vector2(150.0, 0.0)
-	_position_joystick()
-	_joystick.gui_input.connect(_on_joystick_input)
+	get_root_control().add_child(_joystick)
+	_joystick.value_changed.connect(_on_joystick_value)
 
 
-func _position_joystick() -> void:
-	var root := get_root_control()
-	_joy_center = Vector2(150.0, root.size.y - 150.0)
-	_joystick.position = _joy_center - Vector2(JOY_RADIUS, JOY_RADIUS)
-	_joystick.size = Vector2(JOY_RADIUS * 2.0, JOY_RADIUS * 2.0)
-
-
-func _draw_joystick() -> void:
-	_joystick.draw_circle(Vector2(JOY_RADIUS, JOY_RADIUS), JOY_RADIUS, Color(0.08, 0.09, 0.12, 0.55))
-	_joystick.draw_arc(Vector2(JOY_RADIUS, JOY_RADIUS), JOY_RADIUS - 3.0, 0.0, TAU, 40, COLOR_ACCENT, 2.0)
-	var knob_offset := _joystick_vector * (JOY_RADIUS - JOY_KNOB)
-	_joystick.draw_circle(Vector2(JOY_RADIUS, JOY_RADIUS) + knob_offset, JOY_KNOB, Color(0.16, 0.18, 0.24, 0.92))
-	_joystick.draw_circle(Vector2(JOY_RADIUS, JOY_RADIUS) + knob_offset, JOY_KNOB - 4.0, COLOR_TEXT_DIM)
-
-
-func _on_joystick_input(event: InputEvent) -> void:
-	if event is InputEventScreenTouch:
-		var touch := event as InputEventScreenTouch
-		if touch.pressed:
-			_joy_active = true
-		else:
-			_joy_active = false
-			_set_joystick(Vector2.ZERO)
-	elif event is InputEventMouseButton and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
-		var mouse := event as InputEventMouseButton
-		if mouse.pressed:
-			_joy_active = true
-		else:
-			_joy_active = false
-			_set_joystick(Vector2.ZERO)
-	elif event is InputEventScreenDrag and _joy_active:
-		_set_joystick(_clamp_to_radius((event as InputEventScreenDrag).position - Vector2(JOY_RADIUS, JOY_RADIUS)))
-	elif event is InputEventMouseMotion and _joy_active:
-		_set_joystick(_clamp_to_radius(_joystick.get_local_mouse_position() - Vector2(JOY_RADIUS, JOY_RADIUS)))
-
-
-func _clamp_to_radius(vector: Vector2) -> Vector2:
-	if vector.length() > JOY_RADIUS - JOY_KNOB * 0.5:
-		return vector.normalized() * (JOY_RADIUS - JOY_KNOB * 0.5)
-	return vector
+func _on_joystick_value(value: Vector2) -> void:
+	_joystick_vector = value
+	joystick_changed.emit(value)
 
 
 func _set_joystick(vector: Vector2) -> void:
-	var normalized := vector / (JOY_RADIUS - JOY_KNOB * 0.5)
-	_joystick_vector = normalized
-	joystick_changed.emit(normalized)
-	_joystick.queue_redraw()
+	## Compatibilidad de la Fase 1 (usada por pruebas): aplica un offset como si
+	## el dedo estuviera en esa posición del área del joystick.
+	_joystick.set_value_from_offset(vector)
 
 
 func _build_action_buttons() -> void:
-	var root := get_root_control()
-	var cluster := VBoxContainer.new()
-	cluster.name = "ActionCluster"
-	cluster.add_theme_constant_override("separation", 10)
-	root.add_child(cluster)
+	_action_cluster = VBoxContainer.new()
+	_action_cluster.name = "ActionCluster"
+	_action_cluster.add_theme_constant_override("separation", 10)
 	var attack := _action_button("Machete (J)", "attack")
 	var skill := _action_button("Tajo de Guásima (K)", "skill")
 	var dodge := _action_button("Esquiva (Espacio)", "dodge")
@@ -319,8 +270,8 @@ func _build_action_buttons() -> void:
 	potion.add_child(_potion_badge)
 	_potion_badge.position = Vector2(96, 6)
 	for button: Button in [attack, skill, dodge, potion]:
-		cluster.add_child(button)
-	cluster.position = Vector2(root.size.x - 240.0, root.size.y - 240.0)
+		_action_cluster.add_child(button)
+	get_root_control().add_child(_action_cluster)
 
 
 func _action_button(text: String, action: String) -> Button:
@@ -360,9 +311,7 @@ func _build_interact_button() -> void:
 	_interact_button.add_theme_color_override("font_color", COLOR_TEXT)
 	_interact_button.add_theme_stylebox_override("normal", _button_style(Color(0.10, 0.16, 0.22, 0.95)))
 	_interact_button.add_theme_stylebox_override("pressed", _button_style(COLOR_ACCENT))
-	var root := get_root_control()
-	root.add_child(_interact_button)
-	_interact_button.position = Vector2(root.size.x / 2.0 - 90.0, root.size.y - 96.0)
+	get_root_control().add_child(_interact_button)
 
 
 func _build_dialog_panel() -> void:
@@ -388,10 +337,27 @@ func _build_dialog_panel() -> void:
 	_dialog_action.custom_minimum_size = Vector2(180, 44)
 	_dialog_action.pressed.connect(_dialog_next)
 	box.add_child(_dialog_action)
-	var root := get_root_control()
-	root.add_child(_dialog_panel)
 	_dialog_panel.custom_minimum_size = Vector2(600, 150)
-	_dialog_panel.position = Vector2(root.size.x / 2.0 - 300.0, root.size.y - 210.0)
+	get_root_control().add_child(_dialog_panel)
+
+
+func _layout_hud() -> void:
+	## Re-coloca todo el HUD según el tamaño actual del viewport. Objetivo: landscape
+	## 16:9 y 20:9 (orientación del proyecto); con anchos pequeños se hace clamp a 8 px.
+	var root := get_root_control()
+	var viewport_size := root.size
+	if viewport_size.x < 320.0 or viewport_size.y < 240.0:
+		return
+	_stats_panel.position = Vector2(16, 14)
+	_quest_panel.position = Vector2(16, 132)
+	_toast_label.position = Vector2(0, 84)
+	_toast_label.size = Vector2(viewport_size.x, 30)
+	var joy_size := Vector2(_joystick.radius * 2.0, _joystick.radius * 2.0)
+	_joystick.position = Vector2(150.0, viewport_size.y - 150.0) - joy_size * 0.5
+	_joystick.size = joy_size
+	_action_cluster.position = Vector2(maxf(viewport_size.x - 240.0, 8.0), maxf(viewport_size.y - 240.0, 8.0))
+	_interact_button.position = Vector2(viewport_size.x / 2.0 - 90.0, viewport_size.y - 96.0)
+	_dialog_panel.position = Vector2(maxf(viewport_size.x / 2.0 - 300.0, 8.0), maxf(viewport_size.y - 210.0, 8.0))
 
 
 func _panel_style(margin := 10) -> StyleBoxFlat:

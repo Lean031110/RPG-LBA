@@ -158,3 +158,6 @@ arpg_pause={
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 anti_aliasing/quality/msaa_3d=0
+; Fase 2: requerido por el preset Android (arm64). Sin ETC2/ASTC, la exportación
+; Android falla con "Cannot export for universal or arm64...". No afecta al escritorio.
+textures/vram_compression/import_etc2_astc=true
