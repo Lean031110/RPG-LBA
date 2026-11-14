@@ -2,6 +2,7 @@
 
 - **Fecha:** 2026-11-15
 - **Rama:** `feature/ai-art-department` (base: main @ 26fb66b)
+- **Pull Request:** https://github.com/Lean031110/RPG-LBA/pull/12 (abierto, sin merge automático)
 - **Motor de la fábrica:** v1.0 (procedural CPU: NumPy/Pillow + trimesh/bpy)
 
 ## 1. Estado global
