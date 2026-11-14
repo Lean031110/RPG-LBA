@@ -88,4 +88,4 @@ func test_level_up_bounds_totals() -> void:
 func test_first_kill_xp_rules() -> void:
 	var enemy := RpgDB.get_enemy("sombra_de_portal")
 	assert_int(ProgressionService.first_kill_xp(enemy, true)).is_equal(18)
-	assert_int(ProgressionService.first_kill_xp(enemy, false)).is_equal(4)
+	assert_int(ProgressionService.first_kill_xp(enemy, false)).is_equal(12)

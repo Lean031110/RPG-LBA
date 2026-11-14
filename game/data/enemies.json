@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "note": "Catálogo de enemigos. Valores = hipótesis de diseño; validar con simulaciones (Fase 2). Los ids son estables y persistentes: no reutilizarlos para otro enemigo.",
+  "note": "Catálogo de enemigos (Fase 5: tres especies del monstruario canon). Valores = hipótesis de diseño; validar con simulaciones. Los ids son estables y persistentes: no reutilizarlos para otro enemigo. Los campos on_hit_status/respawn/knockback/strike_* gobiernan la FSM compartida (ArpgEnemy).",
   "enemies": [
     {
       "id": "sombra_de_portal",
@@ -9,11 +9,10 @@
       "hp": 45,
       "armor": 2,
       "resistance": 1,
-      "damage": 12,
-      "damage_type": "physical",
-      "attribute": "fuerza",
       "potency": 9.0,
       "damage_coeff": 1.0,
+      "damage_type": "physical",
+      "attribute_value": 14.0,
       "move_speed": 3.6,
       "detect_radius": 9.0,
       "lose_radius": 16.0,
@@ -22,23 +21,104 @@
       "attack_window": 0.25,
       "recover_time": 1.1,
       "lunge_distance": 1.4,
+      "strike_range": 2.8,
+      "strike_arc_deg": 80.0,
+      "knockback": 0.0,
       "telegraph_color": "#c21f30",
       "xp_first_kill": 18,
-      "xp_repeat": 4,
-      "respawn": false,
+      "xp_repeat": 12,
+      "respawn": true,
+      "respawn_time": 22.0,
       "drops": [
         {
           "item_id": "pocion_curativa",
           "chance": 1.0
         }
-      ],
-      "attribute_value": 14.0
+      ]
+    },
+    {
+      "id": "perro_de_ceniza",
+      "name_key": "enemy.perro_de_ceniza.name",
+      "description_key": "enemy.perro_de_ceniza.desc",
+      "hp": 28,
+      "armor": 1,
+      "resistance": 0,
+      "potency": 6.5,
+      "damage_coeff": 1.0,
+      "damage_type": "physical",
+      "attribute_value": 12.0,
+      "move_speed": 4.6,
+      "circle_blend": 0.45,
+      "detect_radius": 11.0,
+      "lose_radius": 18.0,
+      "attack_range": 1.8,
+      "windup_time": 0.4,
+      "attack_window": 0.18,
+      "recover_time": 0.8,
+      "lunge_distance": 1.2,
+      "strike_range": 2.2,
+      "strike_arc_deg": 70.0,
+      "knockback": 0.0,
+      "telegraph_color": "#ff7311",
+      "xp_first_kill": 12,
+      "xp_repeat": 8,
+      "respawn": true,
+      "respawn_time": 26.0,
+      "drops": [
+        {
+          "item_id": "pocion_curativa",
+          "chance": 0.35
+        }
+      ]
+    },
+    {
+      "id": "guarapo_negro",
+      "name_key": "enemy.guarapo_negro.name",
+      "description_key": "enemy.guarapo_negro.desc",
+      "hp": 85,
+      "armor": 5,
+      "resistance": 2,
+      "potency": 13.0,
+      "damage_coeff": 1.0,
+      "damage_type": "physical",
+      "attribute_value": 17.0,
+      "move_speed": 2.1,
+      "detect_radius": 8.0,
+      "lose_radius": 14.0,
+      "attack_range": 2.6,
+      "windup_time": 1.0,
+      "attack_window": 0.3,
+      "recover_time": 1.6,
+      "lunge_distance": 0.0,
+      "strike_range": 3.0,
+      "strike_arc_deg": 360.0,
+      "knockback": 3.2,
+      "on_hit_status": {
+        "id": "resin",
+        "duration": 3.0,
+        "params": {"slow_fraction": 0.45}
+      },
+      "telegraph_color": "#472b06",
+      "xp_first_kill": 26,
+      "xp_repeat": 16,
+      "respawn": true,
+      "respawn_time": 40.0,
+      "drops": [
+        {
+          "item_id": "pocion_curativa",
+          "chance": 0.6
+        }
+      ]
     }
   ],
   "strings": {
     "es": {
       "enemy.sombra_de_portal.name": "Sombra de Portal",
-      "enemy.sombra_de_portal.desc": "Figura alargada que se esconde bajo los portales y ataca cuando el camino queda sin luz."
+      "enemy.sombra_de_portal.desc": "Figura alargada que se esconde bajo los portales y ataca cuando el camino queda sin luz.",
+      "enemy.perro_de_ceniza.name": "Perro de ceniza",
+      "enemy.perro_de_ceniza.desc": "Sabueso espectral que rodea a su presa, la marca y aúlla para llamar a la manada.",
+      "enemy.guarapo_negro.name": "Guarapo negro",
+      "enemy.guarapo_negro.desc": "Masa de caña y resina que se arrastra por los centrales; su pisoteo atrapa con lenta pegajosidad."
     }
   }
 }

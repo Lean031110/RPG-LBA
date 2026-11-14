@@ -32,7 +32,10 @@ func test_slice_assembles_everything() -> void:
 	assert_object(slice.player).is_instanceof(ArpgPlayer)
 	assert_object(slice.cheo).is_instanceof(CheoNPC)
 	assert_object(slice.camera_rig).is_instanceof(IsoCameraRig)
-	assert_int(slice._enemies.size()).is_equal(3)
+	## Fase 5: 6 marcadores (3 sombras de misión + manada + guarapo) dentro del
+	## tope de la matriz de compatibilidad del perfil activo.
+	assert_int(slice._enemies.size()).is_equal(mini(6, GraphicsSettings.max_active_enemies()))
+	assert_int(slice.SPAWN_REGISTRY.size()).is_equal(6)
 	assert_object(slice.hud).is_instanceof(ArpgHUD)
 	# El jugador aparece en el marcador de spawn.
 	assert_float(slice.player.global_position.z).is_less(-23.0)
@@ -46,10 +49,17 @@ func test_full_quest_flow_with_xp_and_claim() -> void:
 	assert_int(player.level).is_equal(1)
 	# Aceptar la mision (camino del dialogo).
 	assert_bool(QuestSystem.accept("VS_P00")).is_true()
-	# Derrotas via el camino real de la slice: XP por instancia + drop de pocion.
+	# Derrotas via el camino real de la slice: las 3 Sombras de Portal de la
+	# misión (la manada y el Guarapo no cuentan para VS_P00).
 	var pickups_before := _count_pickups(slice)
-	for enemy: ShadowOfPortal in slice._enemies:
-		slice._on_enemy_died("sombra_de_portal", enemy.global_position, enemy)
+	var sombras_killed := 0
+	for enemy: ArpgEnemy in slice._enemies.duplicate():
+		if String(enemy.enemy_id) != "sombra_de_portal":
+			continue
+		slice._on_enemy_died(enemy.enemy_id, enemy.global_position, enemy)
+		sombras_killed += 1
+	# 3 primeras victorias de sombra = 54 XP; sus drops (chance 1.0) = 3 pociones.
+	assert_int(sombras_killed).is_equal(3)
 	assert_int(player.xp_into_level).is_equal(54)
 	assert_int(_count_pickups(slice) - pickups_before).is_equal(3)
 	# Fragmentos.

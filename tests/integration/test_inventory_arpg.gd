@@ -72,11 +72,11 @@ func test_unequip_returns_weapon_to_free_slot() -> void:
 
 func test_weapon_grants_potency_bonus() -> void:
 	var player := _make_player()
-	assert_float(player._weapon_potency_bonus()).is_equal(0.0)
+	assert_float(player.equipment.potency_bonus()).is_equal(0.0)
 	player.receive_item("machete_mellado")
 	player.try_equip_weapon(0)
 	# items.json: machete_mellado potency_bonus 3.0 (data-driven).
-	assert_float(player._weapon_potency_bonus()).is_equal(3.0)
+	assert_float(player.equipment.potency_bonus()).is_equal(3.0)
 
 
 func test_serialize_roundtrip_keeps_equipped_weapon() -> void:
@@ -91,7 +91,7 @@ func test_serialize_roundtrip_keeps_equipped_weapon() -> void:
 	restored.setup("machetero")
 	restored.restore(data)
 	assert_str(restored.inventory.equipped_weapon.item_id).is_equal("machete_mellado")
-	assert_float(restored._weapon_potency_bonus()).is_equal(3.0)
+	assert_float(restored.equipment.potency_bonus()).is_equal(3.0)
 
 
 func test_weapon_pickup_goes_to_inventory() -> void:
@@ -114,8 +114,10 @@ func test_quest_claim_grants_machete() -> void:
 	var slice: ValdeluzSlice = auto_free(scene) as ValdeluzSlice
 	add_child(slice)
 	assert_bool(QuestSystem.accept("VS_P00")).is_true()
-	for enemy: ShadowOfPortal in slice._enemies:
-		slice._on_enemy_died("sombra_de_portal", enemy.global_position, enemy)
+	for enemy: ArpgEnemy in slice._enemies.duplicate():
+		if String(enemy.enemy_id) != "sombra_de_portal":
+			continue
+		slice._on_enemy_died(enemy.enemy_id, enemy.global_position, enemy)
 	QuestSystem.notify_collect("fragmento_bronce", 1)
 	QuestSystem.notify_collect("fragmento_bronce", 1)
 	slice._claim_quest()

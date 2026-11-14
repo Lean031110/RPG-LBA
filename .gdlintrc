@@ -1,1 +1,11 @@
 max-line-length: 120
+
+# Fase 5: arpg_player.gd concentra la definición de la CLASE Machetero (datos +
+# acciones del kit completo + locomoción + persistencia). La presentación ya vive
+# en machetero_puppet.gd y el motor de combate en arpg_combatant.gd/combat/*;
+# la API exigida por el HUD (combo, pesado, 4 habilidades, definitiva, bloqueo,
+# atributos) no admite más recortes sin perder cohesión. Excepción documentada
+# en docs/reportes/FASE_05_AUDITORIA.md; el resto del repo mantiene el tope.
+files:
+  scripts/arpg/player/arpg_player.gd:
+    max-file-lines: 1200

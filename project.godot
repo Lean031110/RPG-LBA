@@ -34,6 +34,7 @@ RpgDB="*res://scripts/arpg/autoloads/rpg_db.gd"
 SaveSystem="*res://scripts/arpg/autoloads/save_system.gd"
 QuestSystem="*res://scripts/arpg/autoloads/quest_system.gd"
 GraphicsSettings="*res://scripts/arpg/autoloads/graphics_settings.gd"
+CombatEvents="*res://scripts/arpg/combat/combat_events.gd"
 
 [display]
 

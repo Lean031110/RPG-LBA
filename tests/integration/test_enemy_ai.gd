@@ -103,8 +103,8 @@ func test_strike_damage_matches_data() -> void:
 				"damage_coeff": float(enemy.enemy_data["damage_coeff"]),
 				"damage_type": String(enemy.enemy_data["damage_type"]),
 			},
-			enemy.get_attribute_value(),
-			player.armor,
+			enemy.stats.primary_attribute,
+			player.stats.armor,
 		)
 	)
 	# Un solo golpe con gracia de 0.25 s: no hay doble aplicacion.
