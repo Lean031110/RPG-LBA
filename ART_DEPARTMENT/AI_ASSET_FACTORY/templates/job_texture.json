@@ -1,0 +1,18 @@
+{
+  "id": "job_NNNN",
+  "categoria": "texture",
+  "nombre": "nombre_de_la_textura",
+  "generador": "texture:<tipo>",
+  "descripcion": "qué representa y para qué se usará",
+  "parametros": {
+    "name": "nombre_de_la_textura",
+    "wear": 0.3,
+    "moss": 0.25,
+    "color": "#C9BFAB",
+    "scale": 1.0
+  },
+  "resolucion": 1024,
+  "prioridad": 2,
+  "perfil": "BALANCED",
+  "semilla": 123456789
+}

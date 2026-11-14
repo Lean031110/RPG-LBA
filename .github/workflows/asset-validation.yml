@@ -1,0 +1,64 @@
+# RPG-LBA — Validación de recursos del departamento de arte.
+# Se dispara en PRs que toquen ART_DEPARTMENT/ o assets/ (y manualmente).
+# Ejecuta la suite pytest + validación de todos los recursos publicados
+# y sube los informes como artifact (no permanente, caduca a 90 días).
+name: Asset Validation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ART_DEPARTMENT/**"
+      - "assets/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validar:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ART_DEPARTMENT/AI_ASSET_FACTORY/requirements.txt
+
+      - name: Suite de pruebas de la fábrica
+        run: python -m pytest ART_DEPARTMENT/AI_ASSET_FACTORY/tests/ -q
+
+      - name: Validación de todos los recursos del catálogo
+        run: |
+          python ART_DEPARTMENT/AI_ASSET_FACTORY/cli.py validate
+          python ART_DEPARTMENT/AI_ASSET_FACTORY/cli.py gallery
+
+      - name: Comprobación Godot headless (opcional)
+        continue-on-error: true
+        run: |
+          echo "Paso opcional: colocar un binario Godot 4.7 en PATH para activarlo."
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, "ART_DEPARTMENT/AI_ASSET_FACTORY")
+          from integrations.godot_bridge import find_godot, godot_import_check
+          from pathlib import Path
+          g = find_godot()
+          if g is None:
+              print("SKIPPED: sin binario Godot en PATH (NOT TESTED en CI)")
+          else:
+              print(godot_import_check(Path("."), g))
+          PY
+
+      - name: Subir informes (artifact NO permanente)
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-reports
+          path: |
+            ART_DEPARTMENT/AI_ASSET_FACTORY/catalog/validation_reports/
+            ART_DEPARTMENT/PREVIEWS/index.html
+          retention-days: 14

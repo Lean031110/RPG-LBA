@@ -1,0 +1,60 @@
+{
+  "asset_id": "mdl_buildings_house_colonial_02_001",
+  "fecha": "2026-11-14T20:50:41+00:00",
+  "resultado": "PASS",
+  "pasadas": 10,
+  "fallidas": 0,
+  "omitidas": 0,
+  "comprobaciones": [
+    {
+      "comprobacion": "archivo_glb",
+      "resultado": "PASS",
+      "detalle": "/home/runner/work/RPG-LBA/RPG-LBA/assets/models/buildings/mdl_buildings_house_colonial_02_001.glb"
+    },
+    {
+      "comprobacion": "glb_integro",
+      "resultado": "PASS",
+      "detalle": "9 mallas"
+    },
+    {
+      "comprobacion": "geometria_valida",
+      "resultado": "PASS",
+      "detalle": "2400 verts / 1160 tris"
+    },
+    {
+      "comprobacion": "normales_finitas",
+      "resultado": "PASS",
+      "detalle": "sin NaN/Inf en vértices"
+    },
+    {
+      "comprobacion": "uv_presentes",
+      "resultado": "PASS",
+      "detalle": "UV planas por normal dominante"
+    },
+    {
+      "comprobacion": "triangulos_coherentes",
+      "resultado": "PASS",
+      "detalle": "catálogo=1160 real=1160"
+    },
+    {
+      "comprobacion": "escala_metros",
+      "resultado": "PASS",
+      "detalle": "dimensiones=[8.33, 8.45, 8.1]"
+    },
+    {
+      "comprobacion": "pivote_base",
+      "resultado": "PASS",
+      "detalle": "y_min=0.000 (base en origen)"
+    },
+    {
+      "comprobacion": "colision_registrada",
+      "resultado": "PASS",
+      "detalle": "caja simple 8.33x8.45x8.10 m (convex recomendado en Godot: Mesh -> Create Convex Collision)"
+    },
+    {
+      "comprobacion": "materiales_presentes",
+      "resultado": "PASS",
+      "detalle": "22 materiales"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "MOBILE": {
+    "texture_resolution": 512,
+    "max_triangles_prop": 900,
+    "max_triangles_building": 3500,
+    "radial_segments": 8,
+    "sphere_segments": [
+      8,
+      6
+    ],
+    "lod_levels": 0,
+    "materials": "flat-color-pbr",
+    "notes": "Perfil Low del canon (Compatibility Renderer, Redmi 9C como referencia de diseño)."
+  },
+  "BALANCED": {
+    "texture_resolution": 1024,
+    "max_triangles_prop": 2200,
+    "max_triangles_building": 7000,
+    "radial_segments": 12,
+    "sphere_segments": [
+      12,
+      8
+    ],
+    "lod_levels": 1,
+    "materials": "flat-color-pbr+texture",
+    "notes": "Perfil Medium del canon."
+  },
+  "HIGH": {
+    "texture_resolution": 2048,
+    "max_triangles_prop": 5000,
+    "max_triangles_building": 16000,
+    "radial_segments": 16,
+    "sphere_segments": [
+      16,
+      12
+    ],
+    "lod_levels": 1,
+    "materials": "textured-pbr",
+    "notes": "Perfil High del canon; solo cuando esté justificado."
+  }
+}

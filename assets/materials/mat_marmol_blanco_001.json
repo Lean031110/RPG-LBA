@@ -1,0 +1,30 @@
+{
+  "id": "mat_marmol_blanco_001",
+  "nombre": "Marmol Blanco",
+  "categoria": "material/interiores",
+  "descripcion": "Material PBR del canon para Godot 4 (Compatibility Renderer).",
+  "perfil": "BALANCED",
+  "procedencia": "Definición generada por RPG-LBA AI Asset Factory",
+  "licencia": "MIT (proyecto RPG-LBA) - generacion procedural propia",
+  "backend": "numpy+pillow",
+  "semilla": 1940432887,
+  "albedo_color": [
+    0.878,
+    0.863,
+    0.824
+  ],
+  "roughness": 0.25,
+  "metallic": 0.0,
+  "normal_scale": 1.0,
+  "texturas": {
+    "albedo": "res://assets/environment/textures/tiles/tex_tiles_marble_001_albedo.png",
+    "normal": "res://assets/environment/textures/tiles/tex_tiles_marble_001_normal.png",
+    "roughness": "res://assets/environment/textures/tiles/tex_tiles_marble_001_roughness.png",
+    "metallic": "res://assets/environment/textures/tiles/tex_tiles_marble_001_metallic.png",
+    "ao": "res://assets/environment/textures/tiles/tex_tiles_marble_001_ao.png",
+    "height": "res://assets/environment/textures/tiles/tex_tiles_marble_001_height.png"
+  },
+  "texture_id": "tex_tiles_marble_001",
+  "uso_godot": "StandardMaterial3D: albedo_color + albedo_texture (si hay), roughness/metallic y normal_texture con normal_scale.",
+  "categoria_godot": "interiores"
+}

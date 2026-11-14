@@ -1,0 +1,9 @@
+numpy>=2.0
+Pillow>=10.0
+trimesh>=4.0
+pygltflib>=1.14
+opencv-python-headless>=4.8
+matplotlib>=3.8
+pytest>=8.0
+# bpy (motor principal en CI) se instala aparte: requiere Python 3.11 exacto
+# pip install bpy==4.2.0   -> ver DOCUMENTATION/GITHUB_ACTIONS.md

@@ -1,0 +1,60 @@
+{
+  "asset_id": "mat_stucco_ocre_002",
+  "fecha": "2026-11-14T18:35:06+00:00",
+  "resultado": "PASS",
+  "pasadas": 10,
+  "fallidas": 0,
+  "omitidas": 0,
+  "comprobaciones": [
+    {
+      "comprobacion": "archivo_json",
+      "resultado": "PASS",
+      "detalle": "/home/z/my-project/RPG-LBA/assets/materials/mat_stucco_ocre_002.json"
+    },
+    {
+      "comprobacion": "albedo_color",
+      "resultado": "PASS",
+      "detalle": ""
+    },
+    {
+      "comprobacion": "roughness_rango",
+      "resultado": "PASS",
+      "detalle": ""
+    },
+    {
+      "comprobacion": "metallic_rango",
+      "resultado": "PASS",
+      "detalle": ""
+    },
+    {
+      "comprobacion": "textura_albedo",
+      "resultado": "PASS",
+      "detalle": "/home/z/my-project/RPG-LBA/assets/environment/textures/concrete/tex_concrete_stucco_001_albedo.png"
+    },
+    {
+      "comprobacion": "textura_normal",
+      "resultado": "PASS",
+      "detalle": "/home/z/my-project/RPG-LBA/assets/environment/textures/concrete/tex_concrete_stucco_001_normal.png"
+    },
+    {
+      "comprobacion": "textura_roughness",
+      "resultado": "PASS",
+      "detalle": "/home/z/my-project/RPG-LBA/assets/environment/textures/concrete/tex_concrete_stucco_001_roughness.png"
+    },
+    {
+      "comprobacion": "textura_metallic",
+      "resultado": "PASS",
+      "detalle": "/home/z/my-project/RPG-LBA/assets/environment/textures/concrete/tex_concrete_stucco_001_metallic.png"
+    },
+    {
+      "comprobacion": "textura_ao",
+      "resultado": "PASS",
+      "detalle": "/home/z/my-project/RPG-LBA/assets/environment/textures/concrete/tex_concrete_stucco_001_ao.png"
+    },
+    {
+      "comprobacion": "textura_height",
+      "resultado": "PASS",
+      "detalle": "/home/z/my-project/RPG-LBA/assets/environment/textures/concrete/tex_concrete_stucco_001_height.png"
+    }
+  ]
+}
