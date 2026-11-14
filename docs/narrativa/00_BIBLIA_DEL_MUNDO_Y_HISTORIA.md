@@ -193,12 +193,54 @@ El protagonista vuelve al río. Por primera vez, el agua corre en la dirección 
 
 Última frase de Cheo: **“Mira que esta isla ha visto cosas… pero todavía le quedan cuentos.”**
 
-## 7. Finales
+## 7. El cierre del primer arco y el misterio que continúa
 
-- **Final de la Memoria:** el protagonista devuelve los siete recuerdos. La grieta se cierra; se conservan las historias y las cicatrices. Es el final canónico recomendado.
-- **Final del Olvido:** el protagonista usa la energía de la grieta para borrar el dolor de la isla. Hay paz aparente, pero los personajes olvidan por qué se querían. La última escena muestra una plaza hermosa y vacía.
-- **Final del Sacrificio:** Maela se convierte en guardiana de la puerta y queda atrapada en La Otra Orilla. El protagonista salva la isla, pero el cascabel suena desde un lugar imposible.
-- **Final secreto — La Séptima Voz:** requiere completar las cadenas de misiones de Cheo, Inés, el músico del Malecón y los niños de Valdeluz. Los recuerdos se comparten entre todos y nadie debe cargar solo con la puerta. Maela sobrevive y la isla conserva una nueva canción.
+La confrontación con el Rey de la Ceniza **no es el final definitivo de Las Cenizas de Lythara ni el cierre de la historia de Cuba**. Es el clímax de la primera gran campaña. La entidad puede ser expulsada de una región, fragmentada o contenida, pero no debe desaparecer para siempre ni resolver todos los misterios.
+
+### Clímax: La plaza que recuerda
+
+El jugador llega a una plaza de Valdeluz reconstruida dentro de La Otra Orilla. El suelo parece adoquín mojado, pero bajo cada piedra se mueve un recuerdo. Las casas están completas y vacías; desde las ventanas se escuchan conversaciones que nunca ocurrieron.
+
+El Rey aparece con una corona incompleta. Ofrece devolverle al protagonista algo que perdió, aunque todavía no sepa qué es. La batalla tiene tres movimientos:
+
+1. **La plaza prestada:** el Rey oculta telegráficos entre recuerdos falsos. El jugador debe distinguir patrones reales de ilusiones.
+2. **Los rostros queridos:** aparecen versiones deformadas de aliados. Las pistas reunidas en misiones secundarias permiten reconocerlos.
+3. **La corona incompleta:** el grupo rompe parte de la corona y recupera los recuerdos reunidos. El Rey no muere: pierde forma y se retira a una grieta que todavía no puede cerrarse.
+
+La victoria es real, pero parcial. La isla deja de sufrir la expansión inmediata de la ceniza. Sin embargo, las siete campanas no eran siete cerraduras: eran siete señales que mantenían algo más profundo dormido.
+
+### Epílogo abierto: El día después
+
+Amanece en Valdeluz. El río vuelve a correr, pero en su orilla aparece una escalera de piedra que no estaba allí. Maela conserva su cascabel y escucha una voz que pronuncia un nombre desconocido. Cheo reabre la barbería; Inés convierte la clínica en refugio; los vecinos reconstruyen la plaza.
+
+El protagonista puede recorrer el pueblo, hablar con aliados, revisar el diario y aceptar nuevos encargos. Una radio apagada se enciende sola. Una voz desde otra región dice: **«La primera puerta ya sabe tu nombre. ¿Cuántas quedan?»**
+
+La cámara se eleva sobre Valdeluz. Más allá de las lomas se ven tres luces: una en La Habana, otra en el mar y otra en una región que todavía no aparece en el mapa.
+
+### Misterios que quedan abiertos
+
+- ¿Quién construyó realmente las siete campanas y qué había antes de ellas?
+- ¿Por qué el Rey reconoce al protagonista?
+- ¿Qué es la escalera que apareció junto al río?
+- ¿Quién habla desde la radio y desde qué región?
+- ¿Qué otras puertas existen fuera de La Otra Orilla?
+- ¿Qué ocurrió con la persona cuyo recuerdo falta en el cascabel de Maela?
+- ¿Varela fue el verdadero responsable o alguien llevaba años guiándolo?
+
+### Rutas de desenlace del primer arco (no son finales de la franquicia)
+
+- **Memoria compartida:** la comunidad recupera más recuerdos; facilita nuevas alianzas y rutas.
+- **Silencio temporal:** el pueblo obtiene paz inmediata, pero quedan recuerdos ocultos.
+- **Deuda de Maela:** Maela conserva una conexión peligrosa con la puerta; abre una cadena futura para comprenderla.
+- **La voz de todos:** al completar varias cadenas secundarias, el pueblo ayuda a contener al Rey; se desbloquea una escena extra, no un final definitivo.
+
+### Reglas de continuidad y expansión
+
+- No declarar muerto al Rey ni destruir definitivamente La Otra Orilla en la primera campaña.
+- No cerrar el destino de Maela, Varela ni de los aliados con una única respuesta irreversible.
+- Las decisiones cambian relaciones, recompensas, rutas y escenas; deben preservar la continuidad.
+- Cada expansión puede introducir regiones cubanas, personajes, facciones, puertas, mazmorras y antagonistas nuevos.
+- Mantener cronología y registro de canon para evitar contradicciones.
 
 ## 8. Monstruario y lenguaje visual
 

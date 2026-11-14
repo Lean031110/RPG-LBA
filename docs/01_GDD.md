@@ -9,7 +9,7 @@
 
 ## 1. Visión general
 
-**RPG LBA: Las Cenizas de Lythara** es un action RPG 3D de fantasía oscura caribeña. Su primera campaña, **El Eco de Valdeluz**, transcurre en una Cuba ficticia de 1953: pueblos de interior, La Habana, fortalezas, centrales azucareros, mogotes, montañas, ciénagas y una dimensión sobrenatural llamada La Otra Orilla. El juego combina combate de acción isométrico, seis clases con habilidades propias, exploración por regiones, misiones cinematográficas y multijugador planificado con servidor dedicado autoritativo.
+**RPG LBA: Las Cenizas de Lythara** es un action RPG 3D de fantasía oscura caribeña. Su primera campaña, **El Eco de Valdeluz**, transcurre en una Cuba ficticia de 1953: pueblos de interior, La Habana, fortalezas, centrales azucareros, mogotes, montañas, ciénagas y una dimensión sobrenatural llamada La Otra Orilla. El juego combina combate de acción isométrico, seis clases originales (Machetero, Bruja, Sepulturero, Tirador, Cimarrón y Bardo) con recursos, habilidades y debilidades propias, exploración por regiones, misiones cinematográficas y multijugador planificado con servidor dedicado autoritativo.
 
 La identidad visual es gótico caribeño: arquitectura colonial y art déco, vegetación tropical, césped, tierra roja, piedra caliza, metal envejecido, faroles, radios, trenes y clima dramático. La interfaz debe ser oscura y sobria, pero de lectura inmediata en móvil. No copiar recursos ni UI de juegos existentes.
 
@@ -70,6 +70,12 @@ Se habilita cuando existan servidor público, autenticación, matchmaking/lobby 
 - Desbloqueos de habilidades y especializaciones a niveles definidos.
 - La progresión debe desbloquear decisiones jugables y no depender solo de grind.
 - Las zonas mantienen rangos de nivel propios; no escalar todo automáticamente al jugador.
+
+## 7.1 Experiencia y balance de clases
+
+El nivel objetivo del primer arco es 1–30, con crecimiento por clase y cinco puntos de atributo distribuibles por nivel. La curva provisional de XP y los valores de balance están centralizados en `docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md`. Toda recompensa de misión, enemigo, exploración y jefe debe utilizar el servicio común de experiencia. No permitir XP infinita por enemigos repetibles, invocaciones propias o reconexiones. Los valores se consideran hipótesis hasta ejecutar simulaciones, pruebas automatizadas y pruebas de juego.
+
+El primer arco termina con una victoria parcial y deja ganchos narrativos para nuevos capítulos. El nivel máximo, el sistema de misiones y los datos deben admitir expansiones y migraciones; no codificar límites irreversibles.
 
 ## 8. Equipo y objetos
 
