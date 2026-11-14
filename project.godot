@@ -17,9 +17,14 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="RPG LBA - Las Cenizas de Lythara"
 config/description="Action RPG isométrico de fantasía oscura caribeña. Cuba ficticia, 1953. Campaña: El Eco de Valdeluz."
 config/tags=PackedStringArray("3d", "arpg")
-run/main_scene="res://scenes/arpg/menu/main_menu.tscn"
+run/main_scene="res://scenes/arpg/menu/intro_splash.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.png"
+boot_splash/bg_color=Color(0.043, 0.051, 0.071, 1)
+boot_splash/show_image=true
+boot_splash/image="res://assets/branding/boot_splash.png"
+boot_splash/fullsize=false
+boot_splash/use_filter=true
 
 [autoload]
 
