@@ -12,6 +12,23 @@ repositorio. El detalle por asset vive en `assets/manifest.csv`. Los archivos
 | Documentación del kit RPG LBA (`docs/`, `prompts/`, `config/`) | Uso/adaptación libre para este proyecto | ver `docs/kit/LICENSE_KIT.txt`; no concede licencias sobre assets externos |
 | Código nuevo de RPG LBA (tests, scripts, CI) | Por decidir por el responsable | decisión pendiente registrada en `docs/13_RIESGOS_Y_DECISIONES.md` |
 
+## Herramientas de desarrollo (Fase 1)
+
+### gdUnit4 — MIT
+- Autor: Mike Schulze / godot-gdunit-labs.
+- Vendored en `addons/gdUnit4` desde el commit `674a5a0e0065e641d289fffa4e4350a47be57705`
+  (plugin.cfg 7.0.0, compatible con Godot 4.7 según matriz del action). Licencia MIT
+  incluida en `addons/gdUnit4/LICENSE`. La CI usa `version: 'installed'` (determinista).
+
+### Fuente Kurland — RETIRADA
+- La plantilla incluía `assets/fonts/Kurland.ttf` con licencia PENDIENTE DE VERIFICACIÓN.
+- Retirada en la Fase 1 (AGENTS §5: sin licencia verificable no se incorpora). La UI
+  provisional usa la fuente por defecto del motor hasta el UX Pass (Fase 1B).
+
+### Icono del proyecto — obra original
+- `icon.png` es una obra original generada proceduralmente para RPG LBA (campana agrietada
+  entre cenizas). Sin licencias de terceros.
+
 ## Assets de terceros incluidos (heredados de la plantilla v2.0.0)
 
 ### 1. 3D Godot Robot Platformer Character — CC0 1.0 Universal

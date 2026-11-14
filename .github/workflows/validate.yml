@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  checks: write
 
 concurrency:
   group: rpg-lba-validate-${{ github.ref }}
@@ -73,7 +74,7 @@ jobs:
             "commit": "$GITHUB_SHA",
             "ref": "$GITHUB_REF",
             "godot": "${GODOT_VERSION}-stable",
-            "renderer_preset": "ForwardPlus (inherited from template; Compatibility switch planned for Phase 1)",
+            "renderer_preset": "gl_compatibility (switched in Fase 1 per ADR-002)",
             "build_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
             "ci_job": "project-import-and-smoke"
           }
@@ -160,7 +161,10 @@ jobs:
         uses: godot-gdunit-labs/gdUnit4-action@v1
         with:
           godot-version: '4.7.2'
-          version: '7.0.0'
+          # 'installed' usa la copia verificada en el repo (addons/gdUnit4, gdUnit4 7.0.0
+          # en SHA 674a5a0e0065e641d289fffa4e4350a47be57705) en lugar de clonar master
+          # móvil. Determinista y auditable; ver THIRD_PARTY_NOTICES.md.
+          version: 'installed'
           paths: 'res://tests'
           headless: true
           timeout: 15

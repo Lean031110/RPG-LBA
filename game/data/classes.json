@@ -1,0 +1,185 @@
+{
+	"schema_version": 1,
+	"note": "Baseline de diseño tomado de docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md. Los coeficientes de habilidades son hipótesis de diseño sin validar; requieren simulación y pruebas (Fase 2).",
+	"attribute_points_per_level": 5,
+	"attribute_modifier_formula": "1.0 + (atributo - 10) * 0.05",
+	"classes": [
+		{
+			"id": "machetero",
+			"name_key": "class.machetero.name",
+			"role_key": "class.machetero.role",
+			"resource": {"id": "vigor", "name_key": "resource.vigor", "base": 100, "per_level": 4},
+			"base_stats": {"hp": 125, "armor": 12, "fuerza": 18, "destreza": 13, "intelecto": 8, "espiritu": 11},
+			"growth": {"hp_per_level": 12, "armor_per_level": 1.0},
+			"move_speed": 4.2,
+			"dodge": {"cost": 15, "duration": 0.35, "distance": 4.5, "cooldown": 1.2},
+			"basic_attack": {
+				"name_key": "skill.machetero.basic",
+				"damage_coeff": 1.0,
+				"potency": 8.0,
+				"damage_type": "physical",
+				"attribute": "fuerza",
+				"cooldown": 0.9,
+				"windup": 0.12,
+				"active_until": 0.3,
+				"total_time": 0.55,
+				"range": 2.6,
+				"arc_deg": 100.0
+			},
+			"skills": [
+				{
+					"id": "tajo_guasima",
+					"name_key": "skill.machetero.tajo",
+					"damage_coeff": 1.8,
+					"potency": 8.0,
+					"damage_type": "physical",
+					"attribute": "fuerza",
+					"resource_cost": 20,
+					"cooldown": 5.0,
+					"windup": 0.18,
+					"active_until": 0.42,
+					"total_time": 0.7,
+					"range": 3.2,
+					"arc_deg": 140.0
+				}
+			],
+			"ultimate": {"id": "huracan_machetes", "name_key": "skill.machetero.ultimate", "implemented": false},
+			"specializations": [
+				{"id": "guardian_batey", "name_key": "spec.machetero.guardian"},
+				{"id": "hoja_sierra", "name_key": "spec.machetero.hoja"}
+			],
+			"playable_in_slice": true
+		},
+		{
+			"id": "bruja",
+			"name_key": "class.bruja.name",
+			"role_key": "class.bruja.role",
+			"resource": {"id": "esencia", "name_key": "resource.esencia", "base": 125, "per_level": 6},
+			"base_stats": {"hp": 85, "armor": 4, "fuerza": 7, "destreza": 12, "intelecto": 20, "espiritu": 16},
+			"growth": {"hp_per_level": 7, "armor_per_level": 0.3},
+			"move_speed": 4.0,
+			"dodge": {"cost": 15, "duration": 0.3, "distance": 4.0, "cooldown": 1.3},
+			"basic_attack": {"name_key": "skill.bruja.basic", "damage_type": "arcane", "attribute": "intelecto", "implemented": false},
+			"skills": [],
+			"ultimate": {"id": "manigua_despierta", "name_key": "skill.bruja.ultimate", "implemented": false},
+			"specializations": [
+				{"id": "senora_raices", "name_key": "spec.bruja.raices"},
+				{"id": "hija_tormenta", "name_key": "spec.bruja.tormenta"}
+			],
+			"playable_in_slice": false
+		},
+		{
+			"id": "sepulturero",
+			"name_key": "class.sepulturero.name",
+			"role_key": "class.sepulturero.role",
+			"resource": {"id": "ceniza", "name_key": "resource.ceniza", "base": 115, "per_level": 6},
+			"base_stats": {"hp": 95, "armor": 6, "fuerza": 8, "destreza": 11, "intelecto": 20, "espiritu": 18},
+			"growth": {"hp_per_level": 8, "armor_per_level": 0.4},
+			"move_speed": 4.0,
+			"dodge": {"cost": 15, "duration": 0.3, "distance": 4.0, "cooldown": 1.3},
+			"basic_attack": {"name_key": "skill.sepulturero.basic", "damage_type": "arcane", "attribute": "intelecto", "implemented": false},
+			"skills": [],
+			"ultimate": {"id": "patio_vuelven", "name_key": "skill.sepulturero.ultimate", "implemented": false},
+			"specializations": [
+				{"id": "capataz_ecos", "name_key": "spec.sepulturero.capataz"},
+				{"id": "lector_ceniza", "name_key": "spec.sepulturero.lector"}
+			],
+			"playable_in_slice": false
+		},
+		{
+			"id": "tirador",
+			"name_key": "class.tirador.name",
+			"role_key": "class.tirador.role",
+			"resource": {"id": "concentracion", "name_key": "resource.concentracion", "base": 100, "per_level": 5},
+			"base_stats": {"hp": 90, "armor": 5, "fuerza": 12, "destreza": 20, "intelecto": 10, "espiritu": 10},
+			"growth": {"hp_per_level": 8, "armor_per_level": 0.4},
+			"move_speed": 4.1,
+			"dodge": {"cost": 15, "duration": 0.3, "distance": 4.2, "cooldown": 1.2},
+			"basic_attack": {"name_key": "skill.tirador.basic", "damage_type": "physical", "attribute": "destreza", "implemented": false},
+			"skills": [],
+			"ultimate": {"id": "ultima_luz", "name_key": "skill.tirador.ultimate", "implemented": false},
+			"specializations": [
+				{"id": "ojo_faro", "name_key": "spec.tirador.ojo"},
+				{"id": "trampero_puerto", "name_key": "spec.tirador.trampero"}
+			],
+			"playable_in_slice": false
+		},
+		{
+			"id": "cimarron",
+			"name_key": "class.cimarron.name",
+			"role_key": "class.cimarron.role",
+			"resource": {"id": "vigor", "name_key": "resource.vigor", "base": 110, "per_level": 5},
+			"base_stats": {"hp": 95, "armor": 5, "fuerza": 13, "destreza": 20, "intelecto": 12, "espiritu": 10},
+			"growth": {"hp_per_level": 8, "armor_per_level": 0.4},
+			"move_speed": 4.6,
+			"dodge": {"cost": 15, "duration": 0.32, "distance": 5.0, "cooldown": 1.1},
+			"basic_attack": {"name_key": "skill.cimarron.basic", "damage_type": "physical", "attribute": "destreza", "implemented": false},
+			"skills": [],
+			"ultimate": {"id": "noche_testigos", "name_key": "skill.cimarron.ultimate", "implemented": false},
+			"specializations": [
+				{"id": "cuchilla_silente", "name_key": "spec.cimarron.cuchilla"},
+				{"id": "rastreador_libre", "name_key": "spec.cimarron.rastreador"}
+			],
+			"playable_in_slice": false
+		},
+		{
+			"id": "bardo",
+			"name_key": "class.bardo.name",
+			"role_key": "class.bardo.role",
+			"resource": {"id": "compas", "name_key": "resource.compas", "base": 100, "per_level": 5},
+			"base_stats": {"hp": 100, "armor": 7, "fuerza": 10, "destreza": 14, "intelecto": 13, "espiritu": 20},
+			"growth": {"hp_per_level": 9, "armor_per_level": 0.5},
+			"move_speed": 4.2,
+			"dodge": {"cost": 15, "duration": 0.3, "distance": 4.2, "cooldown": 1.2},
+			"basic_attack": {"name_key": "skill.bardo.basic", "damage_type": "arcane", "attribute": "espiritu", "implemented": false},
+			"skills": [],
+			"ultimate": {"id": "solar_entero", "name_key": "skill.bardo.ultimate", "implemented": false},
+			"specializations": [
+				{"id": "voz_solar", "name_key": "spec.bardo.voz"},
+				{"id": "tambor_guerra", "name_key": "spec.bardo.tambor"}
+			],
+			"playable_in_slice": false
+		}
+	],
+	"strings": {
+		"es": {
+			"class.machetero.name": "Machetero de la Sierra",
+			"class.machetero.role": "Guardián del batey — tanque / daño cuerpo a cuerpo sostenido",
+			"class.bruja.name": "Bruja de la Manigua",
+			"class.bruja.role": "Tejedora de tormentas — control de masas / daño arcano por zonas",
+			"class.sepulturero.name": "Sepulturero de Guanabacoa",
+			"class.sepulturero.role": "Pastor de los ecos — invocación / desgaste / control táctico",
+			"class.tirador.name": "Tirador del Malecón",
+			"class.tirador.role": "Ojo del faro — daño a distancia / ejecución",
+			"class.cimarron.name": "Cimarrón Sombrío",
+			"class.cimarron.role": "Sombra del jagüey — asesino / movilidad / daño explosivo",
+			"class.bardo.name": "Bardo del Solar",
+			"class.bardo.role": "Corazón del barrio — apoyo / control / daño híbrido",
+			"resource.vigor": "Vigor",
+			"resource.esencia": "Esencia",
+			"resource.ceniza": "Ceniza",
+			"resource.concentracion": "Concentración",
+			"resource.compas": "Compás",
+			"skill.machetero.basic": "Tajo de machete",
+			"skill.machetero.tajo": "Tajo de Guásima",
+			"skill.machetero.ultimate": "Huracán de Machetes",
+			"skill.bruja.ultimate": "Manigua Despierta",
+			"skill.sepulturero.ultimate": "El Patio de los que Vuelven",
+			"skill.tirador.ultimate": "Última Luz del Malecón",
+			"skill.cimarron.ultimate": "Noche sin Testigos",
+			"skill.bardo.ultimate": "El Solar Entero",
+			"spec.machetero.guardian": "Guardián del Batey",
+			"spec.machetero.hoja": "Hoja de la Sierra",
+			"spec.bruja.raices": "Señora de Raíces",
+			"spec.bruja.tormenta": "Hija de la Tormenta",
+			"spec.sepulturero.capataz": "Capataz de Ecos",
+			"spec.sepulturero.lector": "Lector de Ceniza",
+			"spec.tirador.ojo": "Ojo del Faro",
+			"spec.tirador.trampero": "Trampero del Puerto",
+			"spec.cimarron.cuchilla": "Cuchilla Silente",
+			"spec.cimarron.rastreador": "Rastreador Libre",
+			"spec.bardo.voz": "Voz del Solar",
+			"spec.bardo.tambor": "Tambor de Guerra"
+		}
+	}
+}

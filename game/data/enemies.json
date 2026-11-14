@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "note": "Catálogo de enemigos. Valores = hipótesis de diseño; validar con simulaciones (Fase 2). Los ids son estables y persistentes: no reutilizarlos para otro enemigo.",
+  "enemies": [
+    {
+      "id": "sombra_de_portal",
+      "name_key": "enemy.sombra_de_portal.name",
+      "description_key": "enemy.sombra_de_portal.desc",
+      "hp": 45,
+      "armor": 2,
+      "resistance": 1,
+      "damage": 12,
+      "damage_type": "physical",
+      "attribute": "fuerza",
+      "potency": 9.0,
+      "damage_coeff": 1.0,
+      "move_speed": 3.6,
+      "detect_radius": 9.0,
+      "lose_radius": 16.0,
+      "attack_range": 2.2,
+      "windup_time": 0.75,
+      "attack_window": 0.25,
+      "recover_time": 1.1,
+      "lunge_distance": 1.4,
+      "telegraph_color": "#c21f30",
+      "xp_first_kill": 18,
+      "xp_repeat": 4,
+      "respawn": false,
+      "drops": [
+        {
+          "item_id": "pocion_curativa",
+          "chance": 1.0
+        }
+      ],
+      "attribute_value": 14.0
+    }
+  ],
+  "strings": {
+    "es": {
+      "enemy.sombra_de_portal.name": "Sombra de Portal",
+      "enemy.sombra_de_portal.desc": "Figura alargada que se esconde bajo los portales y ataca cuando el camino queda sin luz."
+    }
+  }
+}
