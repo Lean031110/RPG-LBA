@@ -113,7 +113,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		toggle_inventory()
 		get_viewport().set_input_as_handled()
 		return
-	if _player == null:
+	if _player == null or _actions_blocked():
 		return
 	var arpg_player := _player as ArpgPlayer
 	if event.is_action_pressed("arpg_attack"):
@@ -182,6 +182,12 @@ func _wire_combat_signals() -> void:
 
 func is_dialog_open() -> bool:
 	return _dialog_panel != null and _dialog_panel.visible
+
+
+func _actions_blocked() -> bool:
+	## Con un diálogo abierto (hablar con Cheo) no se combate: los botones y
+	## el teclado de combate se ignoran hasta cerrarlo.
+	return is_dialog_open()
 
 
 func get_joystick_vector() -> Vector2:
@@ -463,7 +469,7 @@ func _round_action_button(icon: Texture2D, key_hint: String, diameter: float) ->
 
 
 func _on_action_pressed(action: String) -> void:
-	if _player == null:
+	if _player == null or _actions_blocked():
 		return
 	match action:
 		"attack":
@@ -479,7 +485,7 @@ func _on_action_pressed(action: String) -> void:
 
 
 func _on_block_down() -> void:
-	if _player != null:
+	if _player != null and not _actions_blocked():
 		(_player as ArpgPlayer).set_blocking(true)
 
 
@@ -627,7 +633,7 @@ func _build_skill_bar() -> void:
 
 
 func _on_skill_button_pressed(index: int) -> void:
-	if _player != null:
+	if _player != null and not _actions_blocked():
 		(_player as ArpgPlayer).try_skill_index(index)
 
 

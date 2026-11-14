@@ -6,8 +6,13 @@ extends CanvasLayer
 signal resume_requested
 signal exit_requested
 
+const EXIT_CONFIRM_TEXT := "¿Abandonar la partida? (Se guarda)"
+const EXIT_TEXT := "Salir al menú"
+
 var _root: Control
 var _profile_option: OptionButton
+var _exit_button: Button = null
+var _exit_armed := false
 
 
 func _ready() -> void:
@@ -18,11 +23,30 @@ func _ready() -> void:
 
 func open() -> void:
 	visible = true
+	_disarm_exit()
 	_sync_profile_option()
 
 
 func close() -> void:
 	visible = false
+
+
+func _on_exit_pressed() -> void:
+	## Confirmación en dos pasos: la primera pulsación arma el aviso (no hay
+	## abandono accidental de la partida); la segunda confirma.
+	if not _exit_armed:
+		_exit_armed = true
+		_exit_button.text = EXIT_CONFIRM_TEXT
+		_exit_button.modulate = Color(1.0, 0.75, 0.6)
+		return
+	exit_requested.emit()
+
+
+func _disarm_exit() -> void:
+	_exit_armed = false
+	if _exit_button != null:
+		_exit_button.text = EXIT_TEXT
+		_exit_button.modulate = Color(1, 1, 1, 1)
 
 
 func _build() -> void:
@@ -92,9 +116,9 @@ func _build() -> void:
 	volume.custom_minimum_size = Vector2(180, 24)
 	volume_row.add_child(volume)
 	volume.value_changed.connect(_on_volume_changed)
-	var exit := _button("Salir al menú")
-	exit.pressed.connect(func() -> void: exit_requested.emit())
-	box.add_child(exit)
+	_exit_button = _button(EXIT_TEXT)
+	_exit_button.pressed.connect(_on_exit_pressed)
+	box.add_child(_exit_button)
 	add_child(_root)
 	# Centrado por rect del viewport (iteración 4C: PRESET_CENTER puede
 	# quedar pegado arriba-izquierda en Android).
