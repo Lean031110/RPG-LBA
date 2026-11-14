@@ -139,3 +139,51 @@ func test_interact_prompt_follows_range() -> void:
 		await get_tree().physics_frame
 	slice._update_interact_prompt()
 	assert_bool(slice.hud._interact_button.visible).is_true()
+
+
+func test_full_combat_loop_with_real_kit() -> void:
+	## Fase 5: bucle de juego REAL en la escena de verdad — pelear con el kit
+	## completo (combo, habilidad, pesado), cobrar XP, cargar la definitiva y
+	## guardar/recargar sin corromper nada. Sin toques en estado privado.
+	SaveSystem.save_path = "user://tmp/combat_loop_%d.json" % (Time.get_ticks_msec() + randi() % 1000)
+	var slice := _make_slice()
+	var player := slice.player
+	## Un sombra de misión delante del jugador, a distancia de golpe.
+	var sombra: ArpgEnemy = null
+	for enemy: ArpgEnemy in slice._enemies:
+		if String(enemy.enemy_id) == "sombra_de_portal":
+			sombra = enemy
+			break
+	assert_object(sombra).is_not_null()
+	sombra.global_position = player.global_position + Vector3(0, 0, 1.5)
+	player.orient_to_input_or_forward()
+	var hp_before := sombra.hp
+	var charge_before := player.get_ultimate_charge()
+	var xp_before := player.xp_into_level + (player.level - 1) * 100
+	## Combate con la API pública: combo ligero + Tajo de Guásima + pesado.
+	for frame: int in 240:
+		await get_tree().physics_frame
+		if frame % 30 == 0:
+			player.try_attack()
+		if frame == 60:
+			player.try_skill_index(0)
+		if frame == 120:
+			player.try_heavy_attack()
+	## La sombra recibió daño real (o murió con su recompensa de XP) y el
+	## jugador cargó la definitiva golpeando.
+	var xp_after := player.xp_into_level + (player.level - 1) * 100
+	if is_instance_valid(sombra):
+		assert_float(sombra.hp).is_less(hp_before)
+	else:
+		## Murió: primera victoria de sombra = 18 XP reales.
+		assert_int(xp_after - xp_before).is_greater_equal(18)
+	assert_float(player.get_ultimate_charge()).is_greater(charge_before)
+	## Guardado y recarga con los sistemas reales.
+	var payload := SaveSystem.build_payload(player.serialize(), QuestSystem.serialize(), GraphicsSettings.serialize())
+	SaveSystem.save_game(payload)
+	var loaded: Dictionary = SaveSystem.load_game()
+	assert_bool(loaded.is_empty()).is_false()
+	assert_int(int(loaded["player"]["level"])).is_equal(player.level)
+	assert_float(float(loaded["player"]["ultimate_charge"])).is_equal(player.get_ultimate_charge())
+	if FileAccess.file_exists(SaveSystem.save_path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(SaveSystem.save_path))
