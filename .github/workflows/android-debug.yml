@@ -8,6 +8,7 @@ on:
       - develop
       - 'agent/**'
       - 'feature/**'
+      - 'fix/**'
     tags: ['v*']
 
 permissions:
@@ -21,11 +22,12 @@ env:
   GODOT_VERSION: "4.7.2"
   PACKAGE: com.lbagames.rpglba
   # Constantes de layout del menu medidas con scripts/local/measure_menu_layout.gd
-  # (canvas 1280x720). Solo documentativas: el script de emulador las recalcula.
-  MENU_TAP_NEW_GAME_Y: "423"
-  MENU_TAP_PLAY_DX: "174"
-  MENU_TAP_PLAY_DY: "159"
-  MENU_TAP_PROTO_Y: "489"
+  # (canvas 1280x720; iteracion 4C: la app arranca en la PRESENTACION, que el
+  # script de emulador salta con un tap al centro antes de medir). Solo
+  # documentativas: el script de emulador las recalcula desde wm size.
+  MENU_TAP_NEW_GAME_Y: "358"
+  MENU_TAP_PLAY_DX: "-81"
+  MENU_TAP_PLAY_DY: "76.5"
 
 jobs:
   build-sign-verify:
@@ -209,19 +211,25 @@ jobs:
              -> permite tu explorador de archivos o tu navegador.
           5. Abre el .apk EXTRAIDO con el instalador de paquetes.
 
-          SI FALLA LA INSTALACION
-          Causas ya DESCARTADAS en el artefacto (verificacion estatica PASS):
-          firma v2+v3 de la autofirma del proyecto, manifiesto valido
-          (com.lbagames.rpglba, minSdk 24, targetSdk 36), ABIs correctos,
-          zipalign PASS y resources.arsc Stored.
-          Causas posibles:
-          - Instalaste el .zip sin extraer -> extrae primero (causa mas comun).
-          - Descarga truncada o corrupta -> compara SHA-256 y re-descarga.
-          - Resto de una instalacion previa con OTRA firma -> desinstala la
-            anterior (con autorizacion): INSTALL_FAILED_UPDATE_INCOMPATIBLE.
-          - Para obtener el codigo de error exacto:
-            adb install -r RPG-LBA-Android-ARM64-debug.apk
-            y reporta el INSTALL_* que aparezca.
+          SI FALLA LA INSTALACION (protocolo S22 Ultra)
+          Diagnostico de la v0.1.0 (ARM64 fallo en el S22 Ultra, la Universal
+          funciono): el APK publicado era VALIDO (SHA-256 identico al verificado
+          en CI; firma v2+v3; manifiesto com.lbagames.rpglba, minSdk 24,
+          targetSdk 36; zipalign PASS; resources.arsc Stored; las librerias
+          arm64 son byte-identicas en ambas variantes y el ARM64 es un
+          subconjunto estructural de la Universal). La CI lo INSTALO Y ARRANCO
+          en emulador API 35 (traduccion ARM). Conclusion: el fallo estuvo en
+          la copia local del telefono. Antes de reportar un fallo:
+          1. Verifica el TAMANO EXACTO en bytes contra esta release (un APK
+             truncado "pesa mas o menos" lo mismo y da "Error al analizar").
+          2. Verifica el SHA-256 (app "Hash Droid" o adb):
+             adb shell sha256sum /sdcard/Download/RPG-LBA-Android-ARM64-debug.apk
+          3. Si el hash NO coincide: borra el archivo, RE-DescARGA con otra
+             red/browser y vuelve a verificar.
+          4. Si el hash COINCIDE y aun falla: desinstala cualquier version
+             previa de "RPG LBA" y reintenta; luego reporta el codigo exacto:
+             adb install -r RPG-LBA-Android-ARM64-debug.apk
+             (linea Failure [INSTALL_...]).
 
           Este APK es de DEBUG con la autofirma publica del proyecto
           (build/android/rpglba-debug.keystore). No usar para produccion.
