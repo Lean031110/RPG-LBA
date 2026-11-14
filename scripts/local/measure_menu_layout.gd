@@ -8,6 +8,9 @@ extends SceneTree
 ##
 ## La salida es determinista (fuentes y textos fijos); si cambia el menú,
 ## volver a ejecutar y actualizar las constantes en android-debug.yml.
+##
+## Iteración 4C: la app arranca en la PRESENTACIÓN (intro_splash); el emulador
+## la salta con un tap al centro y espera al menú antes de medir los taps.
 
 
 func _initialize() -> void:
@@ -27,16 +30,13 @@ func _run() -> void:
 	await process_frame
 	var canvas := Vector2(1280.0, 720.0)
 	var new_game := _find_button(menu, "Nueva partida")
-	var proto := _find_button(menu, "Prototipo (Fase 2)")
-	if new_game == null or proto == null:
-		push_error("measure_menu_layout: botones no encontrados")
+	if new_game == null:
+		push_error("measure_menu_layout: boton Nueva partida no encontrado")
 		quit(1)
 		return
 	var ng_center := new_game.global_position + new_game.size / 2.0
-	var pr_center := proto.global_position + proto.size / 2.0
 	print("MENU canvas=%s" % [canvas])
 	print("MENU nueva_partida centro=%s (offset_y_desde_arriba=%.1f)" % [ng_center, ng_center.y])
-	print("MENU prototipo centro=%s (offset_y_desde_arriba=%.1f)" % [pr_center, pr_center.y])
 	menu._on_new_game_pressed()
 	await process_frame
 	await process_frame

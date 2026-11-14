@@ -8,6 +8,7 @@ on:
       - develop
       - 'agent/**'
       - 'feature/**'
+      - 'fix/**'
     tags: ['v*']
 
 permissions:
@@ -21,11 +22,12 @@ env:
   GODOT_VERSION: "4.7.2"
   PACKAGE: com.lbagames.rpglba
   # Constantes de layout del menu medidas con scripts/local/measure_menu_layout.gd
-  # (canvas 1280x720). Solo documentativas: el script de emulador las recalcula.
-  MENU_TAP_NEW_GAME_Y: "423"
-  MENU_TAP_PLAY_DX: "174"
-  MENU_TAP_PLAY_DY: "159"
-  MENU_TAP_PROTO_Y: "489"
+  # (canvas 1280x720; iteracion 4C: la app arranca en la PRESENTACION, que el
+  # script de emulador salta con un tap al centro antes de medir). Solo
+  # documentativas: el script de emulador las recalcula desde wm size.
+  MENU_TAP_NEW_GAME_Y: "358"
+  MENU_TAP_PLAY_DX: "-81"
+  MENU_TAP_PLAY_DY: "76.5"
 
 jobs:
   build-sign-verify:
@@ -198,28 +200,36 @@ jobs:
             package: se puede instalar encima de la variante ARM64 y viceversa.
 
           COMO INSTALARLO (pasos exactos)
-          1. Descarga el artefacto ZIP desde la pagina de Actions.
-          2. EXTRAE el ZIP: dentro hay UN archivo .apk y los informes.
-             NO intentes instalar el .zip: un ZIP no es un APK y Android
+          1. Descarga el archivo .apk DIRECTO desde la pagina de Releases
+             (github.com/Lean031110/RPG-LBA/releases). Si descargaste un
+             artefacto ZIP desde la pagina de Actions, EXTRAE primero el ZIP.
+          2. NO intentes instalar un .zip: un ZIP no es un APK y Android
              respondera "Error al analizar el paquete" (INSTALL_PARSE_FAILED_NOT_APK).
-          3. Verifica el SHA-256 del .apk contra SHA256SUMS.txt.
+          3. Verifica el SHA-256 del .apk contra SHA256SUMS.txt (en la misma
+             release o dentro del artefacto de Actions).
           4. En el telefono: Ajustes -> Seguridad -> "Instalar apps desconocidas"
              -> permite tu explorador de archivos o tu navegador.
           5. Abre el .apk EXTRAIDO con el instalador de paquetes.
 
-          SI FALLA LA INSTALACION
-          Causas ya DESCARTADAS en el artefacto (verificacion estatica PASS):
-          firma v2+v3 de la autofirma del proyecto, manifiesto valido
-          (com.lbagames.rpglba, minSdk 24, targetSdk 36), ABIs correctos,
-          zipalign PASS y resources.arsc Stored.
-          Causas posibles:
-          - Instalaste el .zip sin extraer -> extrae primero (causa mas comun).
-          - Descarga truncada o corrupta -> compara SHA-256 y re-descarga.
-          - Resto de una instalacion previa con OTRA firma -> desinstala la
-            anterior (con autorizacion): INSTALL_FAILED_UPDATE_INCOMPATIBLE.
-          - Para obtener el codigo de error exacto:
-            adb install -r RPG-LBA-Android-ARM64-debug.apk
-            y reporta el INSTALL_* que aparezca.
+          SI FALLA LA INSTALACION (protocolo S22 Ultra)
+          Diagnostico de la v0.1.0 (ARM64 fallo en el S22 Ultra, la Universal
+          funciono): el APK publicado era VALIDO (SHA-256 identico al verificado
+          en CI; firma v2+v3; manifiesto com.lbagames.rpglba, minSdk 24,
+          targetSdk 36; zipalign PASS; resources.arsc Stored; las librerias
+          arm64 son byte-identicas en ambas variantes y el ARM64 es un
+          subconjunto estructural de la Universal). La CI lo INSTALO Y ARRANCO
+          en emulador API 35 (traduccion ARM). Conclusion: el fallo estuvo en
+          la copia local del telefono. Antes de reportar un fallo:
+          1. Verifica el TAMANO EXACTO en bytes contra esta release (un APK
+             truncado "pesa mas o menos" lo mismo y da "Error al analizar").
+          2. Verifica el SHA-256 (app "Hash Droid" o adb):
+             adb shell sha256sum /sdcard/Download/RPG-LBA-Android-ARM64-debug.apk
+          3. Si el hash NO coincide: borra el archivo, RE-DescARGA con otra
+             red/browser y vuelve a verificar.
+          4. Si el hash COINCIDE y aun falla: desinstala cualquier version
+             previa de "RPG LBA" y reintenta; luego reporta el codigo exacto:
+             adb install -r RPG-LBA-Android-ARM64-debug.apk
+             (linea Failure [INSTALL_...]).
 
           Este APK es de DEBUG con la autofirma publica del proyecto
           (build/android/rpglba-debug.keystore). No usar para produccion.
@@ -454,3 +464,109 @@ jobs:
             echo "  menu, nueva partida, movimiento, combate, inventario, minimapa,"
             echo "  orientacion, suspender/reanudar, temperatura 15-30 min, FPS y RAM)."
           } >> "$GITHUB_STEP_SUMMARY"
+
+  publish-release:
+    # Solo en pushes de tag v*: publica la release con los APK verificados.
+    # Se anadio tras el tag v0.1.0-fase4-debug (publicado a mano con PAT):
+    # el objetivo es que el flujo completo build->verifica->emulador->release
+    # sea reproducible sin credenciales del agente, solo con GITHUB_TOKEN.
+    name: Publicar release con APK (solo tags v*)
+    needs: [build-sign-verify, emulator-x86_64, arm64-abi-sanity, informe]
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar artefactos de APK e informes
+        uses: actions/download-artifact@v4
+        with:
+          # Terminan en '-debug': solo los dos artefactos de APK (las evidencias
+          # de emulador/sanity terminan en '-evidence' y no casan aqui).
+          pattern: 'RPG-LBA-Android-*-debug'
+          merge-multiple: true
+          path: dist
+
+      - name: Descargar evidencia de emulador (API 35)
+        uses: actions/download-artifact@v4
+        with:
+          name: RPG-LBA-Android-emulator-api35-x86_64-evidence
+          path: evidence35
+
+      - name: Preparar notas y assets con nombres estables
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          ls -la dist evidence35 || true
+          # Nombres estables para el propietario (los del release manual previo).
+          mv "dist/RPG-LBA-Android-ARM64-debug_verification_report.txt" "dist/informe_verificacion_ARM64.txt"
+          mv "dist/RPG-LBA-Android-Universal-debug_verification_report.txt" "dist/informe_verificacion_Universal.txt"
+          if [ -f "evidence35/screenshot_00_intro.png" ]; then
+            cp "evidence35/screenshot_00_intro.png" "dist/captura_presentacion.png"
+          fi
+          cp "evidence35/screenshot_01_menu.png" "dist/captura_menu_principal.png"
+          if [ -f "evidence35/screenshot_02_valdeluz.png" ]; then
+            cp "evidence35/screenshot_02_valdeluz.png" "dist/captura_valdeluz.png"
+          elif [ -f "evidence35/screenshot_02_prototipo.png" ]; then
+            cp "evidence35/screenshot_02_prototipo.png" "dist/captura_prototipo.png"
+          fi
+          [ -f "evidence35/perf_emulator.txt" ] && cp "evidence35/perf_emulator.txt" dist/ || true
+
+          {
+            echo "## RPG LBA ${TAG} (debug, autofirma)"
+            echo ""
+            echo "APK de depuracion firmados con la autofirma del proyecto (solo desarrollo)."
+            echo "- Instalacion recomendada: \`RPG-LBA-Android-ARM64-debug.apk\` (Redmi 9C moderno o superior, Samsung S22 Ultra, mayoria de telefonos desde ~2018)."
+            echo "- Alternativa: \`RPG-LBA-Android-Universal-debug.apk\` (incluye armeabi-v7a; telefonos antiguos de 32 bits)."
+            echo ""
+            echo "Verifica la integridad con SHA256SUMS.txt antes de instalar:"
+            echo '```'
+            cat dist/SHA256SUMS.txt
+            echo '```'
+            echo "Pasos de instalacion y diagnostico: LEEME_INSTALACION.txt (incluido)."
+            echo ""
+            echo "### Alcance de la verificacion (honesto)"
+            echo "- Verificacion estatica (firma v2+v3, zipalign, manifiesto, ABIs, recursos): PASS en CI."
+            echo "- Instalacion + arranque + capturas en emulador x86_64 API 35 y 36: PASS en CI (variante Universal)."
+            echo "- Sanity ABI de la variante ARM64: rechazo exacto INSTALL_FAILED_NO_MATCHING_ABIS en x86_64 (parseo+firma validados) y ejecucion via traduccion ARM en la imagen google_apis API 35."
+            echo "- Dispositivos fisicos (Redmi 9C, Samsung S22 Ultra): PENDIENTE de pruebas del propietario (protocolo en docs/16_COMPATIBILIDAD_ANDROID.md). Ninguna promesa de FPS en hardware real."
+          } > dist/NOTAS_RELEASE.md
+
+      - name: Crear o actualizar release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Este job no hace checkout: gh necesita el repositorio explicito
+          # (corrida 43615421926 falló con "fatal: not a git repository").
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          cd dist
+          ASSETS=(
+            "RPG-LBA-Android-ARM64-debug.apk"
+            "RPG-LBA-Android-Universal-debug.apk"
+            "informe_verificacion_ARM64.txt"
+            "informe_verificacion_Universal.txt"
+            "SHA256SUMS.txt"
+            "LEEME_INSTALACION.txt"
+            "NOTAS_RELEASE.md"
+            "captura_menu_principal.png"
+          )
+          [ -f captura_presentacion.png ] && ASSETS+=("captura_presentacion.png")
+          [ -f captura_valdeluz.png ] && ASSETS+=("captura_valdeluz.png")
+          [ -f captura_prototipo.png ] && ASSETS+=("captura_prototipo.png")
+          [ -f perf_emulator.txt ] && ASSETS+=("perf_emulator.txt")
+
+          if gh release view "$TAG" --json name >/dev/null 2>&1; then
+            echo "La release $TAG ya existe; se actualizan los assets."
+            gh release upload "$TAG" "${ASSETS[@]}" --clobber
+          else
+            gh release create "$TAG" "${ASSETS[@]}" \
+              --verify-tag \
+              --title "RPG LBA ${TAG} — debug (Redmi 9C + S22 Ultra, ARM64 + Universal)" \
+              --notes-file NOTAS_RELEASE.md
+          fi
+          echo "Release publicada:"; gh release view "$TAG" --json assets --jq '.assets[].name'

@@ -112,7 +112,9 @@ func _apply(value: Vector2) -> void:
 func _draw_joystick() -> void:
 	var center := size * 0.5
 	draw_circle(center, radius, Color(0.08, 0.09, 0.12, 0.42))
-	draw_arc(center, radius - 3.0, 0.0, TAU, 40, COLOR_ACCENT, 2.0)
+	# Aro dorado del emblema (iteración 4C); se aviva mientras el dedo manda.
+	var ring_alpha := 0.55 if _value.length() > 0.05 else 0.35
+	draw_arc(center, radius - 3.0, 0.0, TAU, 40, Color("c99543", ring_alpha), 2.0)
 	var knob_offset := _value * (radius - knob_radius)
 	draw_circle(center + knob_offset, knob_radius, Color(0.16, 0.18, 0.24, 0.82))
 	draw_circle(center + knob_offset, knob_radius - 4.0, COLOR_TEXT_DIM)

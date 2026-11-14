@@ -88,6 +88,10 @@ func setup(new_class_id: String) -> void:
 		# Fase 2: pegado al suelo en bajadas de pendiente/rampa (evita micro-vuelos al bajar).
 
 		# Fase 3: inventario de equipo propio (serializable con el resto del estado).
+
+		# Fase 2: pegado al suelo en bajadas de pendiente/rampa (evita micro-vuelos al bajar).
+
+		# Fase 3: inventario de equipo propio (serializable con el resto del estado).
 	collision_layer = BODY_LAYER
 	collision_mask = BODY_MASK
 	_build_body_shape()
@@ -132,7 +136,9 @@ func _recalculate_from_level() -> void:
 	var growth: Dictionary = class_data.get("growth", {})
 	var resource: Dictionary = class_data.get("resource", {})
 	var levels_from_base := maxi(level - 1, 0)
-	max_hp = float(class_data["base_stats"].get("hp", 100)) + float(growth.get("hp_per_level", 0.0)) * levels_from_base
+	max_hp = (
+		float(class_data["base_stats"].get("hp", 100)) + float(growth.get("hp_per_level", 0.0)) * levels_from_base
+	)
 	armor = (
 		float(class_data["base_stats"].get("armor", 0)) + float(growth.get("armor_per_level", 0.0)) * levels_from_base
 	)
@@ -174,9 +180,33 @@ func get_potions() -> int:
 	return potions
 
 
+## Recargas restantes y totales (HUD: indicadores radiales de habilidad/esquiva).
+
+
+func get_skill_cooldown_left() -> float:
+	return _skill_cooldown_left
+
+
+func get_skill_cooldown_total() -> float:
+	var skills: Array = class_data.get("skills", [])
+	if skills.is_empty():
+		return 0.0
+	return float(skills[0].get("cooldown", 5.0))
+
+
+func get_dodge_cooldown_left() -> float:
+	return _dodge_cooldown_left
+
+
+func get_dodge_cooldown_total() -> float:
+	return float(class_data.get("dodge", {}).get("cooldown", 1.2))
+
+
 func add_xp(amount: int) -> void:
 	if amount <= 0 or _dead:
 		return
+
+		# Diseño de la rebanada: al subir de nivel se restaura por completo (decisión documentada).
 
 		# Diseño de la rebanada: al subir de nivel se restaura por completo (decisión documentada).
 	var result := ProgressionService.add_xp(level, xp_into_level, amount, RpgDB.get_progression())
@@ -235,13 +265,25 @@ func try_dodge() -> bool:
 		return false
 
 		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
 	if _dodge_cooldown_left > 0.0:
 		return false
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
 
 		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
 	var cost := float(class_data.get("dodge", {}).get("cost", 15))
 	if vigor < cost:
 		return false
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
 
 		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
 	var dodge: Dictionary = class_data.get("dodge", {})
@@ -412,6 +454,15 @@ func _physics_process(delta: float) -> void:
 		# Giro y ciclo de pasos siguen la velocidad REAL del cuerpo: sin deslizamiento visual.
 
 		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
+
+		# Fase 3: el tier de locomoción (caminar/correr) sale de la magnitud de entrada;
+		# la velocidad objetivo del tier se persigue con la aceleración de la Fase 2.
+
+		# Giro y ciclo de pasos siguen la velocidad REAL del cuerpo: sin deslizamiento visual.
+
+		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
+
+		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 	_tick_timers(delta)
 	_update_run_blend(delta)
 	if not is_dodging and _action_params.is_empty():
@@ -431,8 +482,12 @@ func _physics_process(delta: float) -> void:
 			_face_towards(planar.normalized(), delta)
 			_walk_phase += delta * planar_speed * (2.4 + _run_blend * 0.8)
 			_animate_walk(_walk_phase)
+
+			# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 		else:
 			_animate_idle(delta)
+
+			# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 
 		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 	else:
@@ -565,6 +620,18 @@ func _apply_hitbox_damage(params: Dictionary) -> void:
 		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
 
 		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
+
+		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
+
+		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
+
+		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
 	for body: Node in _hitbox_area.get_overlapping_bodies():
 		if body == self or body in _bodies_hit_this_swing:
 			continue
@@ -572,8 +639,20 @@ func _apply_hitbox_damage(params: Dictionary) -> void:
 			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
 
 			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
+
+			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
+
+			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
 		if not body.has_method("take_damage"):
 			continue
+
+			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
 
 			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
 
@@ -667,6 +746,8 @@ func restore(data: Dictionary) -> void:
 		return
 
 		# Fase 3: el inventario llega en partidas guardadas nuevas; en las viejas queda vacío.
+
+		# Fase 3: el inventario llega en partidas guardadas nuevas; en las viejas queda vacío.
 	_reset_stats()
 	level = int(data.get("level", 1))
 	xp_into_level = int(data.get("xp_into_level", 0))
@@ -746,49 +827,31 @@ func _build_visual() -> void:
 	VisualKit.add_box(arm_l, Vector3(0.13, 0.2, 0.15), Vector3(0, -0.42, 0), skin)
 	VisualKit.add_box(arm_r, Vector3(0.13, 0.2, 0.15), Vector3(0, -0.42, 0), skin)
 	# Cara legible desde la cámara isométrica: ojos y bigote bajo el ala del sombrero.
-	VisualKit.add_box(
-		puppet, Vector3(0.05, 0.05, 0.03), Vector3(-0.06, 1.5, 0.19), VisualKit.flat_material(Color(0.09, 0.07, 0.06))
-	)
-	VisualKit.add_box(
-		puppet, Vector3(0.05, 0.05, 0.03), Vector3(0.06, 1.5, 0.19), VisualKit.flat_material(Color(0.09, 0.07, 0.06))
-	)
-	VisualKit.add_box(
-		puppet, Vector3(0.13, 0.045, 0.05), Vector3(0, 1.43, 0.21), VisualKit.flat_material(Color(0.14, 0.1, 0.08))
-	)
+	var eye_mat := VisualKit.flat_material(Color(0.09, 0.07, 0.06))
+	VisualKit.add_box(puppet, Vector3(0.05, 0.05, 0.03), Vector3(-0.06, 1.5, 0.19), eye_mat)
+	VisualKit.add_box(puppet, Vector3(0.05, 0.05, 0.03), Vector3(0.06, 1.5, 0.19), eye_mat)
+	var mustache_mat := VisualKit.flat_material(Color(0.14, 0.1, 0.08))
+	VisualKit.add_box(puppet, Vector3(0.13, 0.045, 0.05), Vector3(0, 1.43, 0.21), mustache_mat)
 	# Cinta del sombrero: acento oscuro bajo la copa.
-	VisualKit.add_cylinder(puppet, 0.245, 0.05, Vector3(0, 1.6, 0), VisualKit.flat_material(Color(0.14, 0.1, 0.07)), 10)
+	var band_mat := VisualKit.flat_material(Color(0.14, 0.1, 0.07))
+	VisualKit.add_cylinder(puppet, 0.245, 0.05, Vector3(0, 1.6, 0), band_mat, 10)
 	# Talega al hombro: correa diagonal + bolsillo (lee "viajero").
-	var strap := VisualKit.add_box(
-		puppet,
-		Vector3(0.08, 0.78, 0.05),
-		Vector3(0.1, 1.1, 0),
-		VisualKit.flat_material(VisualKit.MAT_WOOD.darkened(0.15))
-	)
+	var strap_mat := VisualKit.flat_material(VisualKit.MAT_WOOD.darkened(0.15))
+	var strap := VisualKit.add_box(puppet, Vector3(0.08, 0.78, 0.05), Vector3(0.1, 1.1, 0), strap_mat)
 	strap.rotation_degrees.z = 24.0
-	VisualKit.add_box(
-		puppet,
-		Vector3(0.24, 0.18, 0.1),
-		Vector3(-0.2, 0.94, 0),
-		VisualKit.flat_material(VisualKit.MAT_HAT_STRAW.darkened(0.3))
-	)
+	var bag_mat := VisualKit.flat_material(VisualKit.MAT_HAT_STRAW.darkened(0.3))
+	VisualKit.add_box(puppet, Vector3(0.24, 0.18, 0.1), Vector3(-0.2, 0.94, 0), bag_mat)
 	# Vaina del machete en la cadera izquierda: el de la mano es el de combate.
 	var sheath := Node3D.new()
 	sheath.position = Vector3(-0.3, 0.78, -0.12)
 	sheath.rotation_degrees = Vector3(6.0, 18.0, 12.0)
 	puppet.add_child(sheath)
-	VisualKit.add_box(
-		sheath,
-		Vector3(0.07, 0.5, 0.12),
-		Vector3(0, 0.24, 0),
-		VisualKit.flat_material(VisualKit.MAT_WOOD.darkened(0.25))
-	)
+	var sheath_mat := VisualKit.flat_material(VisualKit.MAT_WOOD.darkened(0.25))
+	VisualKit.add_box(sheath, Vector3(0.07, 0.5, 0.12), Vector3(0, 0.24, 0), sheath_mat)
 	# Yuntas/botas con suela: masa visual abajo, mejor lectura de apoyo.
-	VisualKit.add_box(
-		leg_l, Vector3(0.2, 0.05, 0.28), Vector3(0, -0.61, 0.05), VisualKit.flat_material(Color(0.1, 0.07, 0.05))
-	)
-	VisualKit.add_box(
-		leg_r, Vector3(0.2, 0.05, 0.28), Vector3(0, -0.61, 0.05), VisualKit.flat_material(Color(0.1, 0.07, 0.05))
-	)
+	var sole_mat := VisualKit.flat_material(Color(0.1, 0.07, 0.05))
+	VisualKit.add_box(leg_l, Vector3(0.2, 0.05, 0.28), Vector3(0, -0.61, 0.05), sole_mat)
+	VisualKit.add_box(leg_r, Vector3(0.2, 0.05, 0.28), Vector3(0, -0.61, 0.05), sole_mat)
 	_puppet = {
 		"root": puppet,
 		"leg_l": leg_l,
@@ -823,6 +886,8 @@ func _animate_idle(delta: float) -> void:
 		return
 
 		# Fase 4B: el rebote del paso vuelve al suelo en reposo.
+
+		# Fase 4B: el rebote del paso vuelve al suelo en reposo.
 	_walk_phase += delta * 1.6
 	var breathe := sin(_walk_phase) * 0.04
 	var root := _puppet["root"] as Node3D
@@ -839,6 +904,8 @@ func _animate_idle(delta: float) -> void:
 func _animate_action(delta: float) -> void:
 	if _puppet.is_empty():
 		return
+
+		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
 
 		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
 

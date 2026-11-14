@@ -14,8 +14,10 @@
 #   BOOT_BUDGET_S   presupuesto de arranque en s (default 480)
 #   RENDER_BUDGET_S presupuesto del primer fotograma no negro en s (default 240)
 #   TRY_VALDELUZ    "1" = capturar tambien una escena jugable:
-#                   tap "Nueva partida" -> "Jugar" (Valdeluz); si falla, fallback
-#                   a "Prototipo (Fase 2)" con relanzamiento.
+#                   tap al centro (salta la presentacion) -> "Nueva partida"
+#                   -> "Jugar" (Valdeluz). Iteracion 4C: sin fallback a
+#                   Prototipo (el menu ya no lo expone); si Valdeluz no
+#                   carga, la corrida falla con evidencia.
 #
 # Requiere: adb/avdmanager/emulator en PATH, KVM accesible, y que sdkmanager ya
 # haya instalado la imagen ANDROID_IMAGE.
@@ -274,9 +276,25 @@ _wait_render() {
   return 1
 }
 
-echo "== Menu render =="
-if ! _wait_render "$RENDER_BUDGET_S" menu; then
-  echo "ERROR: el menu no se presento." >&2
+echo "== Intro render + salto hacia el menu =="
+# Iteracion 4C: la app arranca en la PRESENTACION cinematografica (intro).
+if ! _wait_render "$RENDER_BUDGET_S" intro; then
+  echo "ERROR: la presentacion no aparecio." >&2
+  _dump_failure_evidence
+  exit 1
+fi
+adb exec-out screencap -p > "$OUT/screenshot_00_intro.png"
+# Un tap en cualquier punto salta la presentacion (skip integrado).
+sleep 1
+W_H=$(adb shell wm size | tr -d '\r')
+W=$(echo "$W_H" | grep -oE '[0-9]+x[0-9]+' | head -1 | cut -d'x' -f1)
+H=$(echo "$W_H" | grep -oE '[0-9]+x[0-9]+' | head -1 | cut -d'x' -f2)
+# wm size devuelve portrait (1080x1920): en landscape el largo es el mayor.
+if [ "${W:-0}" -lt "${H:-0}" ]; then TMPX=$W; W=$H; H=$TMPX; fi
+adb shell input tap $((W / 2)) $((H / 2))
+sleep 3
+if ! _wait_render 90 menu; then
+  echo "ERROR: el menu no se presento tras saltar la presentacion." >&2
   _dump_failure_evidence
   exit 1
 fi
@@ -287,9 +305,10 @@ adb exec-out screencap -p > "$OUT/screenshot_01_menu.png"
 # coinciden con el framebuffer (2880 vs 1920; corridas 43482533022/43486543259):
 # las capturas se guardan igual (son contenido real), pero los taps ABSOLUTOS
 # se calculan desde wm size y se registran las dims del PNG para diagnostico.
-# Layout medido (scripts/local/measure_menu_layout.gd; canvas 1280x720):
-#   Nueva partida: (w/2, 423*escala);  Jugar: (w/2+174*esc, h/2+159*esc);
-#   Prototipo:     (w/2, 489*escala).  escala = min(w/1280, h/720) en landscape.
+# Layout medido (scripts/local/measure_menu_layout.gd; canvas 1280x720,
+# iteracion 4C sin boton de prototipo en el menu):
+#   Nueva partida: (w/2, 358*escala);  Jugar: (w/2-81*esc, h/2+76.5*esc);
+#   escala = min(w/1280, h/720) en landscape.
 adb shell wm size | tr -d '\r' > "$OUT/wm_size.txt" || true
 cat "$OUT/wm_size.txt" || true
 _grab
@@ -314,16 +333,15 @@ scale = min(w / 1280.0, h / 720.0)
 # OJO: w/2 y h/2 YA estan en pixeles (no se escalan); solo las coordenadas de
 # diseno (423/489 y los offsets del panel) llevan escala. El bug anterior
 # (corrida 43488263754): pt(w/2, 423) aplicaba escala a w/2 (1440 en vez de 960).
-# Jugar: panel de clase centrado desde el viewport (corrida 43495554774: el panel
-# quedaba arriba-izquierda); offset final medido: centro + (-152, +44.5).
-t1 = (w // 2, int(round(423 * scale)))                        # Nueva partida
-t2 = (int(round(w / 2 - 152 * scale)), int(round(h / 2 + 44.5 * scale)))  # Jugar
-t3 = (w // 2, int(round(489 * scale)))                        # Prototipo
-print(t1[0], t1[1], t2[0], t2[1], t3[0], t3[1])
+# Jugar: panel de clase centrado desde el viewport y recentrado en cada
+# reorden interno (sort_children; iteracion 4C). Offset medido: (-81, +76.5).
+t1 = (w // 2, int(round(358 * scale)))                        # Nueva partida
+t2 = (int(round(w / 2 - 81 * scale)), int(round(h / 2 + 76.5 * scale)))   # Jugar
+print(t1[0], t1[1], t2[0], t2[1], t2[0], t2[1])
 PY
 )
 EOF
-echo "taps (wm size): nueva_partida=($T1_X,$T1_Y) jugar=($T2_X,$T2_Y) prototipo=($T3_X,$T3_Y)"
+echo "taps (wm size): nueva_partida=($T1_X,$T1_Y) jugar=($T2_X,$T2_Y)"
 
 if [ "$TRY_VALDELUZ" = "1" ]; then
   echo "== Escena jugable: Valdeluz (mejor esfuerzo, fallback a Prototipo) =="
@@ -362,30 +380,11 @@ if [ "$TRY_VALDELUZ" = "1" ]; then
   if [ "$scene_ok" = "1" ]; then
     echo "playable_capture=valdeluz" | tee -a "$OUT/install.txt"
   else
-    echo "NOTE: Valdeluz no presento fotograma con cielo; relanzo para Prototipo." | tee -a "$OUT/install.txt"
-    adb shell am force-stop "$PACKAGE"
-    sleep 2
-    adb shell am start -n "$COMPONENT"
-    sleep 25
-    if ! _wait_render 120 menu_relance; then
-      echo "ERROR: el menu no se presento tras relanzar." >&2
-      _dump_failure_evidence
-      exit 1
-    fi
-    adb shell input tap "$T3_X" "$T3_Y"
-    sleep 8
-    if _wait_render "$RENDER_BUDGET_S" prototipo; then
-      adb exec-out screencap -p > "$OUT/screenshot_02_prototipo.png"
-      if cmp -s "$OUT/screenshot_01_menu.png" "$OUT/screenshot_02_prototipo.png"; then
-        echo "ERROR: captura del Prototipo identica al menu (el tap no entro)." >&2
-        _dump_failure_evidence
-        exit 1
-      fi
-      echo "playable_capture=prototipo_fallback" | tee -a "$OUT/install.txt"
-    else
-      echo "ERROR: tampoco el Prototipo presento fotograma." >&2
-      exit 1
-    fi
+    # Iteracion 4C: el menu ya no expone el prototipo (pantalla profesional);
+    # si Valdeluz no carga, la CI falla con evidencia en vez de esconderlo.
+    echo "ERROR: Valdeluz no presento fotograma jugable." >&2
+    _dump_failure_evidence
+    exit 1
   fi
 fi
 

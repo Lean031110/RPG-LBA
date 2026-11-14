@@ -11,6 +11,7 @@ extends CanvasLayer
 signal joystick_changed(vector: Vector2)
 signal dialog_accepted
 signal dialog_closed
+signal pause_requested
 
 const COLOR_PANEL := Color("14161c")
 const COLOR_PANEL_LINE := Color("2a2e38")
@@ -21,6 +22,7 @@ const COLOR_VIGOR := Color("c98a2d")
 const COLOR_XP := Color("b08d3c")
 const COLOR_ACCENT := Color("1e3a4a")
 const COLOR_DANGER := Color("e0503e")
+const COLOR_GOLD := Color("c99543")
 ## Fase 3: transparencias del HUD móvil (semitransparente, referencia Diablo/MLBB).
 const ALPHA_PANEL := 0.42
 const ALPHA_BUTTON := 0.35
@@ -60,6 +62,9 @@ var _potion_button: Button = null
 var _minimap: ArpgMinimap = null
 var _inventory_button: Button = null
 var _inventory_panel: ArpgInventoryPanel = null
+var _pause_button: Button = null
+var _skill_cooldown: ArpgCooldownOverlay = null
+var _dodge_cooldown: ArpgCooldownOverlay = null
 var _dialog_panel: PanelContainer = null
 var _dialog_name: Label = null
 var _dialog_line: Label = null
@@ -80,6 +85,7 @@ func _ready() -> void:
 	_build_dialog_panel()
 	_build_minimap()
 	_build_inventory_button()
+	_build_pause_button()
 	_build_inventory_panel()
 	var root := get_root_control()
 	root.resized.connect(_layout_hud)
@@ -183,8 +189,12 @@ func _dialog_next() -> void:
 		_dialog_line.text = String(_dialog_lines[_dialog_index])
 		if _dialog_index == _dialog_lines.size() - 1:
 			_dialog_action.text = _dialog_end_label()
+
+			# Última línea: cerrar o aceptar.
 		else:
 			_dialog_action.text = "Continuar"
+
+			# Última línea: cerrar o aceptar.
 		return
 		# Última línea: cerrar o aceptar.
 	_dialog_panel.visible = false
@@ -220,7 +230,7 @@ func _on_leveled_up(new_level: int) -> void:
 func _build_stats_panel() -> void:
 	_stats_panel = PanelContainer.new()
 	_stats_panel.name = "StatsPanel"
-	_stats_panel.add_theme_stylebox_override("panel", _panel_style())
+	_stats_panel.add_theme_stylebox_override("panel", _stats_style())
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 3)
 	_stats_panel.add_child(box)
@@ -306,6 +316,7 @@ func _set_joystick(vector: Vector2) -> void:
 func _build_action_buttons() -> void:
 	## Fase 3: clúster en arco estilo ARPG móvil. El ataque es el botón más grande
 	## (abajo-derecha); habilidad encima; poción a la izquierda; esquiva arriba-izquierda.
+	## Iteración 4C: recargas radiales en habilidad y esquiva + realce al pulsar.
 	_action_cluster = Control.new()
 	_action_cluster.name = "ActionCluster"
 	_action_cluster.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -314,6 +325,10 @@ func _build_action_buttons() -> void:
 	_skill_button = _round_action_button(ICON_SKILL, "K", 84.0)
 	_dodge_button = _round_action_button(ICON_DODGE, "ESP", 72.0)
 	_potion_button = _round_action_button(ICON_POTION, "Q", 64.0)
+	_skill_cooldown = ArpgCooldownOverlay.new(84.0)
+	_skill_button.add_child(_skill_cooldown)
+	_dodge_cooldown = ArpgCooldownOverlay.new(72.0)
+	_dodge_button.add_child(_dodge_cooldown)
 	_potion_badge = Label.new()
 	_potion_badge.text = "x1"
 	_potion_badge.add_theme_font_size_override("font_size", 13)
@@ -331,9 +346,18 @@ func _build_action_buttons() -> void:
 func _round_action_button(icon: Texture2D, key_hint: String, diameter: float) -> Button:
 	var button := Button.new()
 	button.custom_minimum_size = Vector2(diameter, diameter)
+	button.pivot_offset = Vector2(diameter, diameter) / 2.0
 	button.add_theme_stylebox_override("normal", _circle_style(diameter, ALPHA_BUTTON))
 	button.add_theme_stylebox_override("hover", _circle_style(diameter, ALPHA_BUTTON_HOVER))
 	button.add_theme_stylebox_override("pressed", _circle_style(diameter, ALPHA_BUTTON_PRESSED, true))
+	button.add_theme_stylebox_override("focus", _circle_style(diameter, ALPHA_BUTTON_HOVER))
+	# Realce al pulsar (táctil): leve contracción y rebote, como en el menú.
+	button.pressed.connect(
+		func() -> void:
+			var tween := button.create_tween()
+			tween.tween_property(button, "scale", Vector2(0.93, 0.93), 0.05)
+			tween.tween_property(button, "scale", Vector2.ONE, 0.12)
+	)
 	var icon_rect := TextureRect.new()
 	icon_rect.name = "Icon"
 	icon_rect.texture = icon
@@ -380,6 +404,34 @@ func _build_inventory_button() -> void:
 	_inventory_button.name = "InventoryButton"
 	_inventory_button.pressed.connect(toggle_inventory)
 	get_root_control().add_child(_inventory_button)
+
+
+func _build_pause_button() -> void:
+	## Botón táctil de pausa (iteración 4C): junto al minimapa, arriba-derecha.
+	## El HUD no decide qué es pausar: emite pause_requested y la escena responde.
+	_pause_button = _round_action_button(_pause_icon(), "", 48.0)
+	_pause_button.name = "PauseButton"
+	_pause_button.pressed.connect(func() -> void: pause_requested.emit())
+	get_root_control().add_child(_pause_button)
+
+
+func _pause_icon() -> ImageTexture:
+	## Icono de pausa (dos barras) dibujado en código: cero dependencias.
+	var image := Image.create(48, 48, false, Image.FORMAT_RGBA8)
+	var color := Color(0.91, 0.89, 0.85, 0.95)
+	for y: int in 48:
+		for x: int in 48:
+			if (x >= 13 and x <= 20 or x >= 27 and x <= 34) and y >= 12 and y <= 35:
+				image.set_pixel(x, y, color)
+	return ImageTexture.create_from_image(image)
+
+
+func _process(_delta: float) -> void:
+	## Sonda de recargas (barata): alimenta los indicadores radiales.
+	if _player == null or _skill_cooldown == null:
+		return
+	_skill_cooldown.set_progress(_player.get_skill_cooldown_left(), _player.get_skill_cooldown_total())
+	_dodge_cooldown.set_progress(_player.get_dodge_cooldown_left(), _player.get_dodge_cooldown_total())
 
 
 func _build_inventory_panel() -> void:
@@ -445,6 +497,12 @@ func _layout_hud() -> void:
 		# Minimapa arriba-derecha + botón de mochila debajo (Fase 3).
 
 		# Clúster de acciones en arco alrededor de la esquina inferior-derecha.
+
+		# Minimapa arriba-derecha + botón de mochila debajo (Fase 3).
+
+		# Pausa a la izquierda del minimapa (mismo alto; iteración 4C).
+
+		# Clúster de acciones en arco alrededor de la esquina inferior-derecha.
 	_stats_panel.position = Vector2(16, 14)
 	_quest_panel.position = Vector2(16, 132)
 	_toast_label.position = Vector2(0, 84)
@@ -458,6 +516,8 @@ func _layout_hud() -> void:
 	_minimap.position = Vector2(viewport_size.x - map_size.x - 16.0, 14.0)
 	_minimap.size = map_size
 	_inventory_button.position = Vector2(viewport_size.x - 72.0, 14.0 + map_size.y + 10.0)
+	# Pausa a la izquierda del minimapa (mismo alto; iteración 4C).
+	_pause_button.position = Vector2(viewport_size.x - map_size.x - 16.0 - 56.0, 14.0)
 	# Clúster de acciones en arco alrededor de la esquina inferior-derecha.
 	var corner := Vector2(viewport_size.x - 20.0, viewport_size.y - 20.0)
 	_place_arc_button(_attack_button, corner, 225.0, 128.0)
@@ -496,6 +556,17 @@ func _panel_style(margin := 10) -> StyleBoxFlat:
 	style.content_margin_right = margin
 	style.content_margin_top = margin
 	style.content_margin_bottom = margin
+	return style
+
+
+func _stats_style() -> StyleBoxFlat:
+	## Iteración 4C: el panel de stats hereda el acento dorado lateral (misma
+	## familia visual que el rastreador de misiones).
+	var style := _panel_style(10)
+	style.border_color = COLOR_GOLD
+	style.border_width_left = 3
+	style.set_corner_radius(3, 8)
+	style.set_corner_radius(0, 8)
 	return style
 
 

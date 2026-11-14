@@ -55,14 +55,27 @@ func _spawn_player(saved_state: Dictionary) -> void:
 	player.global_position = spawn.global_position
 	if not saved_state.is_empty():
 		player.restore(saved_state)
+
+		# Iteración 4C: oclusión ARPG — muros que tapan al jugador se vuelven
+		# semitransparentes de forma reversible (nada se elimina ni se mueve).
+
+		# Iteración 4C: el botón táctil de pausa del HUD dispara la misma pausa que ESC.
 	camera_rig = IsoCameraRig.new()
 	camera_rig.name = "CameraRig"
 	add_child(camera_rig)
 	camera_rig.setup(player)
+	# Iteración 4C: oclusión ARPG — muros que tapan al jugador se vuelven
+	# semitransparentes de forma reversible (nada se elimina ni se mueve).
+	var occlusion := ArpgOcclusionManager.new()
+	occlusion.name = "OcclusionManager"
+	add_child(occlusion)
+	occlusion.setup(camera_rig.get_camera(), player)
 	player.died.connect(_on_player_died)
 	hud = get_node("HUD")
 	hud.bind_player(player)
 	hud.joystick_changed.connect(func(vector: Vector2) -> void: player.joystick_vector = vector)
+	# Iteración 4C: el botón táctil de pausa del HUD dispara la misma pausa que ESC.
+	hud.pause_requested.connect(_toggle_pause)
 
 
 func _spawn_cheo() -> void:
@@ -219,10 +232,16 @@ func _claim_quest() -> void:
 		return
 
 		# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
+
+		# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
+
+		# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
 	player.add_xp(int(rewards.get("xp", 0)))
 	for item: Dictionary in rewards.get("items", []):
 		if String(item.get("item_id", "")) == "pocion_curativa":
 			player.add_potion(int(item.get("count", 1)))
+
+			# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
 
 			# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
 		elif player.receive_item(String(item.get("item_id", "")), int(item.get("count", 1))):

@@ -39,10 +39,7 @@ func _build() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 10)
 	panel.add_child(box)
-	var title := Label.new()
-	title.text = "Pausa"
-	title.add_theme_font_size_override("font_size", 24)
-	title.add_theme_color_override("font_color", Color("b08d3c"))
+	var title := ArpgUiTheme.make_title("Pausa", 26)
 	box.add_child(title)
 	var resume := _button("Reanudar")
 	resume.pressed.connect(func() -> void: resume_requested.emit())
@@ -59,6 +56,9 @@ func _build() -> void:
 	for pair: Array in [["low", "Bajo"], ["medium", "Medio"], ["high", "Alto"]]:
 		_profile_option.add_item(String(pair[1]))
 		_profile_option.set_item_metadata(_profile_option.item_count - 1, String(pair[0]))
+
+		# Centrado por rect del viewport (iteración 4C: PRESET_CENTER puede
+		# quedar pegado arriba-izquierda en Android).
 	profile_row.add_child(_profile_option)
 	_profile_option.item_selected.connect(_on_profile_selected)
 	var dyn_row := HBoxContainer.new()
@@ -96,7 +96,15 @@ func _build() -> void:
 	exit.pressed.connect(func() -> void: exit_requested.emit())
 	box.add_child(exit)
 	add_child(_root)
+	# Centrado por rect del viewport (iteración 4C: PRESET_CENTER puede
+	# quedar pegado arriba-izquierda en Android).
+	_root.resized.connect(_recenter)
+	get_viewport().connect("size_changed", _recenter)
 	visible = false
+
+
+func _recenter() -> void:
+	ArpgUiTheme.center_in_viewport(_root.get_child(1) as Control)
 
 
 func _sync_profile_option() -> void:
@@ -127,34 +135,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _button(text: String) -> Button:
-	var button := Button.new()
-	button.text = text
-	button.custom_minimum_size = Vector2(280, 52)
-	button.add_theme_font_size_override("font_size", 16)
-	button.add_theme_color_override("font_color", Color("e8e4d8"))
-	button.add_theme_stylebox_override("normal", _flat(Color(0.13, 0.15, 0.2, 0.96)))
-	button.add_theme_stylebox_override("hover", _flat(Color(0.18, 0.21, 0.28, 0.98)))
-	button.add_theme_stylebox_override("pressed", _flat(Color("1e3a4a")))
-	return button
+	return ArpgUiTheme.make_button(text, ArpgUiTheme.ButtonStyle.NORMAL, Vector2(280, 52))
 
 
 func _panel_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.09, 0.12, 0.97)
-	style.border_color = Color("2a2e38")
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(8)
-	style.content_margin_left = 22
-	style.content_margin_right = 22
-	style.content_margin_top = 18
-	style.content_margin_bottom = 18
-	return style
-
-
-func _flat(bg: Color) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = bg
-	style.border_color = Color("2a2e38")
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(6)
-	return style
+	return ArpgUiTheme.panel_style()
