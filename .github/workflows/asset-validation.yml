@@ -14,10 +14,9 @@ on:
 permissions:
   contents: read
 
-timeout-minutes: 20
-
 jobs:
   validar:
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

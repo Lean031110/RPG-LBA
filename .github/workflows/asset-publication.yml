@@ -12,10 +12,9 @@ permissions:
   contents: write
   pull-requests: write
 
-timeout-minutes: 15
-
 jobs:
   publicar:
+    timeout-minutes: 15
     if: github.ref_name != 'main'
     runs-on: ubuntu-latest
     steps:

@@ -44,10 +44,9 @@ concurrency:
 permissions:
   contents: write
 
-timeout-minutes: 25
-
 jobs:
   producir:
+    timeout-minutes: 25
     # el ciclo programado solo corre con la variable activada
     if: github.event_name != 'schedule' || vars.FACTORY_CRON_ENABLED == 'true'
     runs-on: ubuntu-latest
