@@ -200,6 +200,14 @@ static func _build_boundaries(root: Node3D, rng: RandomNumberGenerator, density:
 		body.add_child(shape)
 		body.position = spec["pos"]
 		walls.add_child(body)
+		# Iteración 4C: los muros del recinto son VISIBLES (antes eran solo
+		# colisión invisible) y se registran como oclusores: cuando tapan al
+		# jugador, ArpgOcclusionManager los hace semitransparentes. La malla
+		# cuelga del StaticBody3D para que el raycast la encuentre.
+		var wall_mesh := VisualKit.add_box(
+			body, spec["size"], Vector3.ZERO, VisualKit.noise_material(Color(0.44, 0.40, 0.34), 0.15, 3)
+		)
+		wall_mesh.add_to_group("arpg_occluders")
 
 		# Anillo de palmas y ceibas para enmarcar el horizonte.
 	var palms := int(26.0 * density) + 8

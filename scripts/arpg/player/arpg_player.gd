@@ -88,6 +88,10 @@ func setup(new_class_id: String) -> void:
 		# Fase 2: pegado al suelo en bajadas de pendiente/rampa (evita micro-vuelos al bajar).
 
 		# Fase 3: inventario de equipo propio (serializable con el resto del estado).
+
+		# Fase 2: pegado al suelo en bajadas de pendiente/rampa (evita micro-vuelos al bajar).
+
+		# Fase 3: inventario de equipo propio (serializable con el resto del estado).
 	collision_layer = BODY_LAYER
 	collision_mask = BODY_MASK
 	_build_body_shape()
@@ -176,9 +180,33 @@ func get_potions() -> int:
 	return potions
 
 
+## Recargas restantes y totales (HUD: indicadores radiales de habilidad/esquiva).
+
+
+func get_skill_cooldown_left() -> float:
+	return _skill_cooldown_left
+
+
+func get_skill_cooldown_total() -> float:
+	var skills: Array = class_data.get("skills", [])
+	if skills.is_empty():
+		return 0.0
+	return float(skills[0].get("cooldown", 5.0))
+
+
+func get_dodge_cooldown_left() -> float:
+	return _dodge_cooldown_left
+
+
+func get_dodge_cooldown_total() -> float:
+	return float(class_data.get("dodge", {}).get("cooldown", 1.2))
+
+
 func add_xp(amount: int) -> void:
 	if amount <= 0 or _dead:
 		return
+
+		# Diseño de la rebanada: al subir de nivel se restaura por completo (decisión documentada).
 
 		# Diseño de la rebanada: al subir de nivel se restaura por completo (decisión documentada).
 	var result := ProgressionService.add_xp(level, xp_into_level, amount, RpgDB.get_progression())
@@ -237,13 +265,25 @@ func try_dodge() -> bool:
 		return false
 
 		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
 	if _dodge_cooldown_left > 0.0:
 		return false
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
 
 		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
 	var cost := float(class_data.get("dodge", {}).get("cost", 15))
 	if vigor < cost:
 		return false
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
 
 		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
 	var dodge: Dictionary = class_data.get("dodge", {})
@@ -414,6 +454,15 @@ func _physics_process(delta: float) -> void:
 		# Giro y ciclo de pasos siguen la velocidad REAL del cuerpo: sin deslizamiento visual.
 
 		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
+
+		# Fase 3: el tier de locomoción (caminar/correr) sale de la magnitud de entrada;
+		# la velocidad objetivo del tier se persigue con la aceleración de la Fase 2.
+
+		# Giro y ciclo de pasos siguen la velocidad REAL del cuerpo: sin deslizamiento visual.
+
+		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
+
+		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 	_tick_timers(delta)
 	_update_run_blend(delta)
 	if not is_dodging and _action_params.is_empty():
@@ -433,8 +482,12 @@ func _physics_process(delta: float) -> void:
 			_face_towards(planar.normalized(), delta)
 			_walk_phase += delta * planar_speed * (2.4 + _run_blend * 0.8)
 			_animate_walk(_walk_phase)
+
+			# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 		else:
 			_animate_idle(delta)
+
+			# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 
 		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 	else:
@@ -567,6 +620,18 @@ func _apply_hitbox_damage(params: Dictionary) -> void:
 		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
 
 		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
+
+		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
+
+		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
+
+		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
 	for body: Node in _hitbox_area.get_overlapping_bodies():
 		if body == self or body in _bodies_hit_this_swing:
 			continue
@@ -574,8 +639,20 @@ func _apply_hitbox_damage(params: Dictionary) -> void:
 			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
 
 			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
+
+			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
+
+			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
 		if not body.has_method("take_damage"):
 			continue
+
+			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
 
 			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
 
@@ -667,6 +744,8 @@ func restore(data: Dictionary) -> void:
 	class_data = RpgDB.get_class_data(class_id)
 	if class_data.is_empty():
 		return
+
+		# Fase 3: el inventario llega en partidas guardadas nuevas; en las viejas queda vacío.
 
 		# Fase 3: el inventario llega en partidas guardadas nuevas; en las viejas queda vacío.
 	_reset_stats()
@@ -807,6 +886,8 @@ func _animate_idle(delta: float) -> void:
 		return
 
 		# Fase 4B: el rebote del paso vuelve al suelo en reposo.
+
+		# Fase 4B: el rebote del paso vuelve al suelo en reposo.
 	_walk_phase += delta * 1.6
 	var breathe := sin(_walk_phase) * 0.04
 	var root := _puppet["root"] as Node3D
@@ -823,6 +904,8 @@ func _animate_idle(delta: float) -> void:
 func _animate_action(delta: float) -> void:
 	if _puppet.is_empty():
 		return
+
+		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
 
 		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
 
