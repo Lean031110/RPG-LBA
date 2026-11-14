@@ -122,22 +122,22 @@ static func _build_districts(root: Node3D, rng: RandomNumberGenerator, palette: 
 	districts.name = "Districts"
 	root.add_child(districts)
 	var specs: Array[Dictionary] = [
-		{"district": "BarrioDelSol", "pos": Vector3(-25.0, 0.0, -23.0), "size": Vector3(10.0, 5.8, 8.0), "rot": 90.0, "mat": "plaster_ochre"},
-		{"district": "BarrioDelSol", "pos": Vector3(-40.0, 0.0, -23.0), "size": Vector3(9.0, 5.0, 8.0), "rot": 90.0, "mat": "plaster_cream"},
-		{"district": "BarrioDelSol", "pos": Vector3(-25.0, 0.0, -36.0), "size": Vector3(10.0, 5.5, 8.0), "rot": 0.0, "mat": "plaster_rose"},
-		{"district": "BarrioDelSol", "pos": Vector3(-40.0, 0.0, -36.0), "size": Vector3(9.0, 4.8, 8.0), "rot": 0.0, "mat": "plaster_teal"},
-		{"district": "BarrioDelSol", "pos": Vector3(25.0, 0.0, -23.0), "size": Vector3(10.0, 5.8, 8.0), "rot": -90.0, "mat": "plaster_cream"},
-		{"district": "BarrioDelSol", "pos": Vector3(40.0, 0.0, -23.0), "size": Vector3(9.0, 5.0, 8.0), "rot": -90.0, "mat": "plaster_ochre"},
-		{"district": "BarrioDelSol", "pos": Vector3(25.0, 0.0, -36.0), "size": Vector3(10.0, 5.5, 8.0), "rot": 0.0, "mat": "plaster_teal"},
-		{"district": "BarrioDelSol", "pos": Vector3(40.0, 0.0, -36.0), "size": Vector3(9.0, 4.8, 8.0), "rot": 0.0, "mat": "plaster_rose"},
-		{"district": "BarrioDelSur", "pos": Vector3(-25.0, 0.0, 23.0), "size": Vector3(10.0, 5.8, 8.0), "rot": 90.0, "mat": "plaster_teal"},
-		{"district": "BarrioDelSur", "pos": Vector3(-40.0, 0.0, 23.0), "size": Vector3(9.0, 5.0, 8.0), "rot": 90.0, "mat": "plaster_rose"},
-		{"district": "BarrioDelSur", "pos": Vector3(-25.0, 0.0, 36.0), "size": Vector3(10.0, 5.5, 8.0), "rot": 180.0, "mat": "plaster_cream"},
-		{"district": "BarrioDelSur", "pos": Vector3(-40.0, 0.0, 36.0), "size": Vector3(9.0, 4.8, 8.0), "rot": 180.0, "mat": "plaster_ochre"},
-		{"district": "BarrioDelSur", "pos": Vector3(25.0, 0.0, 23.0), "size": Vector3(10.0, 5.8, 8.0), "rot": -90.0, "mat": "plaster_rose"},
-		{"district": "BarrioDelSur", "pos": Vector3(40.0, 0.0, 23.0), "size": Vector3(9.0, 5.0, 8.0), "rot": -90.0, "mat": "plaster_teal"},
-		{"district": "BarrioDelSur", "pos": Vector3(25.0, 0.0, 36.0), "size": Vector3(10.0, 5.5, 8.0), "rot": 180.0, "mat": "plaster_ochre"},
-		{"district": "BarrioDelSur", "pos": Vector3(40.0, 0.0, 36.0), "size": Vector3(9.0, 4.8, 8.0), "rot": 180.0, "mat": "plaster_cream"}
+		{"district": "BarrioDelSol", "pos": Vector3(-18.0, 0.0, -16.0), "size": Vector3(10.0, 5.8, 8.0), "rot": 90.0, "mat": "plaster_ochre"},
+		{"district": "BarrioDelSol", "pos": Vector3(-43.0, 0.0, -16.0), "size": Vector3(9.0, 5.0, 8.0), "rot": 90.0, "mat": "plaster_cream"},
+		{"district": "BarrioDelSol", "pos": Vector3(-18.0, 0.0, -36.0), "size": Vector3(10.0, 5.5, 8.0), "rot": 0.0, "mat": "plaster_rose"},
+		{"district": "BarrioDelSol", "pos": Vector3(-43.0, 0.0, -36.0), "size": Vector3(9.0, 4.8, 8.0), "rot": 0.0, "mat": "plaster_teal"},
+		{"district": "BarrioDelSol", "pos": Vector3(18.0, 0.0, -16.0), "size": Vector3(10.0, 5.8, 8.0), "rot": -90.0, "mat": "plaster_cream"},
+		{"district": "BarrioDelSol", "pos": Vector3(43.0, 0.0, -16.0), "size": Vector3(9.0, 5.0, 8.0), "rot": -90.0, "mat": "plaster_ochre"},
+		{"district": "BarrioDelSol", "pos": Vector3(18.0, 0.0, -36.0), "size": Vector3(10.0, 5.5, 8.0), "rot": 0.0, "mat": "plaster_teal"},
+		{"district": "BarrioDelSol", "pos": Vector3(43.0, 0.0, -36.0), "size": Vector3(9.0, 4.8, 8.0), "rot": 0.0, "mat": "plaster_rose"},
+		{"district": "BarrioDelSur", "pos": Vector3(-18.0, 0.0, 16.0), "size": Vector3(10.0, 5.8, 8.0), "rot": 90.0, "mat": "plaster_teal"},
+		{"district": "BarrioDelSur", "pos": Vector3(-43.0, 0.0, 16.0), "size": Vector3(9.0, 5.0, 8.0), "rot": 90.0, "mat": "plaster_rose"},
+		{"district": "BarrioDelSur", "pos": Vector3(-18.0, 0.0, 36.0), "size": Vector3(10.0, 5.5, 8.0), "rot": 180.0, "mat": "plaster_cream"},
+		{"district": "BarrioDelSur", "pos": Vector3(-43.0, 0.0, 36.0), "size": Vector3(9.0, 4.8, 8.0), "rot": 180.0, "mat": "plaster_ochre"},
+		{"district": "BarrioDelSur", "pos": Vector3(18.0, 0.0, 16.0), "size": Vector3(10.0, 5.8, 8.0), "rot": -90.0, "mat": "plaster_rose"},
+		{"district": "BarrioDelSur", "pos": Vector3(43.0, 0.0, 16.0), "size": Vector3(9.0, 5.0, 8.0), "rot": -90.0, "mat": "plaster_teal"},
+		{"district": "BarrioDelSur", "pos": Vector3(18.0, 0.0, 36.0), "size": Vector3(10.0, 5.5, 8.0), "rot": 180.0, "mat": "plaster_ochre"},
+		{"district": "BarrioDelSur", "pos": Vector3(43.0, 0.0, 36.0), "size": Vector3(9.0, 4.8, 8.0), "rot": 180.0, "mat": "plaster_cream"}
 	]
 	var index := 0
 	for spec in specs:
@@ -145,9 +145,9 @@ static func _build_districts(root: Node3D, rng: RandomNumberGenerator, palette: 
 		_build_house(districts, spec, index, material, palette, rng)
 		index += 1
 	# Edificios singulares, situados en los extremos de sus manzanas.
-	_build_landmark(districts, "CasaDeCabildo", Vector3(-22.0, 0.0, 8.0), Vector3(12.0, 7.0, 9.0), palette["plaster_cream"], palette, true)
-	_build_landmark(districts, "MercadoDelPuerto", Vector3(22.0, 0.0, -8.0), Vector3(12.0, 5.4, 10.0), palette["plaster_ochre"], palette, false)
-	_build_landmark(districts, "SantuarioDeLasCampanas", Vector3(42.0, 0.0, 4.0), Vector3(10.0, 8.0, 12.0), palette["plaster_teal"], palette, true)
+	_build_landmark(districts, "CasaDeCabildo", Vector3(-18.0, 0.0, 0.0), Vector3(12.0, 7.0, 9.0), palette["plaster_cream"], palette, true)
+	_build_landmark(districts, "MercadoDelPuerto", Vector3(18.0, 0.0, 0.0), Vector3(12.0, 5.4, 10.0), palette["plaster_ochre"], palette, false)
+	_build_landmark(districts, "SantuarioDeLasCampanas", Vector3(43.0, 0.0, 0.0), Vector3(10.0, 8.0, 12.0), palette["plaster_teal"], palette, true)
 
 
 static func _build_house(parent: Node3D, spec: Dictionary, index: int, wall_mat: Material, palette: Dictionary, rng: RandomNumberGenerator) -> void:
@@ -236,8 +236,8 @@ static func _build_street_furniture(root: Node3D, palette: Dictionary) -> void:
 	for x_value in [-42.0, 42.0]:
 		_build_lamp(furniture, Vector3(x_value, 0.0, -7.0), palette)
 		_build_lamp(furniture, Vector3(x_value, 0.0, 7.0), palette)
-	_build_market_stall(furniture, Vector3(34.0, 0.0, -8.0), palette)
-	_build_market_stall(furniture, Vector3(34.0, 0.0, 8.0), palette)
+	_build_market_stall(furniture, Vector3(36.0, 0.0, -8.0), palette)
+	_build_market_stall(furniture, Vector3(36.0, 0.0, 8.0), palette)
 
 
 static func _build_lamp(parent: Node3D, position: Vector3, palette: Dictionary) -> void:
