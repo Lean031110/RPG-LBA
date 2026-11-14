@@ -2,6 +2,7 @@ class_name TestLevelLayout
 extends GdUnitTestSuite
 ## Layout determinista de las afueras de Valdeluz y sus recursos ambientales.
 
+
 func _build(density: float) -> Node3D:
 	var root: Node3D = auto_free(Node3D.new())
 	add_child(root)
@@ -15,9 +16,7 @@ func _controller_of(root: Node3D) -> EnvironmentController:
 
 func test_builder_creates_all_groups() -> void:
 	var root := _build(0.45)
-	for group: String in [
-		"Ground", "EnvironmentController", "Boundaries", "Vegetation", "Props"
-	]:
+	for group: String in ["Ground", "EnvironmentController", "Boundaries", "Vegetation", "Props"]:
 		var found := root.get_node_or_null(group) != null
 		assert_bool(found).is_true()
 
@@ -61,9 +60,7 @@ func test_layout_is_deterministic() -> void:
 	var first := _build(0.8)
 	var second := _build(0.8)
 	for group: String in ["Vegetation", "Boundaries"]:
-		assert_int(first.get_node(group).get_child_count()).is_equal(
-			second.get_node(group).get_child_count()
-		)
+		assert_int(first.get_node(group).get_child_count()).is_equal(second.get_node(group).get_child_count())
 
 
 func test_lighting_follows_profile_shadow_mode() -> void:
