@@ -67,9 +67,18 @@ repositorio. El detalle por asset vive en `assets/manifest.csv`. Los archivos
 - Acción requerida: reemplazar por un icono propio o CC0 verificado antes de
   cualquier release pública.
 
-### 7. `icon.png` — MIT (contenido de la plantilla)
-- Render del robot CC0 creado para la plantilla. Se reemplazará por el icono
-  original de RPG LBA en la Fase 1.
+### 7. `icon.png` + iconos Android — obra original del proyecto
+- Iteración 4C: el icono del proyecto y los launcher icons (adaptativo
+  432 px y heredados 36–192 px) se generan desde el emblema oficial
+  (`assets/branding/rpg-lba-logo.svg`) con `scripts/local/make_branding.py`.
+- El robot CC0 de la plantilla dejó de usarse como icono.
+
+### 8. Cinzel (tipografía de títulos) — SIL Open Font License 1.1
+- Autor: The Cinzel Project Authors (https://github.com/NDISCOVER/Cinzel)
+- Fuente: https://github.com/google/fonts (ofl/cinzel)
+- Uso: títulos y encabezados de la UI (ArpgUiTheme). Licencia completa en
+  `assets/ui/fonts/OFL.txt`; la fuente permite uso, edición y redistribución
+  con reservado del nombre.
 
 ## Assets previstos y NO incluidos aún
 

@@ -36,15 +36,9 @@ func _build() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 12)
 	panel.add_child(box)
-	var title := Label.new()
-	title.text = "Las sombras te cubrieron"
-	title.add_theme_font_size_override("font_size", 26)
-	title.add_theme_color_override("font_color", Color("e0503e"))
+	var title := ArpgUiTheme.make_title("Las sombras te cubrieron", 26, ArpgUiTheme.EMBER)
 	box.add_child(title)
-	var body := Label.new()
-	body.text = "El eco de Valdeluz todavía puede oírse. Cheo espera en el portal."
-	body.add_theme_font_size_override("font_size", 15)
-	body.add_theme_color_override("font_color", Color("9aa0a6"))
+	var body := ArpgUiTheme.make_dim("El eco de Valdeluz todavía puede oírse. Cheo espera en el portal.")
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.custom_minimum_size = Vector2(380, 0)
 	box.add_child(body)
@@ -55,37 +49,17 @@ func _build() -> void:
 	menu.pressed.connect(func() -> void: menu_requested.emit())
 	box.add_child(menu)
 	add_child(_root)
+	_root.resized.connect(_recenter)
+	get_viewport().connect("size_changed", _recenter)
+
+
+func _recenter() -> void:
+	ArpgUiTheme.center_in_viewport(_root.get_child(1) as Control)
 
 
 func _button(text: String) -> Button:
-	var button := Button.new()
-	button.text = text
-	button.custom_minimum_size = Vector2(240, 52)
-	button.add_theme_font_size_override("font_size", 16)
-	button.add_theme_color_override("font_color", Color("e8e4d8"))
-	button.add_theme_stylebox_override("normal", _flat(Color(0.13, 0.15, 0.2, 0.96)))
-	button.add_theme_stylebox_override("hover", _flat(Color(0.18, 0.21, 0.28, 0.98)))
-	button.add_theme_stylebox_override("pressed", _flat(Color("1e3a4a")))
-	return button
-
-
-func _flat(bg: Color) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = bg
-	style.border_color = Color("2a2e38")
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(6)
-	return style
+	return ArpgUiTheme.make_button(text, ArpgUiTheme.ButtonStyle.NORMAL, Vector2(240, 52))
 
 
 func _flat_panel() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.09, 0.12, 0.97)
-	style.border_color = Color("2a2e38")
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(8)
-	style.content_margin_left = 26
-	style.content_margin_right = 26
-	style.content_margin_top = 22
-	style.content_margin_bottom = 22
-	return style
+	return ArpgUiTheme.panel_style()

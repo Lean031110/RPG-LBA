@@ -2,6 +2,7 @@ class_name TestWeatherController
 extends GdUnitTestSuite
 ## La mezcla climática siempre conserva pesos normalizados y transiciones suaves.
 
+
 func test_instant_weather_change() -> void:
 	var weather := WeatherController.new()
 	assert_bool(weather.set_weather(WeatherController.Weather.RAIN, true)).is_true()

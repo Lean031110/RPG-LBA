@@ -18,6 +18,35 @@ env:
   GODOT_VERSION: "4.7.2"
 
 jobs:
+  # Leccion del tag v0.1.0-fase4-debug: godot-ci.yml solo dispara su lint en
+  # pushes/PRs hacia main/develop, y la cadena de fases trabaja con PRs
+  # apilados hacia ramas agent/**. El lint nunca se habia ejecutado sobre ese
+  # codigo y el workflow Release fallo en el primer push de tag. Este job
+  # garantiza que TODO PR (cualquier rama base) pase gdlint+gdformat.
+  gdscript-quality:
+    name: GDScript lint and format
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install development tools
+        run: python -m pip install --requirement requirements-dev.txt
+
+      - name: Lint GDScript
+        run: gdlint scripts tests
+
+      - name: Check GDScript formatting
+        run: gdformat --check scripts tests
+
   project-import-and-smoke:
     name: project-import (Godot 4.7.2) + game-smoke-test
     runs-on: ubuntu-latest

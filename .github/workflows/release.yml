@@ -56,15 +56,22 @@ jobs:
           RELEASE_TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag_name }}
           RELEASE_TITLE_INPUT: ${{ inputs.release_title }}
         run: |
+          # Este workflow publica releases de CODIGO FUENTE (semver desde main).
+          # Los tags de depuracion (p.ej. v0.1.0-fase4-debug) y los commits fuera
+          # de main se saltan con aviso verde; los APK con autofirma los publica
+          # android-debug.yml en su job publish-release (leccion del tag
+          # v0.1.0-fase4-debug, que fallo aqui por formato no-semver).
           if [[ ! "${RELEASE_TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Release tags must use the vX.Y.Z format."
-            exit 1
+            echo "SKIP: '${RELEASE_TAG}' no es semver estricto (vX.Y.Z); no se crea release de fuente."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           RELEASE_SHA="$(git rev-parse HEAD)"
           if ! git merge-base --is-ancestor "${RELEASE_SHA}" origin/main; then
-            echo "::error::The release commit must be contained in main."
-            exit 1
+            echo "SKIP: el commit ${RELEASE_SHA} no esta contenido en main; no se crea release de fuente."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           EXISTING_TAG_SHA="$(git rev-parse -q --verify "refs/tags/${RELEASE_TAG}^{commit}" || true)"
@@ -73,11 +80,11 @@ jobs:
             exit 1
           fi
 
-          ARCHIVE_NAME="godot-3d-multiplayer-template-${RELEASE_TAG}.zip"
+          ARCHIVE_NAME="RPG-LBA-${RELEASE_TAG}-source.zip"
           mkdir -p dist
           git archive \
             --format=zip \
-            --prefix="godot-3d-multiplayer-template-${RELEASE_TAG}/" \
+            --prefix="RPG-LBA-${RELEASE_TAG}/" \
             --output="dist/${ARCHIVE_NAME}" \
             "${RELEASE_SHA}"
           (cd dist && sha256sum "${ARCHIVE_NAME}" > "${ARCHIVE_NAME}.sha256")
@@ -87,8 +94,10 @@ jobs:
           echo "release_sha=${RELEASE_SHA}" >> "${GITHUB_OUTPUT}"
           echo "release_tag=${RELEASE_TAG}" >> "${GITHUB_OUTPUT}"
           echo "release_title=${RELEASE_TITLE}" >> "${GITHUB_OUTPUT}"
+          echo "skip=false" >> "${GITHUB_OUTPUT}"
 
       - name: Create draft release
+        if: steps.prepare.outputs.skip != 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
