@@ -2,9 +2,11 @@
 
 Documento vivo: refleja el estado REAL del proyecto y las prioridades de las
 próximas entregas. Se actualiza al cierre de cada iteración. La fecha de corte
-de esta edición es la Fase 5 (sistemas de juego, combate y personaje completos).
+de esta edición es la **reconciliación integral** (2026-11-15): las PR #3 a
+#14 están fusionadas en `main` (fases 1–5 + documentación + departamento de
+arte); la PR #15 (capital de Valdeluz) queda como fase futura conservada.
 
-## Estado actual (Fase 5)
+## Estado actual (reconciliación integral)
 
 Sistemas completados y verificados por CI (además de todo lo de 4C-visual):
 
@@ -109,9 +111,12 @@ sin nuevas texturas, modelos, audio ni efectos de arte en esta fase.
 
 ### Iteraciones posteriores (orden tentativo)
 
-1. Terminar el Machetero de la Sierra: 5 habilidades con efectos reales
-   (Corte de Sierra, Barrido del Machete, Guardia de Acero, Embestida del
-   Cimarrón, Furia de la Sierra), definitiva, animaciones y estadísticas.
+1. Pulido visual del Machetero de la Sierra: el kit LÓGICO ya está completo y
+   probado (Fase 5: combo de 3, pesado, Tajo de Guásima, Guardia del Bohío,
+   Carga del Mambí, Corte de la Ceiba, Huracán de Machetes, pasivas Pulso de
+   monte y Pies de piedra). Falta la capa visual/audio por habilidad (VFX,
+   poses pulidas, ventana visual de la parada) — nombres canónicos según
+   docs/diseno/02, sin volver a implementar la lógica.
 2. Ampliar enemigos y combate (IA, tipos, respuesta de golpe).
 3. Completar inventario y progresión (equipo, atributos, economía).
 4. Nuevas misiones de la campaña (capítulos siguientes de Valdeluz).
