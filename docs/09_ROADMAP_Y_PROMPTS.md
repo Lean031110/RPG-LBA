@@ -104,3 +104,13 @@ El agente no debe desarrollar el juego completo en una sola operación. Cada fas
 - `prompts/08_OPTIMIZACION_RELEASE.md`
 
 Los prompts existentes deben adaptarse a la visión cubana y a la puerta Art Pass sin cambiar silenciosamente su alcance.
+
+
+## Especificaciones futuras añadidas (14-11-2026)
+
+- `docs/16_ADAPTIVE_GRAPHICS_CAMERA_UX.md` — una sola experiencia de juego con perfiles Low/Medium/High, cámara isométrica, controles y UX móvil.
+- `docs/17_CONTENT_PACKS_GITHUB_UPDATES.md` — distribución de contenido no ejecutable mediante GitHub Releases, integridad, compatibilidad y rollback.
+- `docs/18_GOOGLE_PLAY_RELEASE_PIPELINE.md` — AAB, Play Console, cuenta de servicio y GitHub Actions con aprobación humana.
+- `prompts/10_ADAPTIVE_UX_CONTENT_UPDATES_AND_PLAY_RELEASE.md` — prompt maestro de ejecución futura con puertas de entrada, orden y criterios de aceptación.
+
+Estas especificaciones son planificación, no implementación. Ejecutar el Prompt 10 solo cuando la lógica y la interfaz inicial estén estabilizadas y las PR/CI actuales hayan sido auditadas. Las descargas de contenido para la edición Google Play deben excluir código ejecutable y respetar la política vigente.
