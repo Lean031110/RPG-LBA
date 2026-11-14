@@ -6,8 +6,13 @@ extends CanvasLayer
 signal resume_requested
 signal exit_requested
 
+const EXIT_CONFIRM_TEXT := "¿Abandonar la partida? (Se guarda)"
+const EXIT_TEXT := "Salir al menú"
+
 var _root: Control
 var _profile_option: OptionButton
+var _exit_button: Button = null
+var _exit_armed := false
 
 
 func _ready() -> void:
@@ -18,11 +23,30 @@ func _ready() -> void:
 
 func open() -> void:
 	visible = true
+	_disarm_exit()
 	_sync_profile_option()
 
 
 func close() -> void:
 	visible = false
+
+
+func _on_exit_pressed() -> void:
+	## Confirmación en dos pasos: la primera pulsación arma el aviso (no hay
+	## abandono accidental de la partida); la segunda confirma.
+	if not _exit_armed:
+		_exit_armed = true
+		_exit_button.text = EXIT_CONFIRM_TEXT
+		_exit_button.modulate = Color(1.0, 0.75, 0.6)
+		return
+	exit_requested.emit()
+
+
+func _disarm_exit() -> void:
+	_exit_armed = false
+	if _exit_button != null:
+		_exit_button.text = EXIT_TEXT
+		_exit_button.modulate = Color(1, 1, 1, 1)
 
 
 func _build() -> void:
@@ -39,10 +63,7 @@ func _build() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 10)
 	panel.add_child(box)
-	var title := Label.new()
-	title.text = "Pausa"
-	title.add_theme_font_size_override("font_size", 24)
-	title.add_theme_color_override("font_color", Color("b08d3c"))
+	var title := ArpgUiTheme.make_title("Pausa", 26)
 	box.add_child(title)
 	var resume := _button("Reanudar")
 	resume.pressed.connect(func() -> void: resume_requested.emit())
@@ -59,8 +80,27 @@ func _build() -> void:
 	for pair: Array in [["low", "Bajo"], ["medium", "Medio"], ["high", "Alto"]]:
 		_profile_option.add_item(String(pair[1]))
 		_profile_option.set_item_metadata(_profile_option.item_count - 1, String(pair[0]))
+
+		# Centrado por rect del viewport (iteración 4C: PRESET_CENTER puede
+		# quedar pegado arriba-izquierda en Android).
 	profile_row.add_child(_profile_option)
 	_profile_option.item_selected.connect(_on_profile_selected)
+	var dyn_row := HBoxContainer.new()
+	box.add_child(dyn_row)
+	var dyn_label := Label.new()
+	dyn_label.text = "Resolución dinámica"
+	dyn_label.add_theme_font_size_override("font_size", 14)
+	dyn_label.add_theme_color_override("font_color", Color("e8e4d8"))
+	dyn_row.add_child(dyn_label)
+	var dyn_check := CheckButton.new()
+	dyn_check.button_pressed = GraphicsSettings.dynamic_resolution
+	dyn_check.toggled.connect(
+		func(pressed: bool) -> void:
+			GraphicsSettings.set_dynamic_resolution_enabled(pressed)
+			GraphicsSettings.apply_profile(GraphicsSettings.active_profile)
+			GraphicsSettings.persist_settings()
+	)
+	dyn_row.add_child(dyn_check)
 	var volume_row := HBoxContainer.new()
 	box.add_child(volume_row)
 	var volume_label := Label.new()
@@ -76,11 +116,19 @@ func _build() -> void:
 	volume.custom_minimum_size = Vector2(180, 24)
 	volume_row.add_child(volume)
 	volume.value_changed.connect(_on_volume_changed)
-	var exit := _button("Salir al menú")
-	exit.pressed.connect(func() -> void: exit_requested.emit())
-	box.add_child(exit)
+	_exit_button = _button(EXIT_TEXT)
+	_exit_button.pressed.connect(_on_exit_pressed)
+	box.add_child(_exit_button)
 	add_child(_root)
+	# Centrado por rect del viewport (iteración 4C: PRESET_CENTER puede
+	# quedar pegado arriba-izquierda en Android).
+	_root.resized.connect(_recenter)
+	get_viewport().connect("size_changed", _recenter)
 	visible = false
+
+
+func _recenter() -> void:
+	ArpgUiTheme.center_in_viewport(_root.get_child(1) as Control)
 
 
 func _sync_profile_option() -> void:
@@ -111,34 +159,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _button(text: String) -> Button:
-	var button := Button.new()
-	button.text = text
-	button.custom_minimum_size = Vector2(280, 52)
-	button.add_theme_font_size_override("font_size", 16)
-	button.add_theme_color_override("font_color", Color("e8e4d8"))
-	button.add_theme_stylebox_override("normal", _flat(Color(0.13, 0.15, 0.2, 0.96)))
-	button.add_theme_stylebox_override("hover", _flat(Color(0.18, 0.21, 0.28, 0.98)))
-	button.add_theme_stylebox_override("pressed", _flat(Color("1e3a4a")))
-	return button
+	return ArpgUiTheme.make_button(text, ArpgUiTheme.ButtonStyle.NORMAL, Vector2(280, 52))
 
 
 func _panel_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.09, 0.12, 0.97)
-	style.border_color = Color("2a2e38")
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(8)
-	style.content_margin_left = 22
-	style.content_margin_right = 22
-	style.content_margin_top = 18
-	style.content_margin_bottom = 18
-	return style
-
-
-func _flat(bg: Color) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = bg
-	style.border_color = Color("2a2e38")
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(6)
-	return style
+	return ArpgUiTheme.panel_style()

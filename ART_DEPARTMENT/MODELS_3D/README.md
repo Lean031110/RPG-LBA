@@ -1,0 +1,7 @@
+# MODELS_3D (puntero)
+
+La ubicación CANÓNICA de los recursos está en `assets/models/`
+para no duplicar binarios en Git (ver INITIAL_AUDIT.md §2).
+
+Consulta el catálogo:
+`ART_DEPARTMENT/AI_ASSET_FACTORY/catalog/assets_manifest.json`

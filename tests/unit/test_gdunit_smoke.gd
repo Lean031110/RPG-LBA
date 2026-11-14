@@ -9,5 +9,5 @@ func test_gdunit_runner_is_alive() -> void:
 
 func test_project_data_loads() -> void:
 	assert_int(RpgDB.get_classes().size()).is_equal(6)
-	assert_int(RpgDB.get_enemies().size()).is_equal(1)
+	assert_int(RpgDB.get_enemies().size()).is_equal(3)
 	assert_int(RpgDB.get_quests().size()).is_equal(2)

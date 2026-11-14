@@ -1,6 +1,9 @@
 class_name TestEnvironmentController
 extends GdUnitTestSuite
 ## Integración del reloj, cielo, clima y luces locales en el bosque.
+## Compatibility Renderer: sin GI dinámica ni volumétricos; las sombras del sol
+## las decide el perfil activo (matriz docs/16), no este controlador.
+
 
 func _build_controller() -> EnvironmentController:
 	var root: Node3D = auto_free(Node3D.new())
@@ -13,13 +16,19 @@ func _build_controller() -> EnvironmentController:
 
 
 func test_controller_creates_sky_and_low_cost_sun() -> void:
+	var original := GraphicsSettings.active_profile
+	GraphicsSettings.apply_profile("low")
 	var controller := _build_controller()
 	assert_object(controller.world_environment).is_instanceof(WorldEnvironment)
 	assert_object(controller.active_environment.sky).is_instanceof(Sky)
 	assert_object(controller.sun_light).is_instanceof(DirectionalLight3D)
-	assert_bool(controller.sun_light.shadow_enabled).is_false()
+	# LOW => player_only (docs/16): sombras dinámicas LIMITADAS mientras haya sol.
+	# A las 12:00 la energía solar (~1.0) está por encima del umbral nocturno.
+	assert_bool(controller.sun_light.shadow_enabled).is_true()
+	assert_float(controller.sun_light.directional_shadow_max_distance).is_less_equal(16.0)
 	assert_object(controller.rain_particles).is_instanceof(CPUParticles3D)
 	assert_object(controller.rain_particles.mesh).is_instanceof(QuadMesh)
+	GraphicsSettings.apply_profile(original)
 
 
 func test_time_api_updates_period_without_scene_dependency() -> void:

@@ -85,7 +85,10 @@ func test_toast_sets_text() -> void:
 	var hud := _make_hud()
 	hud.show_toast("Misión completada")
 	assert_str(hud._toast_label.text).is_equal("Misión completada")
-	assert_float(hud._toast_label.modulate.a).is_equal(1.0)
+	# Art Pass: el toast entra con fundido ascendente (0.18 s); a los 0.3 s
+	# la entrada terminó y la etiqueta quedó visible (alpha 1.0).
+	await get_tree().create_timer(0.3).timeout
+	assert_float(hud._toast_label.modulate.a).is_greater_equal(0.99)
 
 
 func test_joystick_vector_normalizes() -> void:

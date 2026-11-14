@@ -1,0 +1,30 @@
+{
+  "id": "mat_tejas_terracotta_001",
+  "nombre": "Tejas Terracotta",
+  "categoria": "material/tejados",
+  "descripcion": "Material PBR del canon para Godot 4 (Compatibility Renderer).",
+  "perfil": "BALANCED",
+  "procedencia": "Definición generada por RPG-LBA AI Asset Factory",
+  "licencia": "MIT (proyecto RPG-LBA) - generacion procedural propia",
+  "backend": "numpy+pillow",
+  "semilla": 548098196,
+  "albedo_color": [
+    0.612,
+    0.29,
+    0.184
+  ],
+  "roughness": 0.9,
+  "metallic": 0.0,
+  "normal_scale": 1.0,
+  "texturas": {
+    "albedo": "res://assets/environment/textures/tiles/tex_tiles_roof_tiles_terracotta_001_albedo.png",
+    "normal": "res://assets/environment/textures/tiles/tex_tiles_roof_tiles_terracotta_001_normal.png",
+    "roughness": "res://assets/environment/textures/tiles/tex_tiles_roof_tiles_terracotta_001_roughness.png",
+    "metallic": "res://assets/environment/textures/tiles/tex_tiles_roof_tiles_terracotta_001_metallic.png",
+    "ao": "res://assets/environment/textures/tiles/tex_tiles_roof_tiles_terracotta_001_ao.png",
+    "height": "res://assets/environment/textures/tiles/tex_tiles_roof_tiles_terracotta_001_height.png"
+  },
+  "texture_id": "tex_tiles_roof_tiles_terracotta_001",
+  "uso_godot": "StandardMaterial3D: albedo_color + albedo_texture (si hay), roughness/metallic y normal_texture con normal_scale.",
+  "categoria_godot": "tejados"
+}

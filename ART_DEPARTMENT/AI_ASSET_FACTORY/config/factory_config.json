@@ -1,0 +1,10 @@
+{
+  "backend": "auto",
+  "default_profile": "BALANCED",
+  "max_attempts": 3,
+  "stale_processing_minutes": 45,
+  "batch_limit_default": 5,
+  "collision_simple": true,
+  "license": "MIT (proyecto RPG-LBA) - generacion procedural propia",
+  "provenance": "Procedural - RPG-LBA AI Asset Factory (sin recursos de terceros)"
+}

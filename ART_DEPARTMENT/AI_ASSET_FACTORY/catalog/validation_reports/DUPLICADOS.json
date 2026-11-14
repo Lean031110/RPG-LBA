@@ -1,0 +1,20 @@
+{
+  "asset_id": "DUPLICADOS",
+  "fecha": "2026-11-14T20:50:43+00:00",
+  "resultado": "PASS",
+  "pasadas": 2,
+  "fallidas": 0,
+  "omitidas": 0,
+  "comprobaciones": [
+    {
+      "comprobacion": "hash_duplicados",
+      "resultado": "PASS",
+      "detalle": ""
+    },
+    {
+      "comprobacion": "texturas_visualmente_distintas",
+      "resultado": "PASS",
+      "detalle": ""
+    }
+  ]
+}

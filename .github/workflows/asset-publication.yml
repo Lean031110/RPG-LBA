@@ -1,0 +1,76 @@
+# RPG-LBA — Publicación del departamento de arte.
+# Manual (workflow_dispatch): verifica higiene del repo, marca como
+# 'published' los recursos validados y abre/actualiza el Pull Request
+# de feature/ai-art-department hacia main (sin merge automático,
+# según AGENTS.md §2).
+name: Asset Publication
+
+on:
+  workflow_dispatch:
+
+# Una sola escritura a la rama a la vez: fabrica y publicacion comparten
+# grupo para no competir por el push (carrera detectada en el primer
+# despacho simultaneo: factory perdio el push no-ff contra publication).
+concurrency:
+  group: art-department-write
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  publicar:
+    timeout-minutes: 15
+    if: github.ref_name != 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Dependencias
+        run: pip install -r ART_DEPARTMENT/AI_ASSET_FACTORY/requirements.txt
+
+      - name: Higiene del repositorio (mandato §14)
+        run: |
+          echo "== archivos prohibidos (deben ser 0) =="
+          find . -path ./.git -prune -o -type d \( -name ".venv" -o -name "venv" \
+            -o -name "__pycache__" -o -name ".pytest_cache" \) -print | wc -l
+          echo "== peso total de arte =="
+          du -sh ART_DEPARTMENT assets 2>/dev/null || true
+          echo "== archivos > 45 MB (deben ser 0; usar LFS/releases aparte) =="
+          find ART_DEPARTMENT assets -type f -size +45M | wc -l
+
+      - name: Validar antes de publicar
+        run: python ART_DEPARTMENT/AI_ASSET_FACTORY/cli.py validate
+
+      - name: Marcar recursos validados como published
+        run: python ART_DEPARTMENT/AI_ASSET_FACTORY/cli.py mark-published
+
+      - name: Guardar estado de publicación
+        run: |
+          git config user.name "AI Art Department (Actions)"
+          git config user.email "actions@users.noreply.github.com"
+          git add ART_DEPARTMENT/AI_ASSET_FACTORY/catalog
+          git commit -m "chore(art-factory): recursos marcados published [skip ci]" \
+            || echo "sin cambios"
+          git push
+
+      - name: Crear o actualizar Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TITLE: "AI Art Department: fábrica de recursos 3D + primer lote (93 recursos)"
+        run: |
+          BRANCH="${GITHUB_REF_NAME}"
+          PR_EXISTS=$(gh pr list --head "$BRANCH" --json number --jq 'length')
+          if [ "$PR_EXISTS" = "0" ]; then
+            gh pr create \
+              --base main --head "$BRANCH" \
+              --title "$TITLE" \
+              --body-file ART_DEPARTMENT/AI_ASSET_FACTORY/templates/PR_BODY.md
+          else
+            gh pr comment "$BRANCH" --body "Publicación actualizada: recursos marcados published."
+          fi

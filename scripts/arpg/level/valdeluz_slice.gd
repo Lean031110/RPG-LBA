@@ -6,8 +6,19 @@ extends Node3D
 ## Interfaces preparadas para autoridad local/servidor: el daño pasa por servicios.
 
 const QUEST_ID := "VS_P00"
-const ENEMY_ID := "sombra_de_portal"
 const FRAGMENT_ID := "fragmento_bronce"
+
+## Registro de aparición (Fase 5): marcador -> especie del monstruario canon.
+## La misión VS_P00 mantiene sus 3 Sombras de Portal; la manada de perros y
+## el Guarapo amplían el combate de la zona sin tocar la misión (datos, no código).
+const SPAWN_REGISTRY := {
+	"EnemySpawn1": "sombra_de_portal",
+	"EnemySpawn2": "sombra_de_portal",
+	"EnemySpawn3": "sombra_de_portal",
+	"DogPack1": "perro_de_ceniza",
+	"DogPack2": "perro_de_ceniza",
+	"GuarapoLair": "guarapo_negro",
+}
 
 var player: ArpgPlayer = null
 var cheo: CheoNPC = null
@@ -16,8 +27,9 @@ var hud: ArpgHUD = null
 var pause_overlay: ArpgPauseOverlay = null
 var defeat_overlay: ArpgDefeatOverlay = null
 
-var _enemies: Array[ShadowOfPortal] = []
+var _enemies: Array[ArpgEnemy] = []
 var _killed_counts := {}
+var _respawn_queue := {}
 var _saving_enabled := true
 
 
@@ -42,8 +54,25 @@ func _ready() -> void:
 		_autosave()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	_update_interact_prompt()
+	_process_respawns(delta)
+
+
+func _process_respawns(delta: float) -> void:
+	## Reaparición dirigida por datos (enemies.json "respawn"): la zona nunca
+	## queda vacía; el XP de reaparecidos es el repetible, no el primero.
+	if player == null or player.is_dead():
+		return
+	var ready_markers: Array[String] = []
+	for marker_name: String in _respawn_queue.keys():
+		_respawn_queue[marker_name] = float(_respawn_queue[marker_name]) - delta
+		if float(_respawn_queue[marker_name]) <= 0.0:
+			ready_markers.append(marker_name)
+	for marker_name: String in ready_markers:
+		_respawn_queue.erase(marker_name)
+		if _enemies.size() < GraphicsSettings.max_active_enemies():
+			_spawn_enemy_at(marker_name)
 
 
 func _spawn_player(saved_state: Dictionary) -> void:
@@ -55,14 +84,27 @@ func _spawn_player(saved_state: Dictionary) -> void:
 	player.global_position = spawn.global_position
 	if not saved_state.is_empty():
 		player.restore(saved_state)
+
+		# Iteración 4C: oclusión ARPG — muros que tapan al jugador se vuelven
+		# semitransparentes de forma reversible (nada se elimina ni se mueve).
+
+		# Iteración 4C: el botón táctil de pausa del HUD dispara la misma pausa que ESC.
 	camera_rig = IsoCameraRig.new()
 	camera_rig.name = "CameraRig"
 	add_child(camera_rig)
 	camera_rig.setup(player)
+	# Iteración 4C: oclusión ARPG — muros que tapan al jugador se vuelven
+	# semitransparentes de forma reversible (nada se elimina ni se mueve).
+	var occlusion := ArpgOcclusionManager.new()
+	occlusion.name = "OcclusionManager"
+	add_child(occlusion)
+	occlusion.setup(camera_rig.get_camera(), player)
 	player.died.connect(_on_player_died)
 	hud = get_node("HUD")
 	hud.bind_player(player)
 	hud.joystick_changed.connect(func(vector: Vector2) -> void: player.joystick_vector = vector)
+	# Iteración 4C: el botón táctil de pausa del HUD dispara la misma pausa que ESC.
+	hud.pause_requested.connect(_toggle_pause)
 
 
 func _spawn_cheo() -> void:
@@ -74,16 +116,44 @@ func _spawn_cheo() -> void:
 
 
 func _spawn_enemies() -> void:
-	for marker_path: String in ["EnemySpawn1", "EnemySpawn2", "EnemySpawn3"]:
-		var marker: Marker3D = get_node(marker_path)
-		var enemy := ShadowOfPortal.new()
-		enemy.name = marker_path
-		add_child(enemy)
-		enemy.global_position = marker.global_position
-		enemy.setup(ENEMY_ID)
-		enemy.set_target(player)
-		enemy.enemy_died.connect(_on_enemy_died.bind(enemy))
-		_enemies.append(enemy)
+	## Matriz de compatibilidad (docs/16): tope de enemigos simultáneos por perfil.
+	## El registro reparte especies por marcador; los que no caben quedan en cola.
+	for marker_name: String in SPAWN_REGISTRY.keys():
+		if _enemies.size() >= GraphicsSettings.max_active_enemies():
+			break
+		_spawn_enemy_at(marker_name)
+
+
+func _spawn_enemy_at(marker_name: String) -> void:
+	var marker := get_node_or_null(marker_name) as Marker3D
+	if marker == null:
+		return
+	var species_id: String = SPAWN_REGISTRY.get(marker_name, "sombra_de_portal")
+	var enemy := _create_enemy(species_id)
+	if enemy == null:
+		return
+	enemy.name = marker_name
+	add_child(enemy)
+	enemy.global_position = marker.global_position
+	enemy.setup(species_id)
+	enemy.set_target(player)
+	enemy.enemy_died.connect(_on_enemy_died.bind(enemy))
+	_enemies.append(enemy)
+
+
+func _create_enemy(species_id: String) -> ArpgEnemy:
+	## Fábrica de especies: cada entrada del monstruario con su clase; añadir
+	## especies nuevas = un dato + una línea (arquitectura reutilizable).
+	match species_id:
+		"sombra_de_portal":
+			return ShadowOfPortal.new()
+		"perro_de_ceniza":
+			return PerroDeCeniza.new()
+		"guarapo_negro":
+			return GuarapoNegro.new()
+		_:
+			push_error("ValdeluzSlice: especie sin clase: " + species_id)
+			return null
 
 
 func _spawn_quest_pickups() -> void:
@@ -213,26 +283,45 @@ func _claim_quest() -> void:
 	var rewards := QuestSystem.claim(QUEST_ID)
 	if rewards.is_empty():
 		return
+
+		# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
+
+		# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
+
+		# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
 	player.add_xp(int(rewards.get("xp", 0)))
 	for item: Dictionary in rewards.get("items", []):
 		if String(item.get("item_id", "")) == "pocion_curativa":
 			player.add_potion(int(item.get("count", 1)))
+
+			# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
+
+			# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
+		elif player.receive_item(String(item.get("item_id", "")), int(item.get("count", 1))):
+			# Fase 3: recompensas de equipo entran al inventario (machete mellado de Cheo).
+			var item_data := RpgDB.get_item(String(item.get("item_id", "")))
+			hud.show_toast("Equipo recibido: %s" % RpgDB.get_text(String(item_data.get("name_key", ""))))
 	hud.show_toast(RpgDB.get_text("quest.claimed"))
 	_refresh_quest_tracker()
 	_autosave()
 
 
 func _on_fragment_collected(pickup_type: String, amount: int) -> void:
+	# Fase 3: los objetos de equipo (drops futuros) ya entraron al inventario vía
+	# receive_item; aquí solo se avisa. Los fragmentos siguen notificando a la misión.
 	if pickup_type != FRAGMENT_ID:
+		var pickup_data := RpgDB.get_item(pickup_type)
+		if String(pickup_data.get("kind", "")) == "weapon":
+			hud.show_toast("Arma recuperada: %s" % RpgDB.get_text(String(pickup_data.get("name_key", ""))))
 		return
 	QuestSystem.notify_collect(FRAGMENT_ID, amount)
 	hud.show_toast("Fragmento de bronce recuperado (%d)" % amount)
 
 
 func _on_enemy_died(enemy_id: String, death_position: Vector3, enemy: Node) -> void:
-	## Registro por instancia: en la rebanada no hay respawn; cada sombra es una
-	## primera victoria. El servicio first/repeat XP queda listo para repetibles.
-	var instance_key := str(enemy.get_instance_id())
+	## Registro por MARCADOR (Fase 5): los reaparecidos cuentan como victoria
+	## repetible aunque sean instancias nuevas (el XP primero/repetido es real).
+	var instance_key := str(enemy.name)
 	var count := int(_killed_counts.get(instance_key, 0)) + 1
 	_killed_counts[instance_key] = count
 	var is_first := count == 1
@@ -240,6 +329,9 @@ func _on_enemy_died(enemy_id: String, death_position: Vector3, enemy: Node) -> v
 	var xp := ProgressionService.first_kill_xp(enemy_data, is_first)
 	player.add_xp(xp)
 	QuestSystem.notify_kill(enemy_id, is_first)
+	if enemy is ArpgEnemy:
+		_enemies.erase(enemy)
+		_schedule_respawn(str(enemy.name), enemy_data)
 	# Drop de poción según datos del enemigo (chance en enemies.json).
 	for drop: Dictionary in enemy_data.get("drops", []):
 		if randf() > float(drop.get("chance", 1.0)):
@@ -249,6 +341,14 @@ func _on_enemy_died(enemy_id: String, death_position: Vector3, enemy: Node) -> v
 		add_child(pickup)
 		pickup.global_position = death_position + Vector3(0, 0.1, 0)
 		pickup.setup(String(drop.get("item_id", "pocion_curativa")))
+
+
+func _schedule_respawn(marker_name: String, enemy_data: Dictionary) -> void:
+	## Los enemigos de la zona reaparecen (datos) para que el combate siga
+	## disponible tras completar la misión (progresión repetible, 12 XP).
+	if not bool(enemy_data.get("respawn", false)):
+		return
+	_respawn_queue[marker_name] = float(enemy_data.get("respawn_time", 25.0))
 
 
 func _on_player_died() -> void:

@@ -8,7 +8,6 @@
 [ext_resource type="ArrayMesh" uid="uid://b3f7h1naq4w6e" path="res://assets/characters/player/meshes/godot_robot_limbs_and_head.tres" id="3_limbs"]
 [ext_resource type="Script" uid="uid://bj7yrijm7bppq" path="res://scripts/player/spring_arm_offset.gd" id="4_ygggd"]
 [ext_resource type="PackedScene" uid="uid://difodi4a2r6vc" path="res://assets/items/weapons/models/sword.fbx" id="16_sword"]
-[ext_resource type="FontFile" uid="uid://diapabmalpcrj" path="res://assets/fonts/Kurland.ttf" id="16_xgf8p"]
 [ext_resource type="PackedScene" uid="uid://dj7318sc4o37l" path="res://assets/items/weapons/models/sword_big.fbx" id="17_sword_big"]
 [ext_resource type="PackedScene" uid="uid://cc8gkp6u5tr2e" path="res://assets/items/backpacks/models/backpack.fbx" id="27_backpack"]
 [ext_resource type="PackedScene" uid="uid://dghg7ospl0imy" path="res://assets/items/weapons/models/axe.fbx" id="28_axe"]
@@ -4889,7 +4888,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
 billboard = 1
 outline_modulate = Color(0, 0, 0, 0.301961)
 text = "player name"
-font = ExtResource("16_xgf8p")
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1634180657]
 replication_config = SubResource("SceneReplicationConfig_wb3a5")

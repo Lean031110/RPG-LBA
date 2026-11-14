@@ -1,0 +1,18 @@
+{
+  "id": "job_NNNN",
+  "categoria": "<vegetation|rocks|urban|furniture|architecture|buildings|objects>",
+  "nombre": "<nombre_del_generador>",
+  "generador": "model:<nombre_del_generador>",
+  "descripcion": "qué representa y para qué se usará",
+  "parametros": {
+    "name": "<nombre_del_generador>",
+    "width": 2.0,
+    "height": 3.0,
+    "facade": "ocre",
+    "decay": 0.35
+  },
+  "resolucion": null,
+  "prioridad": 3,
+  "perfil": "BALANCED",
+  "semilla": 123456789
+}

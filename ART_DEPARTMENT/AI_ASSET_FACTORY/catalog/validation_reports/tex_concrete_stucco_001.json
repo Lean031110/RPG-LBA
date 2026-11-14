@@ -1,0 +1,75 @@
+{
+  "asset_id": "tex_concrete_stucco_001",
+  "fecha": "2026-11-14T20:50:42+00:00",
+  "resultado": "PASS",
+  "pasadas": 13,
+  "fallidas": 0,
+  "omitidas": 0,
+  "comprobaciones": [
+    {
+      "comprobacion": "archivo_albedo",
+      "resultado": "PASS",
+      "detalle": "/home/runner/work/RPG-LBA/RPG-LBA/assets/environment/textures/concrete/tex_concrete_stucco_001_albedo.png"
+    },
+    {
+      "comprobacion": "archivo_normal",
+      "resultado": "PASS",
+      "detalle": "/home/runner/work/RPG-LBA/RPG-LBA/assets/environment/textures/concrete/tex_concrete_stucco_001_normal.png"
+    },
+    {
+      "comprobacion": "archivo_roughness",
+      "resultado": "PASS",
+      "detalle": "/home/runner/work/RPG-LBA/RPG-LBA/assets/environment/textures/concrete/tex_concrete_stucco_001_roughness.png"
+    },
+    {
+      "comprobacion": "archivo_metallic",
+      "resultado": "PASS",
+      "detalle": "/home/runner/work/RPG-LBA/RPG-LBA/assets/environment/textures/concrete/tex_concrete_stucco_001_metallic.png"
+    },
+    {
+      "comprobacion": "archivo_ao",
+      "resultado": "PASS",
+      "detalle": "/home/runner/work/RPG-LBA/RPG-LBA/assets/environment/textures/concrete/tex_concrete_stucco_001_ao.png"
+    },
+    {
+      "comprobacion": "archivo_height",
+      "resultado": "PASS",
+      "detalle": "/home/runner/work/RPG-LBA/RPG-LBA/assets/environment/textures/concrete/tex_concrete_stucco_001_height.png"
+    },
+    {
+      "comprobacion": "albedo_abre",
+      "resultado": "PASS",
+      "detalle": "esperado 1024px"
+    },
+    {
+      "comprobacion": "seamless_bordes",
+      "resultado": "PASS",
+      "detalle": "borde dx=0.0001 dy=0.0001 vs p99.9 interior 0.0235/0.0235"
+    },
+    {
+      "comprobacion": "rango_albedo",
+      "resultado": "PASS",
+      "detalle": "media=0.752 std=0.031"
+    },
+    {
+      "comprobacion": "mapas_pbr_distintos",
+      "resultado": "PASS",
+      "detalle": "repetidos=[]"
+    },
+    {
+      "comprobacion": "roughness_variada",
+      "resultado": "PASS",
+      "detalle": "std=0.0374 (>0.02; nada de mapas constantes)"
+    },
+    {
+      "comprobacion": "normal_blue_dominante",
+      "resultado": "PASS",
+      "detalle": "media B=0.996 (>0.5)"
+    },
+    {
+      "comprobacion": "normal_rango",
+      "resultado": "PASS",
+      "detalle": "min=0.44 max=1.00"
+    }
+  ]
+}

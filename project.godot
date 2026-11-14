@@ -17,9 +17,14 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="RPG LBA - Las Cenizas de Lythara"
 config/description="Action RPG isométrico de fantasía oscura caribeña. Cuba ficticia, 1953. Campaña: El Eco de Valdeluz."
 config/tags=PackedStringArray("3d", "arpg")
-run/main_scene="res://scenes/arpg/menu/main_menu.tscn"
+run/main_scene="res://scenes/arpg/menu/intro_splash.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.png"
+boot_splash/bg_color=Color(0.043, 0.051, 0.071, 1)
+boot_splash/show_image=true
+boot_splash/image="res://assets/branding/boot_splash.png"
+boot_splash/fullsize=false
+boot_splash/use_filter=true
 
 [autoload]
 
@@ -29,6 +34,7 @@ RpgDB="*res://scripts/arpg/autoloads/rpg_db.gd"
 SaveSystem="*res://scripts/arpg/autoloads/save_system.gd"
 QuestSystem="*res://scripts/arpg/autoloads/quest_system.gd"
 GraphicsSettings="*res://scripts/arpg/autoloads/graphics_settings.gd"
+CombatEvents="*res://scripts/arpg/combat/combat_events.gd"
 
 [display]
 
@@ -45,6 +51,9 @@ import/blender/enabled=false
 [global_group]
 
 Players="A group containing all of the player nodes"
+arpg_enemies="Enemigos ARPG visibles en el minimapa (blips rojos)"
+arpg_pickups="Objetos recogibles ARPG visibles en el minimapa (blips dorados)"
+arpg_npcs="NPCs ARPG visibles en el minimapa (blips verdes)"
 
 [input]
 
@@ -135,6 +144,41 @@ arpg_potion={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":81,"key_label":0,"unicode":113,"location":0,"echo":false,"script":null)
 ]
 }
+arpg_inventory={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":73,"key_label":0,"unicode":105,"location":0,"echo":false,"script":null)
+]
+}
+arpg_heavy={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":76,"key_label":0,"unicode":108,"location":0,"echo":false,"script":null)
+]
+}
+arpg_skill_2={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":50,"key_label":0,"unicode":50,"location":0,"echo":false,"script":null)
+]
+}
+arpg_skill_3={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":51,"key_label":0,"unicode":51,"location":0,"echo":false,"script":null)
+]
+}
+arpg_skill_4={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":52,"key_label":0,"unicode":52,"location":0,"echo":false,"script":null)
+]
+}
+arpg_ultimate={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":82,"key_label":0,"unicode":114,"location":0,"echo":false,"script":null)
+]
+}
+arpg_block={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194325,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+]
+}
 arpg_pause={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194305,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
@@ -158,3 +202,6 @@ arpg_pause={
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 anti_aliasing/quality/msaa_3d=0
+; Fase 2: requerido por el preset Android (arm64). Sin ETC2/ASTC, la exportación
+; Android falla con "Cannot export for universal or arm64...". No afecta al escritorio.
+textures/vram_compression/import_etc2_astc=true
