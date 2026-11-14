@@ -51,6 +51,7 @@ Los atributos, poderes, especializaciones, XP, curva de niveles y pruebas de bal
 | Godot 4.7.2 y auditoría inicial | Fase 0 reportada |
 | Vertical slice | Reconstruida y publicada en `agent/fase1-vertical-slice` (PR pendiente de revisión; 108/108 pruebas GdUnit4 y CI en verde) |
 | Prototipo de movimiento y controles | Fase 2 del propietario implementada en `feature/phase-2-playable-prototype` (PR pendiente; 132/132 pruebas; export Android debug verificada, dispositivo NO PROBADO) |
+| HUD móvil (arco Diablo/MLBB), minimapa, correr/caminar e inventario de armas | Preparativos Fase 3 en `agent/fase3-preparativos-hud-minimap` (PR pendiente; 170/170 pruebas; capturas reales en `screenshots/arpg/`) |
 | Dirección creativa y narrativa | Documentadas |
 | Clases, XP y balance | Diseño revisado; implementación y simulación pendientes |
 | Art Pass / ciclo día-noche / UX | Especificados; implementación pendiente |

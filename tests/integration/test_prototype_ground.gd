@@ -70,13 +70,16 @@ func test_player_climbs_ramp_and_stays_on_floor() -> void:
 	var player := ground.player
 	# Base de la rampa A (asciende hacia +Z hasta la plataforma de piedra).
 	player.global_position = Vector3(8.0, 0.15, 4.2)
-	player.joystick_vector = Vector2(0, 1)
-	await _frames(60)
+	# Ajuste Fase 3 (justificado): deflexión analógica de CAMINAR (bajo el umbral
+	# de correr 0.6). A velocidad de carrera el ascenso sobrepasa la plataforma y
+	# el caso deja de medir lo que mide: subir pegado al suelo y bajar sin volar.
+	player.joystick_vector = Vector2(0, 0.55)
+	await _frames(110)
 	assert_float(player.global_position.y).is_greater(0.6)
 	assert_bool(player.is_on_floor()).is_true()
 	# Bajada por la misma rampa: floor_snap evita el micro-vuelo en el descenso.
-	player.joystick_vector = Vector2(0, -1)
-	await _frames(60)
+	player.joystick_vector = Vector2(0, -0.55)
+	await _frames(120)
 	assert_float(player.global_position.y).is_less(0.2)
 	assert_bool(player.is_on_floor()).is_true()
 	player.joystick_vector = Vector2.ZERO

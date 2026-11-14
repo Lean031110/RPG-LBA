@@ -22,6 +22,7 @@
 			"name_key": "item.machete.name",
 			"description_key": "item.machete.desc",
 			"kind": "weapon",
+			"potency_bonus": 3.0,
 			"class_id": "machetero"
 		}
 	],

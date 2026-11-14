@@ -1,3 +1,7 @@
+# gdlint: ignore=max-public-methods
+# (Fase 3: 22 metodos publicos. El limite por defecto de gdlint es 20; la clase absorbe
+# inventario de equipo y tiers de locomocion. Excepcion acotada a este archivo y
+# documentada en docs/reportes/FASE_03_PREPARATIVOS.md; la regla global queda intacta.)
 class_name ArpgPlayer
 extends CharacterBody3D
 ## Jugador de la vertical slice: Machetero de la Sierra (única clase jugable en la rebanada).
@@ -6,6 +10,8 @@ extends CharacterBody3D
 ## Lógica desacoplada de la UI: el HUD escucha señales y llama métodos públicos.
 ## Fase 2: movimiento con aceleración/desaceleración y relativo a la cámara (var camera_source);
 ## sin fuente de cámara se usa el eje mundial (identidad), como en la Fase 1.
+## Fase 3 (preparativos): tiers de locomoción por magnitud de entrada (caminar/correr con
+## animación diferenciada) e inventario de equipo propio (arma equipable con bonus de daño).
 
 signal stats_changed
 signal leveled_up(new_level: int)
@@ -22,6 +28,10 @@ const CRIT_CHANCE := 0.05
 ## aporta "move_accel"/"move_decel" en classes.json, los datos mandan (mismo patrón que move_speed).
 const DEFAULT_MOVE_ACCEL := 24.0
 const DEFAULT_MOVE_DECEL := 30.0
+## Fase 3: magnitud de entrada que separa caminar de correr. El teclado entrega 1.0
+## (corre, estándar ARPG); el joystick analógico camina con deflexión baja (estilo MLBB).
+const RUN_INPUT_THRESHOLD := 0.6
+const DEFAULT_RUN_MULTIPLIER := 1.55
 const FLOOR_SNAP := 0.25
 const BODY_LAYER := ArpgLayers.PLAYER
 const BODY_MASK := ArpgLayers.WORLD
@@ -41,6 +51,10 @@ var armor := 0.0
 var potions := 1
 var joystick_vector := Vector2.ZERO
 var is_dodging := false
+## Fase 3: tier de locomoción actual ("idle" | "walk" | "run"), público para HUD/minimapa.
+var move_tier := "idle"
+## Fase 3: inventario de equipo propio (armas; las pociones siguen en contador rápido).
+var inventory: PlayerInventory = null
 ## Fuente del marco de movimiento (Fase 2). Asignación directa pública:
 ## player.camera_source = rig. Sin asignar (tests, escenas mínimas) es identidad.
 var camera_source: Node3D = null
@@ -53,6 +67,7 @@ var _skill_cooldown_left := 0.0
 var _dodge_cooldown_left := 0.0
 var _hurt_grace_left := 0.0
 var _walk_phase := 0.0
+var _run_blend := 0.0
 var _hitbox_shape: CollisionShape3D = null
 var _hitbox_area: Area3D = null
 var _window_open := false
@@ -69,10 +84,6 @@ func setup(new_class_id: String) -> void:
 	if class_data.is_empty():
 		push_error("ArpgPlayer: clase desconocida %s" % class_id)
 		return
-
-		# Fase 2: pegado al suelo en bajadas de pendiente/rampa (evita micro-vuelos al bajar).
-
-		# Fase 2: pegado al suelo en bajadas de pendiente/rampa (evita micro-vuelos al bajar).
 	collision_layer = BODY_LAYER
 	collision_mask = BODY_MASK
 	_build_body_shape()
@@ -81,6 +92,8 @@ func setup(new_class_id: String) -> void:
 	_reset_stats()
 	_build_hitbox()
 	_build_visual()
+	# Fase 3: inventario de equipo propio (serializable con el resto del estado).
+	inventory = PlayerInventory.new()
 
 
 func _build_body_shape() -> void:
@@ -160,12 +173,6 @@ func get_potions() -> int:
 func add_xp(amount: int) -> void:
 	if amount <= 0 or _dead:
 		return
-
-		# Diseño de la rebanada: al subir de nivel se restaura por completo (decisión documentada).
-
-		# Diseño de la rebanada: al subir de nivel se restaura por completo (decisión documentada).
-
-		# Diseño de la rebanada: al subir de nivel se restaura por completo (decisión documentada).
 	var result := ProgressionService.add_xp(level, xp_into_level, amount, RpgDB.get_progression())
 	xp_into_level = int(result["xp_into_level"])
 	attribute_points += int(result["points_gained"])
@@ -254,6 +261,35 @@ func add_potion(count := 1) -> void:
 	stats_changed.emit()
 
 
+func receive_item(item_id: String, count := 1) -> bool:
+	## Guarda un objeto de equipo/misión en el inventario propio (Fase 3). Las pociones
+	## siguen en el contador rápido de la rebanada (decisión documentada). False si no hay
+	## hueco o el objeto no existe en datos.
+	if inventory == null or count <= 0:
+		return false
+	if RpgDB.get_item(item_id).is_empty():
+		push_error("ArpgPlayer: objeto desconocido %s" % item_id)
+		return false
+	var index := inventory.get_first_empty_slot()
+	if index < 0:
+		return false
+	var slot := inventory.get_slot(index)
+	slot.item_id = item_id
+	slot.quantity = count
+	return true
+
+
+func try_equip_weapon(slot_index := -1) -> bool:
+	## slot_index >= 0: equipa el arma de ese hueco (swap con la equipada). -1: desequipa
+	## al primer hueco libre. Valida kind=weapon y la restricción de clase del dato.
+	## El bonus de potencia se aplica en la hitbox (data-driven, sin fórmulas nuevas).
+	if inventory == null:
+		return false
+	if slot_index < 0:
+		return _unequip_weapon_to_free_slot()
+	return _equip_weapon_from_slot(slot_index)
+
+
 func _start_action(kind: String, params: Dictionary) -> bool:
 	if _dead or not _action_params.is_empty() or is_dodging:
 		return false
@@ -281,16 +317,62 @@ func _input_direction() -> Vector3:
 	## Dirección de movimiento en XZ desde teclado + joystick virtual (HUD), normalizada
 	## en diagonal y expresada en el marco de la cámara (Fase 2). Sin cámara asignada,
 	## el marco es la identidad: exactamente el eje mundial de la Fase 1 (compatibilidad).
+	var combined := _raw_input()
+	if combined.length() > 1.0:
+		combined = combined.normalized()
+	return _to_camera_space(combined)
+
+
+func _raw_input() -> Vector3:
+	## Entrada combinada SIN normalizar: su magnitud separa caminar de correr (Fase 3).
 	var keyboard := Vector3(
 		Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
 		0,
 		Input.get_action_strength("move_backward") - Input.get_action_strength("move_forward")
 	)
-	var stick := Vector3(joystick_vector.x, 0, joystick_vector.y)
-	var combined := keyboard + stick
-	if combined.length() > 1.0:
-		combined = combined.normalized()
-	return _to_camera_space(combined)
+	return keyboard + Vector3(joystick_vector.x, 0, joystick_vector.y)
+
+
+func _unequip_weapon_to_free_slot() -> bool:
+	## Devuelve el arma equipada al primer hueco libre (no desequipa si no hay hueco).
+	if inventory.equipped_weapon.is_empty():
+		return false
+	var free := inventory.get_first_empty_slot()
+	if free < 0:
+		return false
+	var target := inventory.get_slot(free)
+	target.item_id = inventory.equipped_weapon.item_id
+	target.quantity = inventory.equipped_weapon.quantity
+	inventory.equipped_weapon.clear()
+	_update_weapon_visual()
+	stats_changed.emit()
+	return true
+
+
+func _equip_weapon_from_slot(slot_index: int) -> bool:
+	## Equipa el arma del hueco indicado dejando la anterior en ese mismo hueco.
+	if not inventory.is_slot_active(slot_index):
+		return false
+	var slot := inventory.get_slot(slot_index)
+	if slot == null or slot.is_empty():
+		return false
+	var item_data := RpgDB.get_item(slot.item_id)
+	if String(item_data.get("kind", "")) != "weapon":
+		return false
+	var required_class := String(item_data.get("class_id", ""))
+	if required_class != "" and required_class != class_id:
+		return false
+	var swap_id := inventory.equipped_weapon.item_id
+	var swap_qty := inventory.equipped_weapon.quantity
+	inventory.equipped_weapon.item_id = slot.item_id
+	inventory.equipped_weapon.quantity = slot.quantity
+	slot.item_id = swap_id
+	slot.quantity = swap_qty
+	if slot.is_empty():
+		slot.clear()
+	_update_weapon_visual()
+	stats_changed.emit()
+	return true
 
 
 func _to_camera_space(direction: Vector3) -> Vector3:
@@ -309,26 +391,13 @@ func _to_camera_space(direction: Vector3) -> Vector3:
 func _physics_process(delta: float) -> void:
 	if class_data.is_empty():
 		return
-
-		# Fase 2: aceleración hacia la velocidad objetivo y desaceleración al soltar.
-
-		# Giro y ciclo de pasos siguen la velocidad REAL del cuerpo: sin deslizamiento visual.
-
-		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
-
-		# Fase 2: aceleración hacia la velocidad objetivo y desaceleración al soltar.
-
-		# Giro y ciclo de pasos siguen la velocidad REAL del cuerpo: sin deslizamiento visual.
-
-		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
-
-		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 	_tick_timers(delta)
+	_update_run_blend(delta)
 	if not is_dodging and _action_params.is_empty():
-		# Fase 2: aceleración hacia la velocidad objetivo y desaceleración al soltar.
+		# Fase 3: el tier de locomoción (caminar/correr) sale de la magnitud de entrada;
+		# la velocidad objetivo del tier se persigue con la aceleración de la Fase 2.
 		var direction := _input_direction()
-		var speed := float(class_data.get("move_speed", 4.0))
-		var target := direction * speed
+		var target := direction * _tier_target_speed()
 		var accel := float(class_data.get("move_accel", DEFAULT_MOVE_ACCEL))
 		var decel := float(class_data.get("move_decel", DEFAULT_MOVE_DECEL))
 		var rate := decel if target.length() < 0.05 else accel
@@ -339,19 +408,13 @@ func _physics_process(delta: float) -> void:
 		if planar_speed > 0.05:
 			# Giro y ciclo de pasos siguen la velocidad REAL del cuerpo: sin deslizamiento visual.
 			_face_towards(planar.normalized(), delta)
-			_walk_phase += delta * planar_speed * 2.4
+			_walk_phase += delta * planar_speed * (2.4 + _run_blend * 0.8)
 			_animate_walk(_walk_phase)
-
-			# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 		else:
 			_animate_idle(delta)
-
-			# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
-
-		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 	else:
-		_animate_walk(_walk_phase)
 		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
+		_animate_walk(_walk_phase)
 		velocity.x = 0.0
 		velocity.z = 0.0
 	if is_dodging:
@@ -369,6 +432,28 @@ func _physics_process(delta: float) -> void:
 	if not _action_params.is_empty():
 		_process_action(delta)
 	_animate_action(delta)
+
+
+func _update_run_blend(delta: float) -> void:
+	## Fundido visual caminar<->correr: persigue el tier actual para transiciones suaves.
+	_run_blend = move_toward(_run_blend, 1.0 if move_tier == "run" else 0.0, delta * 4.0)
+
+
+func _tier_target_speed() -> float:
+	## Velocidad objetivo según el tier (Fase 3). Caminar: base_speed (la deflexión
+	## analógica ya escala la VELOCIDAD a través del vector dirección, que conserva la
+	## magnitud < 1; multiplicarla aquí duplicaría el efecto). Correr: base_speed x
+	## run_multiplier (dato por clase). Actualiza move_tier como único efecto lateral.
+	var raw_magnitude := _raw_input().length()
+	var base_speed := float(class_data.get("move_speed", 4.0))
+	if raw_magnitude >= RUN_INPUT_THRESHOLD:
+		move_tier = "run"
+		return base_speed * float(class_data.get("run_multiplier", DEFAULT_RUN_MULTIPLIER))
+	if raw_magnitude > 0.05:
+		move_tier = "walk"
+		return base_speed
+	move_tier = "idle"
+	return 0.0
 
 
 func _tick_timers(delta: float) -> void:
@@ -455,10 +540,34 @@ func _apply_hitbox_damage(params: Dictionary) -> void:
 		_bodies_hit_this_swing.append(body)
 		var defense := _target_defense(body, params)
 		var attacker_attribute := get_attribute(String(params.get("attribute", "fuerza")))
-		var damage := CombatService.damage_from_data(params, attacker_attribute, defense)
+		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+		var attack_params := params.duplicate()
+		attack_params["potency"] = float(params.get("potency", 0.0)) + _weapon_potency_bonus()
+		var damage := CombatService.damage_from_data(attack_params, attacker_attribute, defense)
 		var crit := CombatService.crit_roll(damage, CRIT_CHANCE, _rng)
 		body.take_damage(float(crit["damage"]))
 		hit_landed.emit(body, float(crit["damage"]), bool(crit["crit"]))
+
+
+func _weapon_potency_bonus() -> float:
+	## Bonus de potencia del arma equipada (items.json "potency_bonus"; 0 sin arma).
+	if inventory == null or inventory.equipped_weapon.is_empty():
+		return 0.0
+	return float(RpgDB.get_item(inventory.equipped_weapon.item_id).get("potency_bonus", 0.0))
+
+
+func _update_weapon_visual() -> void:
+	## Reflejo visual del arma equipada (Fase 3): brillo cálido sutil del acero cuando hay
+	## arma equipada; apagado al desequipar. La silueta no cambia (el Art Pass trae modelos).
+	if _puppet.is_empty():
+		return
+	var blade_mesh := _puppet.get("blade_mesh") as MeshInstance3D
+	if blade_mesh == null:
+		return
+	if _weapon_potency_bonus() > 0.0:
+		VisualKit.set_emission(blade_mesh, VisualKit.MAT_BRONZE_GLOW, 0.55)
+	else:
+		VisualKit.clear_emission(blade_mesh)
 
 
 func _target_defense(body: Node, params: Dictionary) -> float:
@@ -502,6 +611,7 @@ func serialize() -> Dictionary:
 		"vigor": vigor,
 		"potions": potions,
 		"position": [global_position.x, global_position.y, global_position.z],
+		"inventory": inventory.to_dict() if inventory != null else {},
 	}
 
 
@@ -518,9 +628,14 @@ func restore(data: Dictionary) -> void:
 	hp = clampf(float(data.get("hp", max_hp)), 1.0, max_hp)
 	vigor = clampf(float(data.get("vigor", max_vigor)), 0.0, max_vigor)
 	potions = int(data.get("potions", 1))
+	# Fase 3: el inventario llega en partidas guardadas nuevas; en las viejas queda vacío.
+	var inventory_data: Dictionary = data.get("inventory", {})
+	if inventory != null and not inventory_data.is_empty():
+		inventory.from_dict(inventory_data)
 	var position_data: Array = data.get("position", [0, 0, 0])
 	if position_data.size() == 3:
 		global_position = Vector3(position_data[0], position_data[1], position_data[2])
+	_update_weapon_visual()
 	stats_changed.emit()
 
 
@@ -578,7 +693,7 @@ func _build_visual() -> void:
 	VisualKit.add_box(
 		machete, Vector3(0.05, 0.16, 0.06), Vector3(0, 0.02, 0), VisualKit.flat_material(VisualKit.MAT_WOOD)
 	)
-	VisualKit.add_box(machete, Vector3(0.045, 0.52, 0.11), Vector3(0, 0.4, 0.08), blade)
+	var blade_mesh := VisualKit.add_box(machete, Vector3(0.045, 0.52, 0.11), Vector3(0, 0.4, 0.08), blade)
 	_puppet = {
 		"root": puppet,
 		"leg_l": leg_l,
@@ -587,18 +702,23 @@ func _build_visual() -> void:
 		"arm_r": arm_r,
 		"brim": brim,
 		"torso_mat": shirt,
+		"blade_mesh": blade_mesh,
 	}
 
 
 func _animate_walk(phase: float) -> void:
+	## Ciclo compartido caminar/correr (Fase 3): amplitud, inclinación y bombeo de brazos
+	## escalan con _run_blend; la frecuencia ya escala con la velocidad real del cuerpo.
 	if _puppet.is_empty():
 		return
-	var swing := sin(phase) * 0.55
+	var swing := sin(phase) * lerpf(0.55, 0.88, _run_blend)
+	var root := _puppet["root"] as Node3D
+	root.rotation.x = lerpf(root.rotation.x, 0.14 * _run_blend, 0.15)
 	(_puppet["leg_l"] as Node3D).rotation.x = swing
 	(_puppet["leg_r"] as Node3D).rotation.x = -swing
-	(_puppet["arm_l"] as Node3D).rotation.x = -swing * 0.7
+	(_puppet["arm_l"] as Node3D).rotation.x = -swing * (0.7 + 0.25 * _run_blend)
 	if _action_params.is_empty() and not is_dodging:
-		(_puppet["arm_r"] as Node3D).rotation.x = -swing * 0.7
+		(_puppet["arm_r"] as Node3D).rotation.x = -swing * (0.7 + 0.25 * _run_blend)
 
 
 func _animate_idle(delta: float) -> void:
@@ -606,6 +726,7 @@ func _animate_idle(delta: float) -> void:
 		return
 	_walk_phase += delta * 1.6
 	var breathe := sin(_walk_phase) * 0.04
+	(_puppet["root"] as Node3D).rotation.x = lerpf((_puppet["root"] as Node3D).rotation.x, 0.0, 0.15)
 	(_puppet["leg_l"] as Node3D).rotation.x = lerp_angle((_puppet["leg_l"] as Node3D).rotation.x, 0.0, 0.2)
 	(_puppet["leg_r"] as Node3D).rotation.x = lerp_angle((_puppet["leg_r"] as Node3D).rotation.x, 0.0, 0.2)
 	(_puppet["arm_l"] as Node3D).rotation.x = breathe

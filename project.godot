@@ -45,6 +45,9 @@ import/blender/enabled=false
 [global_group]
 
 Players="A group containing all of the player nodes"
+arpg_enemies="Enemigos ARPG visibles en el minimapa (blips rojos)"
+arpg_pickups="Objetos recogibles ARPG visibles en el minimapa (blips dorados)"
+arpg_npcs="NPCs ARPG visibles en el minimapa (blips verdes)"
 
 [input]
 
@@ -133,6 +136,11 @@ arpg_interact={
 arpg_potion={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":81,"key_label":0,"unicode":113,"location":0,"echo":false,"script":null)
+]
+}
+arpg_inventory={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":73,"key_label":0,"unicode":105,"location":0,"echo":false,"script":null)
 ]
 }
 arpg_pause={

@@ -30,6 +30,10 @@
           {
             "item_id": "pocion_curativa",
             "count": 1
+          },
+          {
+            "item_id": "machete_mellado",
+            "count": 1
           }
         ],
         "flags": [

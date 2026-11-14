@@ -37,6 +37,8 @@ func setup(new_enemy_id: String) -> void:
 		return
 	collision_layer = ArpgLayers.ENEMY
 	collision_mask = ArpgLayers.WORLD
+	# Fase 3: grupo para blips del minimapa (consulta por grupo; sin lógica de juego).
+	add_to_group("arpg_enemies")
 	_build_body_shape()
 	max_hp = float(enemy_data.get("hp", 45))
 	hp = max_hp

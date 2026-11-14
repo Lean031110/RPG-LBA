@@ -21,6 +21,8 @@ func setup(new_type: String, start_amount := 1) -> void:
 	amount = start_amount
 	collision_layer = ArpgLayers.PICKUP
 	collision_mask = ArpgLayers.PLAYER
+	# Fase 3: grupo para blips del minimapa (consulta por grupo; sin lógica de juego).
+	add_to_group("arpg_pickups")
 	var shape := CollisionShape3D.new()
 	var sphere := SphereShape3D.new()
 	sphere.radius = 0.9
@@ -35,14 +37,22 @@ func get_item_id() -> String:
 	return pickup_type
 
 
+func _is_weapon() -> bool:
+	## Fase 3: el visual del pickup cambia para armas (kind=weapon en items.json).
+	return String(RpgDB.get_item(pickup_type).get("kind", "")) == "weapon"
+
+
 func _on_body_entered(body: Node3D) -> void:
 	if body == null:
 		return
 	if not body.has_method("add_potion"):
 		return
 	collected.emit(pickup_type, amount)
-	if pickup_type == "pocion_curativa" and body.has_method("add_potion"):
+	if pickup_type == "pocion_curativa":
 		body.add_potion(amount)
+	elif body.has_method("receive_item"):
+		# Fase 3: equipo/misión genérico entra al inventario del jugador (armas).
+		body.receive_item(pickup_type, amount)
 	queue_free()
 
 
@@ -65,6 +75,12 @@ func _build_visual() -> void:
 		VisualKit.add_cylinder(_visual_root, 0.10, 0.2, Vector3(0, 0.26, 0), glass, 8)
 		VisualKit.add_sphere(_visual_root, 0.07, Vector3(0, 0.38, 0), glass)
 		VisualKit.add_cylinder(_visual_root, 0.12, 0.22, Vector3(0, -0.02, 0), liquid, 10)
+	elif _is_weapon():
+		# Arma (Fase 3): mini machete de acero con cabo de madera y brillo tenue.
+		var steel := VisualKit.flat_material(VisualKit.MAT_BLADE, VisualKit.MAT_BRONZE_GLOW, 0.35)
+		var handle := VisualKit.flat_material(VisualKit.MAT_WOOD)
+		VisualKit.add_box(_visual_root, Vector3(0.07, 0.3, 0.07), Vector3(0, 0.05, 0), handle)
+		VisualKit.add_box(_visual_root, Vector3(0.05, 0.55, 0.12), Vector3(0, 0.45, 0.03), steel)
 	else:
 		# Fragmento de bronce: tetraedro con bronce cálido y emisión suave.
 		var bronze := VisualKit.flat_material(VisualKit.MAT_BRONZE, VisualKit.MAT_BRONZE_GLOW, 0.8)
