@@ -37,8 +37,12 @@ on:
 
 # Concurrencia controlada (mandato §9): una ejecución a la vez, sin cancelar
 # la anterior (la cola garantiza que no se repiten recursos completados).
+
+# Una sola escritura a la rama a la vez: fabrica y publicacion comparten
+# grupo para no competir por el push (carrera detectada en el primer
+# despacho simultaneo: factory perdio el push no-ff contra publication).
 concurrency:
-  group: asset-factory
+  group: art-department-write
   cancel-in-progress: false
 
 permissions:
@@ -104,4 +108,5 @@ jobs:
                   assets || true
           git commit -m "feat(art-factory): lote de recursos producidos y validados [skip ci]" \
             || echo "sin cambios que guardar"
+          git pull --rebase --autostash || true
           git push

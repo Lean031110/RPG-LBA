@@ -8,6 +8,13 @@ name: Asset Publication
 on:
   workflow_dispatch:
 
+# Una sola escritura a la rama a la vez: fabrica y publicacion comparten
+# grupo para no competir por el push (carrera detectada en el primer
+# despacho simultaneo: factory perdio el push no-ff contra publication).
+concurrency:
+  group: art-department-write
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write
