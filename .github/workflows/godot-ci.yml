@@ -91,9 +91,9 @@ jobs:
       - name: Unit and integration tests (gdUnit4)
         run: "Godot_v${GODOT_VERSION}_linux.x86_64 --headless --path . -s addons/gdUnit4/bin/GdUnitCmdTool.gd --path . -a tests"
         env:
-          GODOT_BIN: "Godot_v${GODOT_VERSION}_linux.x86_64"
+          GODOT_BIN: "Godot_v${{ env.GODOT_VERSION }}_linux.x86_64"
 
       - name: LAN multiplayer smoke (2 procesos reales)
         run: bash tests/multiplayer/run_multiplayer_smoke.sh .
         env:
-          GODOT_BIN: "Godot_v${GODOT_VERSION}_linux.x86_64"
+          GODOT_BIN: "Godot_v${{ env.GODOT_VERSION }}_linux.x86_64"
