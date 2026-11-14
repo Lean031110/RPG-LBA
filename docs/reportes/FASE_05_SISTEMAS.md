@@ -295,9 +295,11 @@ lo ejecutado aquí es headless. Estado real:
 - Rama: `agent/fase5-sistemas-combate` (desde `983c688`, punta de la PR #11;
   sin tocar `main` ni otras ramas).
 - Commits por bloques: motor de combate/Machetero/monstruario → HUD →
-  interfaces → multijugador → bucle de combate real + CI.
-- PR nueva al final de la cadena: `agent/fase5-sistemas-combate` →
-  `agent/fase4b-artpass-valdeluz` (PR #12), manteniendo la cadena #3→#11.
+  interfaces → multijugador → bucle de combate real + CI → documentación.
+- **PR #14** abierta al final de la cadena:
+  https://github.com/Lean031110/RPG-LBA/pull/14
+  (`agent/fase5-sistemas-combate` → `agent/fase4b-artpass-valdeluz`,
+  manteniendo la cadena #3→#11→#14).
 
 ## 16. Estado de los APK y de CI
 
@@ -306,8 +308,13 @@ lo ejecutado aquí es headless. Estado real:
   `android-debug` que construye **ARM64 + Universal** como artefactos con la
   nueva `permissions/internet`; versionCode se incrementará en la release
   cuando el propietario verifique en el teléfono.
-- **CI**: `godot-ci` ejecuta ahora lint + formato + importación + **suite
-  completa (295 casos)** + **smoke multijugador de 2 procesos**;
-  `android-debug` mantiene la matriz de emuladores. El estado de ambas para
-  la rama se comprobará tras el push (los enlaces exactos de ejecución van
-  en el cuerpo de la PR).
+- **CI verificada tras el push** (ambas en verde):
+  - `RPG LBA - Validate` (run 43630562950): lint+formato ✓,
+    import+smoke de juego ✓, **multiplayer-smoke (servidor dedicado + 2
+    clientes) ✓** — la primera vez que el smoke multijugador corre en CI —,
+    auditoría de licencias ✓ y **gdunit-tests (295 casos) ✓**.
+    https://github.com/Lean031110/RPG-LBA/actions/runs/43630562950
+  - `RPG LBA - Android debug APK` (run 43630531922): APKs ARM64 (36.2 MB) y
+    Universal (93.8 MB) construidos **con el permiso INTERNET nuevo**,
+    instalados y arrancados en los emuladores API 35 y 36 con evidencia.
+    https://github.com/Lean031110/RPG-LBA/actions/runs/43630531922
