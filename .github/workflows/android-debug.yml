@@ -503,6 +503,9 @@ jobs:
           # Nombres estables para el propietario (los del release manual previo).
           mv "dist/RPG-LBA-Android-ARM64-debug_verification_report.txt" "dist/informe_verificacion_ARM64.txt"
           mv "dist/RPG-LBA-Android-Universal-debug_verification_report.txt" "dist/informe_verificacion_Universal.txt"
+          if [ -f "evidence35/screenshot_00_intro.png" ]; then
+            cp "evidence35/screenshot_00_intro.png" "dist/captura_presentacion.png"
+          fi
           cp "evidence35/screenshot_01_menu.png" "dist/captura_menu_principal.png"
           if [ -f "evidence35/screenshot_02_valdeluz.png" ]; then
             cp "evidence35/screenshot_02_valdeluz.png" "dist/captura_valdeluz.png"
@@ -535,6 +538,9 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          # Este job no hace checkout: gh necesita el repositorio explicito
+          # (corrida 43615421926 falló con "fatal: not a git repository").
+          GH_REPO: ${{ github.repository }}
           TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
@@ -549,6 +555,7 @@ jobs:
             "NOTAS_RELEASE.md"
             "captura_menu_principal.png"
           )
+          [ -f captura_presentacion.png ] && ASSETS+=("captura_presentacion.png")
           [ -f captura_valdeluz.png ] && ASSETS+=("captura_valdeluz.png")
           [ -f captura_prototipo.png ] && ASSETS+=("captura_prototipo.png")
           [ -f perf_emulator.txt ] && ASSETS+=("perf_emulator.txt")
