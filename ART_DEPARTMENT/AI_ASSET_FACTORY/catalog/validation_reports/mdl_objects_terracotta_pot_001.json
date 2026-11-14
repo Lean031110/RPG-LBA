@@ -1,0 +1,60 @@
+{
+  "asset_id": "mdl_objects_terracotta_pot_001",
+  "fecha": "2026-11-14T18:42:46+00:00",
+  "resultado": "PASS",
+  "pasadas": 10,
+  "fallidas": 0,
+  "omitidas": 0,
+  "comprobaciones": [
+    {
+      "comprobacion": "archivo_glb",
+      "resultado": "PASS",
+      "detalle": "/home/z/my-project/RPG-LBA/assets/models/objects/mdl_objects_terracotta_pot_001.glb"
+    },
+    {
+      "comprobacion": "glb_integro",
+      "resultado": "PASS",
+      "detalle": "3 mallas"
+    },
+    {
+      "comprobacion": "geometria_valida",
+      "resultado": "PASS",
+      "detalle": "258 verts / 204 tris"
+    },
+    {
+      "comprobacion": "normales_finitas",
+      "resultado": "PASS",
+      "detalle": "sin NaN/Inf en vértices"
+    },
+    {
+      "comprobacion": "uv_presentes",
+      "resultado": "PASS",
+      "detalle": "UV planas por normal dominante"
+    },
+    {
+      "comprobacion": "triangulos_coherentes",
+      "resultado": "PASS",
+      "detalle": "catálogo=204 real=204"
+    },
+    {
+      "comprobacion": "escala_metros",
+      "resultado": "PASS",
+      "detalle": "dimensiones=[0.59, 0.68, 0.65]"
+    },
+    {
+      "comprobacion": "pivote_base",
+      "resultado": "PASS",
+      "detalle": "y_min=-0.000 (base en origen)"
+    },
+    {
+      "comprobacion": "colision_registrada",
+      "resultado": "PASS",
+      "detalle": "caja simple 0.59x0.68x0.65 m (convex recomendado en Godot: Mesh -> Create Convex Collision)"
+    },
+    {
+      "comprobacion": "materiales_presentes",
+      "resultado": "PASS",
+      "detalle": "21 materiales"
+    }
+  ]
+}

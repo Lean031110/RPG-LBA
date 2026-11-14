@@ -1,0 +1,30 @@
+{
+  "id": "mat_zinc_envejecido_001",
+  "nombre": "Zinc Envejecido",
+  "categoria": "material/metales",
+  "descripcion": "Material PBR del canon para Godot 4 (Compatibility Renderer).",
+  "perfil": "BALANCED",
+  "procedencia": "Definición generada por RPG-LBA AI Asset Factory",
+  "licencia": "MIT (proyecto RPG-LBA) - generacion procedural propia",
+  "backend": "numpy+pillow",
+  "semilla": 759979518,
+  "albedo_color": [
+    0.541,
+    0.565,
+    0.588
+  ],
+  "roughness": 0.5,
+  "metallic": 0.9,
+  "normal_scale": 1.0,
+  "texturas": {
+    "albedo": "res://assets/environment/textures/metal/tex_metal_metal_zinc_001_albedo.png",
+    "normal": "res://assets/environment/textures/metal/tex_metal_metal_zinc_001_normal.png",
+    "roughness": "res://assets/environment/textures/metal/tex_metal_metal_zinc_001_roughness.png",
+    "metallic": "res://assets/environment/textures/metal/tex_metal_metal_zinc_001_metallic.png",
+    "ao": "res://assets/environment/textures/metal/tex_metal_metal_zinc_001_ao.png",
+    "height": "res://assets/environment/textures/metal/tex_metal_metal_zinc_001_height.png"
+  },
+  "texture_id": "tex_metal_metal_zinc_001",
+  "uso_godot": "StandardMaterial3D: albedo_color + albedo_texture (si hay), roughness/metallic y normal_texture con normal_scale.",
+  "categoria_godot": "metales"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "mat_stucco_coral_001",
+  "nombre": "Stucco Coral",
+  "categoria": "material/fachadas",
+  "descripcion": "Material PBR del canon para Godot 4 (Compatibility Renderer).",
+  "perfil": "BALANCED",
+  "procedencia": "Definición generada por RPG-LBA AI Asset Factory",
+  "licencia": "MIT (proyecto RPG-LBA) - generacion procedural propia",
+  "backend": "numpy+pillow",
+  "semilla": 1558325457,
+  "albedo_color": [
+    0.725,
+    0.416,
+    0.353
+  ],
+  "roughness": 0.9,
+  "metallic": 0.0,
+  "normal_scale": 1.0,
+  "texturas": {
+    "albedo": "res://assets/environment/textures/concrete/tex_concrete_stucco_001_albedo.png",
+    "normal": "res://assets/environment/textures/concrete/tex_concrete_stucco_001_normal.png",
+    "roughness": "res://assets/environment/textures/concrete/tex_concrete_stucco_001_roughness.png",
+    "metallic": "res://assets/environment/textures/concrete/tex_concrete_stucco_001_metallic.png",
+    "ao": "res://assets/environment/textures/concrete/tex_concrete_stucco_001_ao.png",
+    "height": "res://assets/environment/textures/concrete/tex_concrete_stucco_001_height.png"
+  },
+  "texture_id": "tex_concrete_stucco_001",
+  "uso_godot": "StandardMaterial3D: albedo_color + albedo_texture (si hay), roughness/metallic y normal_texture con normal_scale.",
+  "categoria_godot": "fachadas"
+}

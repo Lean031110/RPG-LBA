@@ -1,0 +1,60 @@
+{
+  "asset_id": "mdl_vegetation_palm_royal_001",
+  "fecha": "2026-11-14T18:42:46+00:00",
+  "resultado": "PASS",
+  "pasadas": 10,
+  "fallidas": 0,
+  "omitidas": 0,
+  "comprobaciones": [
+    {
+      "comprobacion": "archivo_glb",
+      "resultado": "PASS",
+      "detalle": "/home/z/my-project/RPG-LBA/assets/models/vegetation/mdl_vegetation_palm_royal_001.glb"
+    },
+    {
+      "comprobacion": "glb_integro",
+      "resultado": "PASS",
+      "detalle": "3 mallas"
+    },
+    {
+      "comprobacion": "geometria_valida",
+      "resultado": "PASS",
+      "detalle": "576 verts / 588 tris"
+    },
+    {
+      "comprobacion": "normales_finitas",
+      "resultado": "PASS",
+      "detalle": "sin NaN/Inf en vértices"
+    },
+    {
+      "comprobacion": "uv_presentes",
+      "resultado": "PASS",
+      "detalle": "UV planas por normal dominante"
+    },
+    {
+      "comprobacion": "triangulos_coherentes",
+      "resultado": "PASS",
+      "detalle": "catálogo=588 real=588"
+    },
+    {
+      "comprobacion": "escala_metros",
+      "resultado": "PASS",
+      "detalle": "dimensiones=[5.3, 10.36, 5.48]"
+    },
+    {
+      "comprobacion": "pivote_base",
+      "resultado": "PASS",
+      "detalle": "y_min=-0.002 (base en origen)"
+    },
+    {
+      "comprobacion": "colision_registrada",
+      "resultado": "PASS",
+      "detalle": "caja simple 5.30x10.36x5.48 m (convex recomendado en Godot: Mesh -> Create Convex Collision)"
+    },
+    {
+      "comprobacion": "materiales_presentes",
+      "resultado": "PASS",
+      "detalle": "21 materiales"
+    }
+  ]
+}

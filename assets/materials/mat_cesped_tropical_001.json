@@ -1,0 +1,30 @@
+{
+  "id": "mat_cesped_tropical_001",
+  "nombre": "Cesped Tropical",
+  "categoria": "material/terreno",
+  "descripcion": "Material PBR del canon para Godot 4 (Compatibility Renderer).",
+  "perfil": "BALANCED",
+  "procedencia": "Definición generada por RPG-LBA AI Asset Factory",
+  "licencia": "MIT (proyecto RPG-LBA) - generacion procedural propia",
+  "backend": "numpy+pillow",
+  "semilla": 1306827032,
+  "albedo_color": [
+    0.243,
+    0.353,
+    0.22
+  ],
+  "roughness": 0.92,
+  "metallic": 0.0,
+  "normal_scale": 1.0,
+  "texturas": {
+    "albedo": "res://assets/environment/textures/ground/tex_ground_grass_tropical_001_albedo.png",
+    "normal": "res://assets/environment/textures/ground/tex_ground_grass_tropical_001_normal.png",
+    "roughness": "res://assets/environment/textures/ground/tex_ground_grass_tropical_001_roughness.png",
+    "metallic": "res://assets/environment/textures/ground/tex_ground_grass_tropical_001_metallic.png",
+    "ao": "res://assets/environment/textures/ground/tex_ground_grass_tropical_001_ao.png",
+    "height": "res://assets/environment/textures/ground/tex_ground_grass_tropical_001_height.png"
+  },
+  "texture_id": "tex_ground_grass_tropical_001",
+  "uso_godot": "StandardMaterial3D: albedo_color + albedo_texture (si hay), roughness/metallic y normal_texture con normal_scale.",
+  "categoria_godot": "terreno"
+}

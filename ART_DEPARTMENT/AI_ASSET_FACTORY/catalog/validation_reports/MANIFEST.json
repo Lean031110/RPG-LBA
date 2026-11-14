@@ -1,0 +1,30 @@
+{
+  "asset_id": "MANIFEST",
+  "fecha": "2026-11-14T18:42:50+00:00",
+  "resultado": "PASS",
+  "pasadas": 4,
+  "fallidas": 0,
+  "omitidas": 0,
+  "comprobaciones": [
+    {
+      "comprobacion": "manifiesto_json",
+      "resultado": "PASS",
+      "detalle": "93 recursos"
+    },
+    {
+      "comprobacion": "campos_obligatorios",
+      "resultado": "PASS",
+      "detalle": ""
+    },
+    {
+      "comprobacion": "rutas_existen",
+      "resultado": "PASS",
+      "detalle": ""
+    },
+    {
+      "comprobacion": "ids_unicos",
+      "resultado": "PASS",
+      "detalle": ""
+    }
+  ]
+}

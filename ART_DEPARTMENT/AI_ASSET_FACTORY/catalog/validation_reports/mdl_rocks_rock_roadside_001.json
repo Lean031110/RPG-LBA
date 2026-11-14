@@ -1,0 +1,60 @@
+{
+  "asset_id": "mdl_rocks_rock_roadside_001",
+  "fecha": "2026-11-14T18:42:46+00:00",
+  "resultado": "PASS",
+  "pasadas": 10,
+  "fallidas": 0,
+  "omitidas": 0,
+  "comprobaciones": [
+    {
+      "comprobacion": "archivo_glb",
+      "resultado": "PASS",
+      "detalle": "/home/z/my-project/RPG-LBA/assets/models/rocks/mdl_rocks_rock_roadside_001.glb"
+    },
+    {
+      "comprobacion": "glb_integro",
+      "resultado": "PASS",
+      "detalle": "1 mallas"
+    },
+    {
+      "comprobacion": "geometria_valida",
+      "resultado": "PASS",
+      "detalle": "158 verts / 252 tris"
+    },
+    {
+      "comprobacion": "normales_finitas",
+      "resultado": "PASS",
+      "detalle": "sin NaN/Inf en vértices"
+    },
+    {
+      "comprobacion": "uv_presentes",
+      "resultado": "PASS",
+      "detalle": "UV planas por normal dominante"
+    },
+    {
+      "comprobacion": "triangulos_coherentes",
+      "resultado": "PASS",
+      "detalle": "catálogo=252 real=252"
+    },
+    {
+      "comprobacion": "escala_metros",
+      "resultado": "PASS",
+      "detalle": "dimensiones=[1.47, 0.89, 0.9]"
+    },
+    {
+      "comprobacion": "pivote_base",
+      "resultado": "PASS",
+      "detalle": "y_min=-0.005 (base en origen)"
+    },
+    {
+      "comprobacion": "colision_registrada",
+      "resultado": "PASS",
+      "detalle": "caja simple 1.47x0.89x0.90 m (convex recomendado en Godot: Mesh -> Create Convex Collision)"
+    },
+    {
+      "comprobacion": "materiales_presentes",
+      "resultado": "PASS",
+      "detalle": "21 materiales"
+    }
+  ]
+}
