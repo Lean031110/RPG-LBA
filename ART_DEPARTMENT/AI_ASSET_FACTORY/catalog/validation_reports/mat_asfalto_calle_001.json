@@ -1,6 +1,6 @@
 {
   "asset_id": "mat_asfalto_calle_001",
-  "fecha": "2026-11-14T18:42:49+00:00",
+  "fecha": "2026-11-14T20:47:03+00:00",
   "resultado": "PASS",
   "pasadas": 10,
   "fallidas": 0,
@@ -9,7 +9,7 @@
     {
       "comprobacion": "archivo_json",
       "resultado": "PASS",
-      "detalle": "/home/z/my-project/RPG-LBA/assets/materials/mat_asfalto_calle_001.json"
+      "detalle": "/home/runner/work/RPG-LBA/RPG-LBA/assets/materials/mat_asfalto_calle_001.json"
     },
     {
       "comprobacion": "albedo_color",
@@ -29,32 +29,32 @@
     {
       "comprobacion": "textura_albedo",
       "resultado": "PASS",
-      "detalle": "/home/z/my-project/RPG-LBA/assets/environment/textures/concrete/tex_concrete_asphalt_001_albedo.png"
+      "detalle": "/home/runner/work/RPG-LBA/RPG-LBA/assets/environment/textures/concrete/tex_concrete_asphalt_001_albedo.png"
     },
     {
       "comprobacion": "textura_normal",
       "resultado": "PASS",
-      "detalle": "/home/z/my-project/RPG-LBA/assets/environment/textures/concrete/tex_concrete_asphalt_001_normal.png"
+      "detalle": "/home/runner/work/RPG-LBA/RPG-LBA/assets/environment/textures/concrete/tex_concrete_asphalt_001_normal.png"
     },
     {
       "comprobacion": "textura_roughness",
       "resultado": "PASS",
-      "detalle": "/home/z/my-project/RPG-LBA/assets/environment/textures/concrete/tex_concrete_asphalt_001_roughness.png"
+      "detalle": "/home/runner/work/RPG-LBA/RPG-LBA/assets/environment/textures/concrete/tex_concrete_asphalt_001_roughness.png"
     },
     {
       "comprobacion": "textura_metallic",
       "resultado": "PASS",
-      "detalle": "/home/z/my-project/RPG-LBA/assets/environment/textures/concrete/tex_concrete_asphalt_001_metallic.png"
+      "detalle": "/home/runner/work/RPG-LBA/RPG-LBA/assets/environment/textures/concrete/tex_concrete_asphalt_001_metallic.png"
     },
     {
       "comprobacion": "textura_ao",
       "resultado": "PASS",
-      "detalle": "/home/z/my-project/RPG-LBA/assets/environment/textures/concrete/tex_concrete_asphalt_001_ao.png"
+      "detalle": "/home/runner/work/RPG-LBA/RPG-LBA/assets/environment/textures/concrete/tex_concrete_asphalt_001_ao.png"
     },
     {
       "comprobacion": "textura_height",
       "resultado": "PASS",
-      "detalle": "/home/z/my-project/RPG-LBA/assets/environment/textures/concrete/tex_concrete_asphalt_001_height.png"
+      "detalle": "/home/runner/work/RPG-LBA/RPG-LBA/assets/environment/textures/concrete/tex_concrete_asphalt_001_height.png"
     }
   ]
 }
