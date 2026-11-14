@@ -41,8 +41,7 @@ static func _build_ground(root: Node3D, palette: Dictionary) -> void:
 	var ground_mesh := MeshInstance3D.new()
 	ground_mesh.name = "GroundMesh"
 	ground_mesh.mesh = _build_rolling_ground_mesh(
-		Vector2((AREA_MAX_X - AREA_MIN_X) + 24.0, (AREA_MAX_Z - AREA_MIN_Z) + 24.0),
-		palette["grass"]
+		Vector2((AREA_MAX_X - AREA_MIN_X) + 24.0, (AREA_MAX_Z - AREA_MIN_Z) + 24.0), palette["grass"]
 	)
 	ground_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	grass.add_child(ground_mesh)
@@ -108,10 +107,7 @@ static func _build_ground(root: Node3D, palette: Dictionary) -> void:
 	mud.name = "MudPatches"
 	grass.add_child(mud)
 	for patch in [
-		Vector3(-4.8, 0.055, 5.5),
-		Vector3(5.1, 0.055, 15.5),
-		Vector3(-9.4, 0.055, -0.5),
-		Vector3(9.2, 0.055, 6.0)
+		Vector3(-4.8, 0.055, 5.5), Vector3(5.1, 0.055, 15.5), Vector3(-9.4, 0.055, -0.5), Vector3(9.2, 0.055, 6.0)
 	]:
 		var puddle := VisualKit.add_sphere(mud, 0.72, patch, palette["mud"])
 		puddle.scale = Vector3(1.75, 0.08, 0.95)
@@ -175,9 +171,7 @@ static func _build_lighting(root: Node3D) -> void:
 	root.add_child(controller)
 
 
-static func _build_boundaries(
-	root: Node3D, rng: RandomNumberGenerator, density: float, palette: Dictionary
-) -> void:
+static func _build_boundaries(root: Node3D, rng: RandomNumberGenerator, density: float, palette: Dictionary) -> void:
 	var walls := Node3D.new()
 	walls.name = "Boundaries"
 	root.add_child(walls)
@@ -234,9 +228,7 @@ static func _build_boundaries(
 		_build_ceiba(walls, corner, rng, palette)
 
 
-static func _build_vegetation(
-	root: Node3D, rng: RandomNumberGenerator, density: float, palette: Dictionary
-) -> void:
+static func _build_vegetation(root: Node3D, rng: RandomNumberGenerator, density: float, palette: Dictionary) -> void:
 	var veg := Node3D.new()
 	veg.name = "Vegetation"
 	root.add_child(veg)
@@ -308,14 +300,9 @@ static func _build_props(root: Node3D, rng: RandomNumberGenerator, palette: Dict
 	var wheel_mat := VisualKit.noise_material(VisualKit.MAT_WOOD.darkened(0.4), 0.3, 3)
 	for wheel_x in [-0.8, 0.8]:
 		for wheel_z in [-0.9, 0.9]:
-			VisualKit.add_cylinder(
-				cart, 0.55, 0.12, Vector3(wheel_x, 0.55, wheel_z), wheel_mat, 12
-			).rotation_degrees.x = 90.0
+			VisualKit.add_cylinder(cart, 0.55, 0.12, Vector3(wheel_x, 0.55, wheel_z), wheel_mat, 12).rotation_degrees.x = 90.0
 	for nail_position in [
-		Vector3(-1.13, 1.22, 0.74),
-		Vector3(1.13, 1.22, 0.74),
-		Vector3(-1.13, 1.22, -0.74),
-		Vector3(1.13, 1.22, -0.74)
+		Vector3(-1.13, 1.22, 0.74), Vector3(1.13, 1.22, 0.74), Vector3(-1.13, 1.22, -0.74), Vector3(1.13, 1.22, -0.74)
 	]:
 		VisualKit.add_sphere(cart, 0.055, nail_position, iron_mat)
 	VisualKit.add_tetra(
@@ -354,10 +341,7 @@ static func _build_props(root: Node3D, rng: RandomNumberGenerator, palette: Dict
 	# Farol cálido: la luz se modula con la transición noche/día.
 	VisualKit.add_cylinder(town, 0.16, 3.2, Vector3(-3.0, 1.6, 2.6), wood_mat, 6)
 	VisualKit.add_sphere(
-		town,
-		0.3,
-		Vector3(-3.0, 3.35, 2.6),
-		VisualKit.flat_material(Color(0.9, 0.75, 0.4), Color(1.0, 0.8, 0.45), 1.2)
+		town, 0.3, Vector3(-3.0, 3.35, 2.6), VisualKit.flat_material(Color(0.9, 0.75, 0.4), Color(1.0, 0.8, 0.45), 1.2)
 	)
 	var lantern := OmniLight3D.new()
 	lantern.name = "ValdeluzEntryLamp"
@@ -372,21 +356,14 @@ static func _build_props(root: Node3D, rng: RandomNumberGenerator, palette: Dict
 		controller.register_night_light(lantern)
 
 
-static func _build_palm(
-	parent: Node, base: Vector3, rng: RandomNumberGenerator, palette: Dictionary
-) -> void:
+static func _build_palm(parent: Node, base: Vector3, rng: RandomNumberGenerator, palette: Dictionary) -> void:
 	var palm := Node3D.new()
 	palm.position = base
 	parent.add_child(palm)
 	var height := rng.randf_range(3.2, 4.6)
 	var lean := Vector3(rng.randf_range(-0.18, 0.18), 0.0, rng.randf_range(-0.18, 0.18))
 	var trunk := VisualKit.add_cylinder(
-		palm,
-		0.22,
-		height,
-		Vector3(lean.x * height * 0.5, height / 2.0, lean.z * height * 0.5),
-		palette["tree_bark"],
-		7
+		palm, 0.22, height, Vector3(lean.x * height * 0.5, height / 2.0, lean.z * height * 0.5), palette["tree_bark"], 7
 	)
 	trunk.rotation_degrees = Vector3(lean.z * 18.0, 0.0, -lean.x * 18.0)
 	var crown_pos := Vector3(lean.x * height, height + 0.05, lean.z * height)
@@ -404,16 +381,12 @@ static func _build_palm(
 	VisualKit.add_sphere(palm, 0.28, crown_pos, palette["weathered_wood"])
 
 
-static func _build_ceiba(
-	parent: Node, base: Vector3, rng: RandomNumberGenerator, palette: Dictionary
-) -> void:
+static func _build_ceiba(parent: Node, base: Vector3, rng: RandomNumberGenerator, palette: Dictionary) -> void:
 	var ceiba := Node3D.new()
 	ceiba.position = base
 	parent.add_child(ceiba)
 	var height := rng.randf_range(4.0, 5.2)
-	VisualKit.add_cylinder(
-		ceiba, 0.55, height, Vector3(0.0, height / 2.0, 0.0), palette["tree_bark"], 9
-	)
+	VisualKit.add_cylinder(ceiba, 0.55, height, Vector3(0.0, height / 2.0, 0.0), palette["tree_bark"], 9)
 	for canopy in [
 		{"pos": Vector3(0.0, height + 0.2, 0.0), "scale": Vector3(2.6, 1.1, 2.6)},
 		{"pos": Vector3(-1.4, height - 0.3, 0.6), "scale": Vector3(1.7, 0.8, 1.7)},

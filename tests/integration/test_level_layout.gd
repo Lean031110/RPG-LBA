@@ -2,6 +2,7 @@ class_name TestLevelLayout
 extends GdUnitTestSuite
 ## Layout determinista de las afueras de Valdeluz y sus recursos ambientales.
 
+
 func _build(density: float) -> Node3D:
 	var root: Node3D = auto_free(Node3D.new())
 	add_child(root)

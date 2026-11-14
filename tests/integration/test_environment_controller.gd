@@ -2,6 +2,7 @@ class_name TestEnvironmentController
 extends GdUnitTestSuite
 ## Integración del reloj, cielo, clima y luces locales en el bosque.
 
+
 func _build_controller() -> EnvironmentController:
 	var root: Node3D = auto_free(Node3D.new())
 	add_child(root)

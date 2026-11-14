@@ -337,18 +337,14 @@ func _apply_visual_state() -> void:
 		Color(0.43, 0.50, 0.56), maxf(fog_weight, rain_weight * 0.45)
 	)
 	active_environment.fog_density = clampf(
-		float(state["fog_density"]) + fog_weight * 0.014 + rain_weight * 0.003 + cloud_weight * 0.002,
-		0.002,
-		0.026
+		float(state["fog_density"]) + fog_weight * 0.014 + rain_weight * 0.003 + cloud_weight * 0.002, 0.002, 0.026
 	)
 
 	sun_light.light_color = state["sun_color"]
 	sun_light.light_energy = float(state["sun_energy"])
 	sun_light.rotation_degrees = Vector3(float(state["sun_angle_x"]), 34.0, 0.0)
 	sun_light.shadow_enabled = (
-		allow_dynamic_shadows
-		and GraphicsSettings.dynamic_shadows_enabled()
-		and float(state["sun_energy"]) > 0.2
+		allow_dynamic_shadows and GraphicsSettings.dynamic_shadows_enabled() and float(state["sun_energy"]) > 0.2
 	)
 
 	if rain_particles != null:

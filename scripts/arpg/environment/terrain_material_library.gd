@@ -21,11 +21,7 @@ static func create_valdeluz_palette() -> Dictionary:
 
 
 static func _noise(
-	base_color: Color,
-	frequency: float,
-	detail: int,
-	surface_roughness: float,
-	metalness: float
+	base_color: Color, frequency: float, detail: int, surface_roughness: float, metalness: float
 ) -> StandardMaterial3D:
 	var material := VisualKit.noise_material(base_color, frequency, detail)
 	material.uv1_triplanar = true
