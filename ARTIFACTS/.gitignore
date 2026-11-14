@@ -1,0 +1,4 @@
+# Artefactos de ejecución: NO son almacenamiento permanente (mandato §14)
+# Solo logs y staging temporales de la fábrica.
+*
+!.gitignore

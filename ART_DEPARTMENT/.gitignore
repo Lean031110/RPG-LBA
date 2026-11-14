@@ -1,0 +1,7 @@
+# Cache, staging y temporales del departamento de arte
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+*.blend1
+staging/
