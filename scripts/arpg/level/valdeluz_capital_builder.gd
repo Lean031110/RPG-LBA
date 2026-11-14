@@ -145,8 +145,8 @@ static func _build_districts(root: Node3D, rng: RandomNumberGenerator, palette: 
 		_build_house(districts, spec, index, material, palette, rng)
 		index += 1
 	# Edificios singulares, situados en los extremos de sus manzanas.
-	_build_landmark(districts, "CasaDeCabildo", Vector3(-22.0, 0.0, 22.0), Vector3(12.0, 7.0, 9.0), palette["plaster_cream"], palette, true)
-	_build_landmark(districts, "MercadoDelPuerto", Vector3(22.0, 0.0, -22.0), Vector3(12.0, 5.4, 10.0), palette["plaster_ochre"], palette, false)
+	_build_landmark(districts, "CasaDeCabildo", Vector3(-22.0, 0.0, 8.0), Vector3(12.0, 7.0, 9.0), palette["plaster_cream"], palette, true)
+	_build_landmark(districts, "MercadoDelPuerto", Vector3(22.0, 0.0, -8.0), Vector3(12.0, 5.4, 10.0), palette["plaster_ochre"], palette, false)
 	_build_landmark(districts, "SantuarioDeLasCampanas", Vector3(42.0, 0.0, 4.0), Vector3(10.0, 8.0, 12.0), palette["plaster_teal"], palette, true)
 
 
@@ -230,14 +230,14 @@ static func _build_street_furniture(root: Node3D, palette: Dictionary) -> void:
 	var furniture := Node3D.new()
 	furniture.name = "StreetFurniture"
 	root.add_child(furniture)
-	for z_value in [-34.0, -15.0, 15.0, 34.0]:
+	for z_value in [-28.0, 28.0]:
 		_build_lamp(furniture, Vector3(-7.0, 0.0, z_value), palette)
 		_build_lamp(furniture, Vector3(7.0, 0.0, z_value), palette)
-	for x_value in [-46.0, -17.0, 17.0, 46.0]:
+	for x_value in [-42.0, 42.0]:
 		_build_lamp(furniture, Vector3(x_value, 0.0, -7.0), palette)
 		_build_lamp(furniture, Vector3(x_value, 0.0, 7.0), palette)
-	_build_market_stall(furniture, Vector3(29.0, 0.0, -8.0), palette)
-	_build_market_stall(furniture, Vector3(29.0, 0.0, 8.0), palette)
+	_build_market_stall(furniture, Vector3(34.0, 0.0, -8.0), palette)
+	_build_market_stall(furniture, Vector3(34.0, 0.0, 8.0), palette)
 
 
 static func _build_lamp(parent: Node3D, position: Vector3, palette: Dictionary) -> void:
@@ -320,7 +320,9 @@ static func _build_city_edges(root: Node3D, palette: Dictionary) -> void:
 	for x_value in [-CITY_HALF_WIDTH, CITY_HALF_WIDTH]:
 		VisualKit.add_box(edges, Vector3(0.8, 2.2, CITY_HALF_DEPTH * 2.0), Vector3(x_value, 1.1, 0.0), palette["limestone"])
 	for z_value in [-CITY_HALF_DEPTH, CITY_HALF_DEPTH]:
-		VisualKit.add_box(edges, Vector3(CITY_HALF_WIDTH * 2.0, 2.2, 0.8), Vector3(0.0, 1.1, z_value), palette["limestone"])
+		var segment_width := CITY_HALF_WIDTH - 4.5
+		VisualKit.add_box(edges, Vector3(segment_width, 2.2, 0.8), Vector3(-CITY_HALF_WIDTH * 0.5 - 2.25, 1.1, z_value), palette["limestone"])
+		VisualKit.add_box(edges, Vector3(segment_width, 2.2, 0.8), Vector3(CITY_HALF_WIDTH * 0.5 + 2.25, 1.1, z_value), palette["limestone"])
 	# Portales visuales abiertos en los dos extremos del camino principal.
 	for z_value in [-CITY_HALF_DEPTH, CITY_HALF_DEPTH]:
 		VisualKit.add_box(edges, Vector3(0.65, 5.2, 0.65), Vector3(-4.2, 2.6, z_value), palette["limestone"])

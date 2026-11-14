@@ -37,3 +37,14 @@ func test_density_is_clamped_and_scene_remains_deterministic() -> void:
 	assert_int(first.get_node("Districts").get_child_count()).is_equal(
 		second.get_node("Districts").get_child_count()
 	)
+
+
+
+func test_preview_scene_loads_and_builds_city() -> void:
+	var packed_scene := load("res://scenes/arpg/valdeluz/valdeluz_capital_preview.tscn") as PackedScene
+	assert_object(packed_scene).is_not_null()
+	var preview := packed_scene.instantiate() as Node3D
+	add_child(preview)
+	assert_object(preview.get_node_or_null("PreviewCamera")).is_not_null()
+	assert_object(preview.get_node_or_null("Districts")).is_not_null()
+	assert_object(preview.get_node_or_null("EnvironmentController")).is_not_null()
