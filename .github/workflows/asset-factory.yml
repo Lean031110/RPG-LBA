@@ -1,0 +1,108 @@
+# RPG-LBA — Fábrica de recursos 3D: producción progresiva por lotes.
+#
+# Mandato §9: NO genera todo en una ejecución. Lee la cola, procesa
+# `limit` recursos pendientes (1 a 5 recomendado en GitHub Free), valida,
+# actualiza catálogo y guarda el progreso en la rama. Reanudable: los
+# trabajos 'processing' caducados vuelven a pending automáticamente.
+#
+# Triggers:
+#  - workflow_dispatch (manual; elegir rama feature/ai-art-department)
+#  - schedule DESACTIVADO por defecto: crear la variable de repositorio
+#    FACTORY_CRON_ENABLED=true para activar el ciclo nocturno.
+name: Asset Factory (produccion)
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Recursos a producir en esta ejecución (1-5 recomendado)"
+        default: "3"
+        required: false
+      profile:
+        description: "Perfil de calidad"
+        type: choice
+        default: BALANCED
+        options: [MOBILE, BALANCED, HIGH]
+      backend:
+        description: "Motor geométrico (auto = bpy si está disponible)"
+        type: choice
+        default: auto
+        options: [auto, blender, trimesh]
+      category:
+        description: "Solo una categoría (vacío = todas; p.ej. model:rock)"
+        default: ""
+        required: false
+  schedule:
+    - cron: "30 2 * * *"  # 02:30 UTC; guardado por FACTORY_CRON_ENABLED
+
+# Concurrencia controlada (mandato §9): una ejecución a la vez, sin cancelar
+# la anterior (la cola garantiza que no se repiten recursos completados).
+concurrency:
+  group: asset-factory
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+timeout-minutes: 25
+
+jobs:
+  producir:
+    # el ciclo programado solo corre con la variable activada
+    if: github.event_name != 'schedule' || vars.FACTORY_CRON_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (rama de la fábrica)
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 (requisito de bpy)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Dependencias de la fábrica
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ART_DEPARTMENT/AI_ASSET_FACTORY/requirements.txt
+
+      - name: Motor Blender (bpy) — opcional, con fallback trimesh
+        continue-on-error: true   # sin GPU ni bpy, la fábrica usa trimesh
+        run: pip install bpy==4.2.0
+
+      - name: Estado de la cola (antes)
+        run: python ART_DEPARTMENT/AI_ASSET_FACTORY/cli.py status
+
+      - name: Procesar lote
+        run: |
+          python ART_DEPARTMENT/AI_ASSET_FACTORY/cli.py process \
+            --limit "${{ github.event.inputs.limit || '3' }}" \
+            --profile "${{ github.event.inputs.profile || 'BALANCED' }}" \
+            --backend "${{ github.event.inputs.backend || 'auto' }}" \
+            ${{ (github.event.inputs.category || '') && format('--category {0}', github.event.inputs.category) || '' }}
+
+      - name: Validar todo lo producido
+        run: python ART_DEPARTMENT/AI_ASSET_FACTORY/cli.py validate
+
+      - name: Previews y galería
+        run: |
+          python ART_DEPARTMENT/AI_ASSET_FACTORY/cli.py preview --all
+          python ART_DEPARTMENT/AI_ASSET_FACTORY/cli.py gallery
+
+      - name: Tests de la fábrica
+        run: python -m pytest ART_DEPARTMENT/AI_ASSET_FACTORY/tests/ -q
+
+      - name: Estado de la cola (después)
+        run: python ART_DEPARTMENT/AI_ASSET_FACTORY/cli.py status
+
+      - name: Guardar progreso en la rama
+        run: |
+          git config user.name "AI Art Department (Actions)"
+          git config user.email "actions@users.noreply.github.com"
+          git add ART_DEPARTMENT/AI_ASSET_FACTORY/catalog \
+                  ART_DEPARTMENT/AI_ASSET_FACTORY/config \
+                  ART_DEPARTMENT/PREVIEWS \
+                  ART_DEPARTMENT/DOCUMENTATION/PRODUCTION_STATUS.md \
+                  assets || true
+          git commit -m "feat(art-factory): lote de recursos producidos y validados [skip ci]" \
+            || echo "sin cambios que guardar"
+          git push
