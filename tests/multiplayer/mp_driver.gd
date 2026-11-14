@@ -1,31 +1,25 @@
 extends Node
-## Headless multiplayer smoke driver (CI reproducible).
-## Selected via environment variable:
-##   LBA_MP_ROLE=server -> runs the real level, counts distinct player registrations
-##                         via the Network.player_connected signal (no polling race),
-##                         waits for clients to finish, then reports.
-##   LBA_MP_ROLE=client -> runs the real level, joins 127.0.0.1 after LBA_MP_JOIN_DELAY
-##                         seconds, confirms 2 registered + 2 spawned, lingers briefly,
-##                         then reports.
-## The real level scene is instantiated unchanged; this driver only observes.
-## Not part of gameplay code.
+## Headless multiplayer smoke driver (CI reproducible; Fase 5).
+## Escenario REAL del lobby LAN ejecutado con procesos independientes:
 ##
-## Known expected noise on clients: the template auto-hosts when headless, so a client
-## whose port 8080 is already taken logs one benign "Couldn't create an ENet host" error.
+##   server: crea sala → espera 2 jugadores → uno se va → la lista se
+##           actualiza → cierra sala → crea OTRA sala inmediatamente (el caso
+##           del error 20) → espera al cliente de nuevo → PASS.
+##   client: se une → confirma que se ve a sí mismo y al anfitrión → sale de
+##           la sala → se vuelve a unir a la SEGUNDA sala → PASS.
+##
+## Usa el autoload Network real (mismo código que el menú MULTIJUGADOR), no
+## una simulación. Seleccionado por variable de entorno:
+##   LBA_MP_ROLE=server|client  ·  LBA_MP_JOIN_DELAY (s)
 
-const LEVEL_SCENE := "res://scenes/level/level.tscn"
-const SERVER_ADDRESS := "127.0.0.1"
 const POLL_TIMEOUT_SEC := 30.0
-const EXPECTED_PLAYERS := 2
-const CLIENT_LINGER_SEC := 4.0
-const SERVER_GRACE_SEC := 15.0
+const CLIENT_LINGER_SEC := 3.0
+const SERVER_ROOM2_WAIT_SEC := 18.0
 
 var _role := ""
 var _join_delay := 1.0
-var _level: Node = null
-var _distinct_registered := {}
-var _peak_registered := 0
-var _peak_spawned := 0
+var _players_seen := {}
+var _disconnections_seen := 0
 
 
 func _ready() -> void:
@@ -33,86 +27,134 @@ func _ready() -> void:
 	var delay_str := OS.get_environment("LBA_MP_JOIN_DELAY")
 	if delay_str.is_valid_float():
 		_join_delay = maxf(0.0, delay_str.to_float())
-	_level = load(LEVEL_SCENE).instantiate()
-	add_child(_level)
-
+	Network.player_connected.connect(_on_player_connected)
+	Network.player_disconnected.connect(_on_player_disconnected)
 	if _role == "server":
-		Network.player_connected.connect(_on_player_connected)
 		await _run_server_scenario()
 	elif _role == "client":
 		await get_tree().create_timer(_join_delay).timeout
-		var error = Network.join_game("CI_Client", "blue", SERVER_ADDRESS)
-		if error != null and error != OK:
-			print("LBA_MP_RESULT role=client status=FAIL reason=join_error_%s" % str(error))
-			get_tree().quit(1)
-			return
 		await _run_client_scenario()
 	else:
-		print("LBA_MP_RESULT role=unknown status=FAIL reason=LBA_MP_ROLE_not_set")
-		get_tree().quit(1)
+		push_error("LBA_MP_ROLE no reconocido: " + _role)
+		get_tree().quit(2)
 
 
-func _on_player_connected(peer_id, _player_info) -> void:
-	_distinct_registered[int(peer_id)] = true
+func _on_player_connected(peer_id: int, _info: Dictionary) -> void:
+	_players_seen[peer_id] = true
+
+
+func _on_player_disconnected(_peer_id: int) -> void:
+	_disconnections_seen += 1
+
+
+# ---------------------------------------------------------------------------
+# Servidor: sala → 2 jugadores → salida → sala NUEVA sin reiniciar
+# ---------------------------------------------------------------------------
 
 
 func _run_server_scenario() -> void:
-	var timeout_msec := Time.get_ticks_msec() + int(POLL_TIMEOUT_SEC * 1000.0)
-	# 1. Wait (event-driven) until EXPECTED_PLAYERS distinct clients have registered.
-	while _distinct_registered.size() < EXPECTED_PLAYERS and Time.get_ticks_msec() < timeout_msec:
-		await get_tree().create_timer(0.2).timeout
+	# 1) Crear la sala.
+	var error := Network.start_host("ServidorCI", "blue")
+	if error != OK:
+		_report("server", "FAIL", "host_error_%d" % error)
+		return
+	print("LBA_MP_INFO role=server room=1 port=%d" % Network.bound_port)
 
-		# 2. Give clients time to confirm their own state and exit.
-	var latched := _distinct_registered.size() >= EXPECTED_PLAYERS
-	# 2. Give clients time to confirm their own state and exit.
-	var grace_deadline := Time.get_ticks_msec() + int(SERVER_GRACE_SEC * 1000.0)
-	while Time.get_ticks_msec() < grace_deadline and Network.players.size() > 0:
+	# 2) Esperar a los 2 jugadores (el anfitrión ya ocupa el hueco 1).
+	var timeout := POLL_TIMEOUT_SEC
+	while Network.players.size() < 3 and timeout > 0.0:
 		await get_tree().create_timer(0.25).timeout
-	_finish(latched)
+		timeout -= 0.25
+	if Network.players.size() < 3:
+		_report("server", "FAIL", "players_%d_of_3" % Network.players.size())
+		return
+	print("LBA_MP_INFO role=server players=%d" % Network.players.size())
+
+	# 3) El cliente A anuncia su salida (canal de humo: ver su log); esperar
+	#    la desconexión real con la lista actualizada (señal nueva Fase 5).
+	timeout = 8.0
+	while _disconnections_seen < 1 and timeout > 0.0:
+		await get_tree().create_timer(0.25).timeout
+		timeout -= 0.25
+	if _disconnections_seen < 1:
+		_report("server", "FAIL", "no_disconnection_signal")
+		return
+	if Network.players.size() != 2:
+		_report("server", "FAIL", "list_stale_%d" % Network.players.size())
+		return
+	print("LBA_MP_INFO role=server player_left players=%d" % Network.players.size())
+
+	# 4) Cerrar la sala y crear OTRA inmediatamente (el caso del error 20).
+	Network.leave_game()
+	error = Network.start_host("ServidorCI", "blue")
+	if error != OK:
+		_report("server", "FAIL", "rehost_error_%d" % error)
+		return
+	print("LBA_MP_INFO role=server room=2 port=%d" % Network.bound_port)
+
+	# 5) El cliente vuelve a entrar en la sala 2.
+	timeout = SERVER_ROOM2_WAIT_SEC
+	var rejoined := false
+	while timeout > 0.0:
+		await get_tree().create_timer(0.25).timeout
+		timeout -= 0.25
+		if Network.players.size() >= 2:
+			rejoined = true
+			break
+	if not rejoined:
+		_report("server", "FAIL", "no_rejoin_room2")
+		return
+	_report("server", "PASS", "rooms_2_players_%d" % Network.players.size())
+
+
+# ---------------------------------------------------------------------------
+# Cliente: unirse → verse con el anfitrión → salir → reentrar a la sala 2
+# ---------------------------------------------------------------------------
 
 
 func _run_client_scenario() -> void:
-	var timeout_msec := Time.get_ticks_msec() + int(POLL_TIMEOUT_SEC * 1000.0)
-	var latched := false
-	while Time.get_ticks_msec() < timeout_msec:
-		await get_tree().create_timer(0.2).timeout
-		_peak_registered = maxi(_peak_registered, Network.players.size())
-		_peak_spawned = maxi(_peak_spawned, _spawned_players())
-		if Network.players.size() >= EXPECTED_PLAYERS and _spawned_players() >= EXPECTED_PLAYERS:
-			latched = true
-			break
-	if latched:
-		await get_tree().create_timer(CLIENT_LINGER_SEC).timeout
-	_finish(latched)
+	# 1) Unirse a la sala 1.
+	var error := Network.join_game("ClienteCI", "blue", "127.0.0.1")
+	if error != OK:
+		_report("client", "FAIL", "join_error_%d" % error)
+		return
+	var timeout := POLL_TIMEOUT_SEC
+	while not _players_seen.has(1) and timeout > 0.0:
+		await get_tree().create_timer(0.25).timeout
+		timeout -= 0.25
+	if not _players_seen.has(1):
+		_report("client", "FAIL", "host_not_listed")
+		return
+	print("LBA_MP_INFO role=client joined_room=1 players=%d" % Network.players.size())
+
+	# 2) Pausa para que el servidor complete su comprobación de 3 jugadores.
+	await get_tree().create_timer(CLIENT_LINGER_SEC).timeout
+
+	# 3) Salir de la sala (la lista del anfitrión debe refrescarse sola).
+	Network.leave_game()
+	if not Network.players.is_empty():
+		_report("client", "FAIL", "leave_did_not_clear")
+		return
+	print("LBA_MP_INFO role=client left_room=1")
+
+	# 4) El servidor crea la sala 2; reentrar sin reiniciar la app.
+	await get_tree().create_timer(3.0).timeout
+	error = Network.join_game("ClienteCI", "blue", "127.0.0.1")
+	if error != OK:
+		_report("client", "FAIL", "rejoin_error_%d" % error)
+		return
+	timeout = POLL_TIMEOUT_SEC
+	while not _players_seen.has(1) and timeout > 0.0:
+		await get_tree().create_timer(0.25).timeout
+		timeout -= 0.25
+	if not _players_seen.has(1):
+		_report("client", "FAIL", "rejoin_host_not_listed")
+		return
+	print("LBA_MP_INFO role=client rejoined_room=2 players=%d" % Network.players.size())
+	await get_tree().create_timer(2.0).timeout
+	_report("client", "PASS", "two_rooms")
 
 
-func _spawned_players() -> int:
-	if _level == null:
-		return 0
-	var container: Node = _level.get_node_or_null("PlayersContainer")
-	if container == null:
-		return 0
-	return container.get_child_count()
-
-
-func _finish(passed: bool) -> void:
-	var spawned := _spawned_players()
-	var status := "PASS" if passed else "FAIL"
-	print(
-		(
-			(
-				"LBA_MP_RESULT role=%s distinct_registered=%d peak_registered=%d peak_spawned=%d"
-				+ " registered_now=%d spawned_now=%d status=%s"
-			)
-			% [
-				_role,
-				_distinct_registered.size(),
-				maxi(_peak_registered, _distinct_registered.size()),
-				maxi(_peak_spawned, spawned),
-				Network.players.size(),
-				spawned,
-				status,
-			]
-		)
-	)
-	get_tree().quit(0 if passed else 1)
+func _report(role: String, status: String, reason: String) -> void:
+	print("LBA_MP_RESULT role=%s status=%s reason=%s" % [role, status, reason])
+	get_tree().quit(0 if status == "PASS" else 1)

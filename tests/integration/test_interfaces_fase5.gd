@@ -31,9 +31,7 @@ func test_pause_exit_requires_confirmation() -> void:
 	## Primera pulsación: arma la confirmación, NO sale.
 	pause._on_exit_pressed()
 	assert_int(exits[0]).is_equal(0)
-	assert_str(pause._exit_button.text).is_equal(
-		"¿Abandonar la partida? (Se guarda)"
-	)
+	assert_str(pause._exit_button.text).is_equal("¿Abandonar la partida? (Se guarda)")
 	## Segunda pulsación: confirma la salida.
 	pause._on_exit_pressed()
 	assert_int(exits[0]).is_equal(1)
@@ -96,9 +94,7 @@ func test_menu_scene_flow_navigates() -> void:
 
 
 func test_main_menu_buttons_exist() -> void:
-	var menu: ArpgMainMenu = auto_free(
-		load("res://scenes/arpg/menu/main_menu.tscn").instantiate()
-	)
+	var menu: ArpgMainMenu = auto_free(load("res://scenes/arpg/menu/main_menu.tscn").instantiate())
 	add_child(menu)
 	## Contrato del menú: continuar/nueva/multijugador/ajustes/créditos/salir.
 	var labels: Array[String] = []
