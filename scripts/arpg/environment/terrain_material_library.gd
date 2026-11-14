@@ -16,7 +16,14 @@ static func create_valdeluz_palette() -> Dictionary:
 		"wrought_iron": _noise(Color(0.17, 0.19, 0.20), 0.28, 4, 0.76, 0.48),
 		"tree_bark": _noise(Color(0.25, 0.19, 0.13), 0.13, 4, 0.96, 0.0),
 		"leaves_mid": VisualKit.flat_material(Color(0.16, 0.34, 0.15)),
-		"leaves_dark": VisualKit.flat_material(Color(0.08, 0.20, 0.12))
+		"leaves_dark": VisualKit.flat_material(Color(0.08, 0.20, 0.12)),
+		# Fase 4B (Art Pass): materiales de shader originales, Compatibility Renderer
+		# seguro (desplazamiento de vertices y mezclas en fragment). Ver ArpgArtKit.
+		"puddle_wet": ArpgArtKit.wet_material(Color(0.20, 0.15, 0.12), 0.92),
+		"wind_tuft": ArpgArtKit.wind_material(Color(0.10, 0.24, 0.13), 0.07, 1.9),
+		"wind_frond": ArpgArtKit.wind_material(Color(0.16, 0.34, 0.15), 0.045, 1.4),
+		"wind_canopy": ArpgArtKit.wind_material(Color(0.09, 0.22, 0.12), 0.05, 1.2),
+		"worn_iron": ArpgArtKit.worn_iron_material(),
 	}
 
 

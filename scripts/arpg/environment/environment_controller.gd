@@ -8,7 +8,6 @@ extends Node3D
 @export var auto_advance := true
 @export_range(1.0, 90.0, 1.0) var weather_transition_seconds := 18.0
 @export var enable_rain_particles := true
-@export var allow_dynamic_shadows := false
 
 var day_cycle: DayNightCycle
 var weather_controller: WeatherController
@@ -135,15 +134,27 @@ func _create_sun_light() -> void:
 	sun_light.name = "SunMoonLight"
 	sun_light.light_color = Color(1.0, 0.88, 0.72)
 	sun_light.light_energy = 0.9
-	sun_light.shadow_enabled = false
-	sun_light.directional_shadow_max_distance = 38.0
+	# Fase 4A: el modo de sombras lo decide el perfil activo (matriz docs/16):
+	# off | player_only (LOW, <=16 m) | one_directional (MEDIUM, 40 m) |
+	# high_quality (HIGH, 60 m + blend_splits).
+	var mode := GraphicsSettings.shadow_mode()
+	sun_light.shadow_enabled = mode != "off"
+	sun_light.directional_shadow_max_distance = clampf(GraphicsSettings.shadow_max_distance(), 10.0, 80.0)
+	match mode:
+		"player_only":
+			sun_light.directional_shadow_max_distance = minf(sun_light.directional_shadow_max_distance, 16.0)
+			sun_light.shadow_blur = 0.6
+		"one_directional":
+			sun_light.shadow_blur = 1.0
+		"high_quality":
+			sun_light.shadow_blur = 1.2
+			sun_light.directional_shadow_blend_splits = true
 	add_child(sun_light)
 
 
 func _create_rain_particles() -> void:
 	if not enable_rain_particles:
 		return
-
 	rain_particles = CPUParticles3D.new()
 	rain_particles.name = "RainParticles"
 	rain_particles.emitting = false
@@ -301,7 +312,6 @@ func _get_solar_state(hour: float) -> Dictionary:
 			left = _solar_keyframes[index - 1]
 			right = candidate
 			break
-
 	var span := maxf(float(right["hour"]) - float(left["hour"]), 0.001)
 	var blend := clampf((hour - float(left["hour"])) / span, 0.0, 1.0)
 	blend = blend * blend * (3.0 - 2.0 * blend)
@@ -319,6 +329,8 @@ func _apply_visual_state() -> void:
 	if active_environment == null or day_cycle == null or weather_controller == null:
 		return
 
+		# Fase 4A: sombras por perfil (docs/16); de noche (energia solar baja) se apagan
+		# aunque el perfil las permita: sin sol no hay sombra de sol.
 	var state := _get_solar_state(day_cycle.time_hours)
 	var cloud_weight := weather_controller.get_weight(WeatherController.Weather.OVERCAST)
 	var fog_weight := weather_controller.get_weight(WeatherController.Weather.FOG)
@@ -343,9 +355,9 @@ func _apply_visual_state() -> void:
 	sun_light.light_color = state["sun_color"]
 	sun_light.light_energy = float(state["sun_energy"])
 	sun_light.rotation_degrees = Vector3(float(state["sun_angle_x"]), 34.0, 0.0)
-	sun_light.shadow_enabled = (
-		allow_dynamic_shadows and GraphicsSettings.dynamic_shadows_enabled() and float(state["sun_energy"]) > 0.2
-	)
+	# Fase 4A: sombras por perfil (docs/16); de noche (energia solar baja) se apagan
+	# aunque el perfil las permita: sin sol no hay sombra de sol.
+	sun_light.shadow_enabled = (GraphicsSettings.shadow_mode() != "off" and float(state["sun_energy"]) > 0.2)
 
 	if rain_particles != null:
 		var raining := rain_weight > 0.01

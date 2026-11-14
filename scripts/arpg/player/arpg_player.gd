@@ -84,6 +84,10 @@ func setup(new_class_id: String) -> void:
 	if class_data.is_empty():
 		push_error("ArpgPlayer: clase desconocida %s" % class_id)
 		return
+
+		# Fase 2: pegado al suelo en bajadas de pendiente/rampa (evita micro-vuelos al bajar).
+
+		# Fase 3: inventario de equipo propio (serializable con el resto del estado).
 	collision_layer = BODY_LAYER
 	collision_mask = BODY_MASK
 	_build_body_shape()
@@ -173,6 +177,8 @@ func get_potions() -> int:
 func add_xp(amount: int) -> void:
 	if amount <= 0 or _dead:
 		return
+
+		# Diseño de la rebanada: al subir de nivel se restaura por completo (decisión documentada).
 	var result := ProgressionService.add_xp(level, xp_into_level, amount, RpgDB.get_progression())
 	xp_into_level = int(result["xp_into_level"])
 	attribute_points += int(result["points_gained"])
@@ -227,11 +233,17 @@ func try_skill() -> bool:
 func try_dodge() -> bool:
 	if _dead or not _action_params.is_empty() or is_dodging:
 		return false
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
 	if _dodge_cooldown_left > 0.0:
 		return false
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
 	var cost := float(class_data.get("dodge", {}).get("cost", 15))
 	if vigor < cost:
 		return false
+
+		# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
 	var dodge: Dictionary = class_data.get("dodge", {})
 	var input_dir := _input_direction()
 	_dodge_direction = input_dir if input_dir.length() > 0.1 else transform.basis.z
@@ -242,6 +254,8 @@ func try_dodge() -> bool:
 	vigor -= cost
 	_dodge_cooldown_left = float(dodge.get("cooldown", 1.2))
 	stats_changed.emit()
+	# Art Pass: polvo rojo de Valdeluz al arrancar la esquiva.
+	ArpgArtKit.dust_burst(self, global_position + Vector3(0, 0.1, 0))
 	return true
 
 
@@ -391,6 +405,13 @@ func _to_camera_space(direction: Vector3) -> Vector3:
 func _physics_process(delta: float) -> void:
 	if class_data.is_empty():
 		return
+
+		# Fase 3: el tier de locomoción (caminar/correr) sale de la magnitud de entrada;
+		# la velocidad objetivo del tier se persigue con la aceleración de la Fase 2.
+
+		# Giro y ciclo de pasos siguen la velocidad REAL del cuerpo: sin deslizamiento visual.
+
+		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 	_tick_timers(delta)
 	_update_run_blend(delta)
 	if not is_dodging and _action_params.is_empty():
@@ -412,6 +433,8 @@ func _physics_process(delta: float) -> void:
 			_animate_walk(_walk_phase)
 		else:
 			_animate_idle(delta)
+
+		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 	else:
 		# Acción o esquiva en curso: el cuerpo se frena (comportamiento de la Fase 1).
 		_animate_walk(_walk_phase)
@@ -521,6 +544,12 @@ func _open_hitbox_window() -> void:
 	_hitbox_shape.position = Vector3(0, 1.0, reach * 0.5)
 	_hitbox_shape.disabled = false
 	_window_open = true
+	# Art Pass: estela visual del tajo (la hitbox y su ventana no cambian).
+	ArpgArtKit.slash_trail(
+		self,
+		global_position + transform.basis * Vector3(0.24, 1.25, 0.35),
+		global_position + transform.basis * Vector3(0.24, 1.05, reach * 0.92)
+	)
 
 
 func _close_hitbox_window() -> void:
@@ -532,11 +561,23 @@ func _close_hitbox_window() -> void:
 func _apply_hitbox_damage(params: Dictionary) -> void:
 	if _hitbox_area == null:
 		return
+
+		# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
 	for body: Node in _hitbox_area.get_overlapping_bodies():
 		if body == self or body in _bodies_hit_this_swing:
 			continue
+
+			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
 		if not body.has_method("take_damage"):
 			continue
+
+			# Fase 3: el arma equipada suma potencia al golpe (data-driven; sin fórmulas nuevas).
+
+			# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
 		_bodies_hit_this_swing.append(body)
 		var defense := _target_defense(body, params)
 		var attacker_attribute := get_attribute(String(params.get("attribute", "fuerza")))
@@ -547,6 +588,10 @@ func _apply_hitbox_damage(params: Dictionary) -> void:
 		var crit := CombatService.crit_roll(damage, CRIT_CHANCE, _rng)
 		body.take_damage(float(crit["damage"]))
 		hit_landed.emit(body, float(crit["damage"]), bool(crit["crit"]))
+		# Art Pass: chispas del impacto (solo visual; el daño ya se aplicó).
+		if body is Node3D:
+			var impact_color := Color(1.0, 0.72, 0.35) if bool(crit["crit"]) else Color(0.95, 0.85, 0.6)
+			ArpgArtKit.hit_spark(self, (body as Node3D).global_position + Vector3(0, 1.2, 0), impact_color)
 
 
 func _weapon_potency_bonus() -> float:
@@ -620,6 +665,8 @@ func restore(data: Dictionary) -> void:
 	class_data = RpgDB.get_class_data(class_id)
 	if class_data.is_empty():
 		return
+
+		# Fase 3: el inventario llega en partidas guardadas nuevas; en las viejas queda vacío.
 	_reset_stats()
 	level = int(data.get("level", 1))
 	xp_into_level = int(data.get("xp_into_level", 0))
@@ -694,6 +741,54 @@ func _build_visual() -> void:
 		machete, Vector3(0.05, 0.16, 0.06), Vector3(0, 0.02, 0), VisualKit.flat_material(VisualKit.MAT_WOOD)
 	)
 	var blade_mesh := VisualKit.add_box(machete, Vector3(0.045, 0.52, 0.11), Vector3(0, 0.4, 0.08), blade)
+	# ---- Art Pass (Fase 4B): detalles del Machetero, solo nodos visuales ----
+	# Mangas arremangadas: antebrazos con la piel al aire (guajiro de trabajo).
+	VisualKit.add_box(arm_l, Vector3(0.13, 0.2, 0.15), Vector3(0, -0.42, 0), skin)
+	VisualKit.add_box(arm_r, Vector3(0.13, 0.2, 0.15), Vector3(0, -0.42, 0), skin)
+	# Cara legible desde la cámara isométrica: ojos y bigote bajo el ala del sombrero.
+	VisualKit.add_box(
+		puppet, Vector3(0.05, 0.05, 0.03), Vector3(-0.06, 1.5, 0.19), VisualKit.flat_material(Color(0.09, 0.07, 0.06))
+	)
+	VisualKit.add_box(
+		puppet, Vector3(0.05, 0.05, 0.03), Vector3(0.06, 1.5, 0.19), VisualKit.flat_material(Color(0.09, 0.07, 0.06))
+	)
+	VisualKit.add_box(
+		puppet, Vector3(0.13, 0.045, 0.05), Vector3(0, 1.43, 0.21), VisualKit.flat_material(Color(0.14, 0.1, 0.08))
+	)
+	# Cinta del sombrero: acento oscuro bajo la copa.
+	VisualKit.add_cylinder(puppet, 0.245, 0.05, Vector3(0, 1.6, 0), VisualKit.flat_material(Color(0.14, 0.1, 0.07)), 10)
+	# Talega al hombro: correa diagonal + bolsillo (lee "viajero").
+	var strap := VisualKit.add_box(
+		puppet,
+		Vector3(0.08, 0.78, 0.05),
+		Vector3(0.1, 1.1, 0),
+		VisualKit.flat_material(VisualKit.MAT_WOOD.darkened(0.15))
+	)
+	strap.rotation_degrees.z = 24.0
+	VisualKit.add_box(
+		puppet,
+		Vector3(0.24, 0.18, 0.1),
+		Vector3(-0.2, 0.94, 0),
+		VisualKit.flat_material(VisualKit.MAT_HAT_STRAW.darkened(0.3))
+	)
+	# Vaina del machete en la cadera izquierda: el de la mano es el de combate.
+	var sheath := Node3D.new()
+	sheath.position = Vector3(-0.3, 0.78, -0.12)
+	sheath.rotation_degrees = Vector3(6.0, 18.0, 12.0)
+	puppet.add_child(sheath)
+	VisualKit.add_box(
+		sheath,
+		Vector3(0.07, 0.5, 0.12),
+		Vector3(0, 0.24, 0),
+		VisualKit.flat_material(VisualKit.MAT_WOOD.darkened(0.25))
+	)
+	# Yuntas/botas con suela: masa visual abajo, mejor lectura de apoyo.
+	VisualKit.add_box(
+		leg_l, Vector3(0.2, 0.05, 0.28), Vector3(0, -0.61, 0.05), VisualKit.flat_material(Color(0.1, 0.07, 0.05))
+	)
+	VisualKit.add_box(
+		leg_r, Vector3(0.2, 0.05, 0.28), Vector3(0, -0.61, 0.05), VisualKit.flat_material(Color(0.1, 0.07, 0.05))
+	)
 	_puppet = {
 		"root": puppet,
 		"leg_l": leg_l,
@@ -709,11 +804,13 @@ func _build_visual() -> void:
 func _animate_walk(phase: float) -> void:
 	## Ciclo compartido caminar/correr (Fase 3): amplitud, inclinación y bombeo de brazos
 	## escalan con _run_blend; la frecuencia ya escala con la velocidad real del cuerpo.
+	## Fase 4B: rebote vertical (dos apoyos por ciclo) que da peso al paso.
 	if _puppet.is_empty():
 		return
 	var swing := sin(phase) * lerpf(0.55, 0.88, _run_blend)
 	var root := _puppet["root"] as Node3D
 	root.rotation.x = lerpf(root.rotation.x, 0.14 * _run_blend, 0.15)
+	root.position.y = absf(sin(phase)) * 0.05 * lerpf(0.6, 1.0, _run_blend)
 	(_puppet["leg_l"] as Node3D).rotation.x = swing
 	(_puppet["leg_r"] as Node3D).rotation.x = -swing
 	(_puppet["arm_l"] as Node3D).rotation.x = -swing * (0.7 + 0.25 * _run_blend)
@@ -724,9 +821,14 @@ func _animate_walk(phase: float) -> void:
 func _animate_idle(delta: float) -> void:
 	if _puppet.is_empty():
 		return
+
+		# Fase 4B: el rebote del paso vuelve al suelo en reposo.
 	_walk_phase += delta * 1.6
 	var breathe := sin(_walk_phase) * 0.04
-	(_puppet["root"] as Node3D).rotation.x = lerpf((_puppet["root"] as Node3D).rotation.x, 0.0, 0.15)
+	var root := _puppet["root"] as Node3D
+	root.rotation.x = lerpf(root.rotation.x, 0.0, 0.15)
+	# Fase 4B: el rebote del paso vuelve al suelo en reposo.
+	root.position.y = lerpf(root.position.y, 0.0, 0.2)
 	(_puppet["leg_l"] as Node3D).rotation.x = lerp_angle((_puppet["leg_l"] as Node3D).rotation.x, 0.0, 0.2)
 	(_puppet["leg_r"] as Node3D).rotation.x = lerp_angle((_puppet["leg_r"] as Node3D).rotation.x, 0.0, 0.2)
 	(_puppet["arm_l"] as Node3D).rotation.x = breathe
@@ -737,6 +839,8 @@ func _animate_idle(delta: float) -> void:
 func _animate_action(delta: float) -> void:
 	if _puppet.is_empty():
 		return
+
+		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
 
 		# Arco del tajo: atrás en windup, barrido al frente en la ventana activa.
 

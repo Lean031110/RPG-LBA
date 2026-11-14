@@ -35,6 +35,8 @@ func setup(new_enemy_id: String) -> void:
 	if enemy_data.is_empty():
 		push_error("ShadowOfPortal: enemigo desconocido %s" % enemy_id)
 		return
+
+		# Fase 3: grupo para blips del minimapa (consulta por grupo; sin lógica de juego).
 	collision_layer = ArpgLayers.ENEMY
 	collision_mask = ArpgLayers.WORLD
 	# Fase 3: grupo para blips del minimapa (consulta por grupo; sin lógica de juego).
@@ -203,6 +205,8 @@ func _try_damage_player() -> void:
 		return
 
 		# Solo daña si el jugador sigue al frente de la sombra en el momento del golpe.
+
+		# Solo daña si el jugador sigue al frente de la sombra en el momento del golpe.
 	var reach := float(enemy_data.get("attack_range", 2.2)) + 0.8
 	if distance_to_player() > reach:
 		return
@@ -281,13 +285,41 @@ func _build_visual() -> void:
 		Vector3(0.09, 2.18, 0.2),
 		VisualKit.flat_material(VisualKit.MAT_EYE_AMBER, VisualKit.MAT_EYE_AMBER, 2.2)
 	)
+	# ---- Art Pass (Fase 4B): solo nodos visuales, la FSM no cambia ----
+	# Capa de filo frío: cilindro levemente mayor con emisión tenue; da el
+	# read de "sombra con borde" contra el fondo verde de la manigua.
+	var shell_mat := VisualKit.flat_material(VisualKit.MAT_SHADOW_RIM, Color(0.16, 0.2, 0.32), 0.28)
+	var shell := VisualKit.add_cylinder(puppet, 0.37, 1.42, Vector3(0, 1.36, 0), shell_mat, 8)
+	shell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# Jirones colgantes bajo el faldón, meciéndose con el shader de viento.
+	var tatter_mat := ArpgArtKit.wind_material(Color(0.05, 0.06, 0.09), 0.16, 2.4)
+	for index: int in 3:
+		var angle := TAU * float(index) / 3.0 + 0.6
+		var tatter := VisualKit.add_box(
+			puppet, Vector3(0.1, 0.5, 0.02), Vector3(cos(angle) * 0.42, 0.55, sin(angle) * 0.42), tatter_mat
+		)
+		tatter.rotation_degrees.y = -rad_to_deg(angle)
+		# Bruma de suelo: disco oscuro translúcido que asienta la silueta.
+	var haze_material := StandardMaterial3D.new()
+	haze_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	haze_material.albedo_color = Color(0.03, 0.04, 0.07, 0.38)
+	haze_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var haze := VisualKit.add_cylinder(puppet, 0.75, 0.02, Vector3(0, 0.03, 0), haze_material, 16)
+	haze.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 
 func _animate_idle_wobble() -> void:
 	if _body_mesh == null:
 		return
+
+		# Art Pass: ascua de reposo; el pulso carmesí del windup lo pisa luego.
 	var wobble := sin(_wobble_phase * 2.0) * 0.05
 	_body_mesh.position = Vector3(0, 1.35 + wobble, 0)
+	# Art Pass: ascua de reposo; el pulso carmesí del windup lo pisa luego.
+	if _eye_l != null and state != InternalState.WINDUP and state != InternalState.STRIKE:
+		var ember := 1.8 + sin(_wobble_phase * 3.0) * 0.5
+		VisualKit.set_emission(_eye_l, VisualKit.MAT_EYE_AMBER, ember)
+		VisualKit.set_emission(_eye_r, VisualKit.MAT_EYE_AMBER, ember)
 
 
 func _visual_telegraph(progress: float) -> void:

@@ -49,6 +49,7 @@ var _quest_title: Label = null
 var _quest_lines: VBoxContainer = null
 var _quest_hint: Label = null
 var _toast_label: Label = null
+var _toast_base_y := 84.0
 var _interact_button: Button = null
 var _joystick: ArpgVirtualJoystick = null
 var _action_cluster: Control = null
@@ -147,10 +148,16 @@ func clear_quest_tracker() -> void:
 
 func show_toast(text: String, duration := 2.6) -> void:
 	_toast_label.text = text
-	_toast_label.modulate.a = 1.0
-	var tween := create_tween()
-	tween.tween_interval(duration)
-	tween.tween_property(_toast_label, "modulate:a", 0.0, 0.5)
+	# Art Pass: entrada con leve ascenso y fundido; salida igual.
+	_toast_label.modulate.a = 0.0
+	_toast_label.position.y = _toast_base_y + 14.0
+	var intro := create_tween()
+	intro.set_parallel(true)
+	intro.tween_property(_toast_label, "modulate:a", 1.0, 0.18)
+	intro.tween_property(_toast_label, "position:y", _toast_base_y, 0.22)
+	var outro := create_tween()
+	outro.tween_interval(duration)
+	outro.tween_property(_toast_label, "modulate:a", 0.0, 0.5)
 
 
 func set_interact_prompt(show_prompt: bool, text := "") -> void:
@@ -179,7 +186,7 @@ func _dialog_next() -> void:
 		else:
 			_dialog_action.text = "Continuar"
 		return
-	# Última línea: cerrar o aceptar.
+		# Última línea: cerrar o aceptar.
 	_dialog_panel.visible = false
 	if (_dialog_mode == "offer" or _dialog_mode == "claim") and _dialog_on_accept.is_valid():
 		_dialog_on_accept.call()
@@ -246,7 +253,7 @@ func _build_stats_panel() -> void:
 func _build_quest_tracker() -> void:
 	_quest_panel = PanelContainer.new()
 	_quest_panel.name = "QuestPanel"
-	_quest_panel.add_theme_stylebox_override("panel", _panel_style())
+	_quest_panel.add_theme_stylebox_override("panel", _quest_style())
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 2)
 	_quest_panel.add_child(box)
@@ -434,10 +441,15 @@ func _layout_hud() -> void:
 	var viewport_size := root.size
 	if viewport_size.x < 320.0 or viewport_size.y < 240.0:
 		return
+
+		# Minimapa arriba-derecha + botón de mochila debajo (Fase 3).
+
+		# Clúster de acciones en arco alrededor de la esquina inferior-derecha.
 	_stats_panel.position = Vector2(16, 14)
 	_quest_panel.position = Vector2(16, 132)
 	_toast_label.position = Vector2(0, 84)
 	_toast_label.size = Vector2(viewport_size.x, 30)
+	_toast_base_y = 84.0
 	var joy_size := Vector2(_joystick.radius * 2.0, _joystick.radius * 2.0)
 	_joystick.position = Vector2(150.0, viewport_size.y - 150.0) - joy_size * 0.5
 	_joystick.size = joy_size
@@ -479,11 +491,22 @@ func _panel_style(margin := 10) -> StyleBoxFlat:
 	style.bg_color = Color(COLOR_PANEL.r, COLOR_PANEL.g, COLOR_PANEL.b, ALPHA_PANEL)
 	style.border_color = COLOR_PANEL_LINE
 	style.set_border_width_all(1)
-	style.set_corner_radius_all(6)
+	style.set_corner_radius_all(8)
 	style.content_margin_left = margin
 	style.content_margin_right = margin
 	style.content_margin_top = margin
 	style.content_margin_bottom = margin
+	return style
+
+
+func _quest_style() -> StyleBoxFlat:
+	## Art Pass: el rastreador de misiones lleva acento lateral dorado; se
+	## distingue de un vistazo del resto de paneles semitransparentes.
+	var style := _panel_style(10)
+	style.border_color = COLOR_XP
+	style.border_width_left = 3
+	style.set_corner_radius(3, 8)
+	style.set_corner_radius(0, 8)
 	return style
 
 

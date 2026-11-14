@@ -81,7 +81,9 @@ static func _build_ground(root: Node3D, palette: Dictionary) -> void:
 			palette["wheel_tracks"]
 		)
 
-	# Caliza erosionada y musgo en los bordes.
+		# Caliza erosionada y musgo en los bordes.
+
+		# Charcas con brillo humedo (shader wet del Art Pass); sin reflejos ni SSR.
 	var stones := Node3D.new()
 	stones.name = "Limestone"
 	grass.add_child(stones)
@@ -102,14 +104,14 @@ static func _build_ground(root: Node3D, palette: Dictionary) -> void:
 		var moss := VisualKit.add_sphere(stones, 0.26, spot + Vector3(-0.45, 0.38, 0.18), palette["moss"])
 		moss.scale = Vector3(1.2, 0.45, 0.9)
 
-	# Manchas de barro mate; no se usan reflejos ni SSR.
+		# Charcas con brillo humedo (shader wet del Art Pass); sin reflejos ni SSR.
 	var mud := Node3D.new()
 	mud.name = "MudPatches"
 	grass.add_child(mud)
 	for patch in [
 		Vector3(-4.8, 0.055, 5.5), Vector3(5.1, 0.055, 15.5), Vector3(-9.4, 0.055, -0.5), Vector3(9.2, 0.055, 6.0)
 	]:
-		var puddle := VisualKit.add_sphere(mud, 0.72, patch, palette["mud"])
+		var puddle := VisualKit.add_sphere(mud, 0.72, patch, palette["puddle_wet"])
 		puddle.scale = Vector3(1.75, 0.08, 0.95)
 		puddle.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
@@ -138,7 +140,6 @@ static func _build_rolling_ground_mesh(size: Vector2, material: Material) -> Arr
 			_add_terrain_vertex(surface, p10)
 			_add_terrain_vertex(surface, p01)
 			_add_terrain_vertex(surface, p11)
-
 	surface.generate_normals()
 	return surface.commit()
 
@@ -199,8 +200,16 @@ static func _build_boundaries(root: Node3D, rng: RandomNumberGenerator, density:
 		body.add_child(shape)
 		body.position = spec["pos"]
 		walls.add_child(body)
+		# Iteración 4C: los muros del recinto son VISIBLES (antes eran solo
+		# colisión invisible) y se registran como oclusores: cuando tapan al
+		# jugador, ArpgOcclusionManager los hace semitransparentes. La malla
+		# cuelga del StaticBody3D para que el raycast la encuentre.
+		var wall_mesh := VisualKit.add_box(
+			body, spec["size"], Vector3.ZERO, VisualKit.noise_material(Color(0.44, 0.40, 0.34), 0.15, 3)
+		)
+		wall_mesh.add_to_group("arpg_occluders")
 
-	# Anillo de palmas y ceibas para enmarcar el horizonte.
+		# Anillo de palmas y ceibas para enmarcar el horizonte.
 	var palms := int(26.0 * density) + 8
 	for _index in range(palms):
 		var edge := rng.randi_range(0, 3)
@@ -218,7 +227,6 @@ static func _build_boundaries(root: Node3D, rng: RandomNumberGenerator, density:
 			_:
 				pos = Vector3(rect.position.x + rect.size.x + 1.2, 0.0, edge_z)
 		_build_palm(walls, pos, rng, palette)
-
 	for corner in [
 		Vector3(rect.position.x - 1.5, 0.0, rect.position.y - 1.5),
 		Vector3(rect.position.x + rect.size.x + 1.5, 0.0, rect.position.y - 1.5),
@@ -249,7 +257,9 @@ static func _build_vegetation(root: Node3D, rng: RandomNumberGenerator, density:
 		var bush := VisualKit.add_sphere(veg, rng.randf_range(0.45, 0.85), pos + Vector3(0.0, 0.3, 0.0), bush_mat)
 		bush.scale = Vector3(1.3, 0.8, 1.1)
 
-	# Palmas interiores: mallas sencillas con materiales compartidos por zona.
+		# Palmas interiores: mallas sencillas con materiales compartidos por zona.
+
+		# Troncos caídos con forma diferenciada.
 	var inner_palms := int(9.0 * density) + 3
 	for _index in range(inner_palms):
 		var pos := Vector3(
@@ -261,8 +271,9 @@ static func _build_vegetation(root: Node3D, rng: RandomNumberGenerator, density:
 			pos.x += signf(pos.x) * (PATH_HALF_WIDTH + 2.0)
 		_build_palm(veg, pos, rng, palette)
 
+		# Troncos caídos con forma diferenciada.
 	var tufts := int(40.0 * density) + 10
-	var tuft_mat: Material = palette["leaves_dark"]
+	var tuft_mat: Material = palette["wind_tuft"]
 	for _index in range(tufts):
 		var side := 1.0 if rng.randf() > 0.5 else -1.0
 		var pos := Vector3(
@@ -275,7 +286,7 @@ static func _build_vegetation(root: Node3D, rng: RandomNumberGenerator, density:
 		)
 		tuft.rotation_degrees.y = rng.randf_range(0.0, 360.0)
 
-	# Troncos caídos con forma diferenciada.
+		# Troncos caídos con forma diferenciada.
 	for log_pos in [Vector3(-7.5, 0.28, 3.5), Vector3(8.4, 0.28, 16.0)]:
 		var log := VisualKit.add_cylinder(veg, 0.32, 3.2, log_pos, trunk_mat, 7)
 		log.rotation_degrees = Vector3(90.0, rng.randf_range(0.0, 180.0), 0.0)
@@ -297,14 +308,24 @@ static func _build_props(root: Node3D, rng: RandomNumberGenerator, palette: Dict
 	VisualKit.add_box(cart, Vector3(2.4, 0.16, 1.5), Vector3(0.0, 0.9, 0.0), wood_mat)
 	VisualKit.add_box(cart, Vector3(2.4, 0.5, 0.14), Vector3(0.0, 1.2, 0.72), wood_mat)
 	VisualKit.add_box(cart, Vector3(2.4, 0.5, 0.14), Vector3(0.0, 1.2, -0.72), wood_mat)
-	var wheel_mat := VisualKit.noise_material(VisualKit.MAT_WOOD.darkened(0.4), 0.3, 3)
+	var wheel_mat: Material = palette["worn_iron"]
 	for wheel_x in [-0.8, 0.8]:
 		for wheel_z in [-0.9, 0.9]:
 			VisualKit.add_cylinder(cart, 0.55, 0.12, Vector3(wheel_x, 0.55, wheel_z), wheel_mat, 12).rotation_degrees.x = 90.0
+
+		# Casas rurales coloniales como silueta de fondo.
+
+		# Farol cálido: la luz se modula con la transición noche/día. Poste de
+		# hierro forjado (shader worn_iron del Art Pass).
 	for nail_position in [
 		Vector3(-1.13, 1.22, 0.74), Vector3(1.13, 1.22, 0.74), Vector3(-1.13, 1.22, -0.74), Vector3(1.13, 1.22, -0.74)
 	]:
 		VisualKit.add_sphere(cart, 0.055, nail_position, iron_mat)
+
+		# Casas rurales coloniales como silueta de fondo.
+
+		# Farol cálido: la luz se modula con la transición noche/día. Poste de
+		# hierro forjado (shader worn_iron del Art Pass).
 	VisualKit.add_tetra(
 		cart,
 		0.22,
@@ -338,8 +359,9 @@ static func _build_props(root: Node3D, rng: RandomNumberGenerator, palette: Dict
 			roof_mat
 		)
 
-	# Farol cálido: la luz se modula con la transición noche/día.
-	VisualKit.add_cylinder(town, 0.16, 3.2, Vector3(-3.0, 1.6, 2.6), wood_mat, 6)
+		# Farol cálido: la luz se modula con la transición noche/día. Poste de
+		# hierro forjado (shader worn_iron del Art Pass).
+	VisualKit.add_cylinder(town, 0.16, 3.2, Vector3(-3.0, 1.6, 2.6), palette["worn_iron"], 6)
 	VisualKit.add_sphere(
 		town, 0.3, Vector3(-3.0, 3.35, 2.6), VisualKit.flat_material(Color(0.9, 0.75, 0.4), Color(1.0, 0.8, 0.45), 1.2)
 	)
@@ -368,7 +390,7 @@ static func _build_palm(parent: Node, base: Vector3, rng: RandomNumberGenerator,
 	trunk.rotation_degrees = Vector3(lean.z * 18.0, 0.0, -lean.x * 18.0)
 	var crown_pos := Vector3(lean.x * height, height + 0.05, lean.z * height)
 	var frond_count := 7
-	var frond_material: Material = palette["leaves_mid"]
+	var frond_material: Material = palette["wind_frond"]
 	for index in range(frond_count):
 		var angle := (TAU / float(frond_count)) * float(index) + rng.randf_range(-0.2, 0.2)
 		var frond := VisualKit.add_box(
@@ -392,9 +414,9 @@ static func _build_ceiba(parent: Node, base: Vector3, rng: RandomNumberGenerator
 		{"pos": Vector3(-1.4, height - 0.3, 0.6), "scale": Vector3(1.7, 0.8, 1.7)},
 		{"pos": Vector3(1.3, height - 0.2, -0.8), "scale": Vector3(1.5, 0.8, 1.5)}
 	]:
-		var blob := VisualKit.add_sphere(ceiba, 1.0, canopy["pos"], palette["leaves_dark"])
+		var blob := VisualKit.add_sphere(ceiba, 1.0, canopy["pos"], palette["wind_canopy"])
 		blob.scale = canopy["scale"]
-	# Raíces tablares de ceiba.
+		# Raíces tablares de ceiba.
 	for root_angle: float in [0.4, 1.7, 2.9, 4.2]:
 		var root_pos := Vector3(cos(root_angle) * 0.55, 0.35, sin(root_angle) * 0.55)
 		var buttress := VisualKit.add_box(ceiba, Vector3(0.5, 0.9, 0.35), root_pos, palette["tree_bark"])

@@ -54,9 +54,10 @@ Los atributos, poderes, especializaciones, XP, curva de niveles y pruebas de bal
 | HUD móvil (arco Diablo/MLBB), minimapa, correr/caminar e inventario de armas | Preparativos Fase 3 en `agent/fase3-preparativos-hud-minimap` (PR pendiente; 170/170 pruebas; capturas reales en `screenshots/arpg/`) |
 | APK debug con autofirma open source y verificación de instalación | Fase 3B en `agent/fase3b-apk-firma-verificacion` (PR#8; 171/171 pruebas; CI verde con instalación en emulador API 35 y menú renderizado; corridas 43343138392 y 43343144211; dispositivo físico NO PROBADO) |
 | Compatibilidad Android Redmi 9C + S22 Ultra (diagnóstico del APK, matriz por hardware, perfiles LOW/MEDIUM/HIGH, ARM64+Universal, CI con emuladores API 35/36 y capturas reales) | Fase 4A en `agent/fase4a-android-compat-matriz` (PR#9; 183/183 pruebas en Validate; android-debug 43499106389 en verde con sanity ARM64 por ABI; menú y escena jugable capturados de verdad; dispositivo físico PENDIENTE según protocolo docs/16 §E) |
+| Art Pass de Valdeluz (shaders de viento/humedad/hierro, Machetero y Sombra mejorados, VFX de combate, HUD pulido; Fase 1B fusionada: día/noche, clima, faroles) | Fase 4B en `agent/fase4b-artpass-valdeluz` (PR#10; 200/200 pruebas; CI verde 43499113001 con `playable_capture=valdeluz`; capturas reales en `screenshots/arpg/`; revisión visual humana PENDIENTE; assets externos no viables en el entorno, contenido original documentado) |
 | Dirección creativa y narrativa | Documentadas |
 | Clases, XP y balance | Diseño revisado; implementación y simulación pendientes |
-| Art Pass / ciclo día-noche / UX | Especificados; implementación pendiente |
+| Art Pass / ciclo día-noche / UX | Primer Art Pass entregado en PR#10 (revisión humana pendiente); ciclo día/noche + clima fusionados de la Fase 1B; UX Pass completo sigue pendiente |
 | Campaña y cadenas secundarias | Diseño inicial documentado; contenido ampliable |
 | Multijugador autoritativo | Planificado; no declarar completo |
 | APK, Android físico y FPS | NOT TESTED hasta evidencia real |
