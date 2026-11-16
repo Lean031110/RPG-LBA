@@ -112,6 +112,19 @@ Abre el proyecto en Godot y ejecuta F5. Consulta `AGENTS.md`, `scripts/ci/` y `.
 - `config/` — datos y perfiles.
 - `scenes/`, `scripts/`, `tests/` — proyecto Godot.
 
+## Producción de assets y automatización cloud
+
+La biblioteca visual y las automatizaciones tienen una guía central en [ART_DEPARTMENT/CLOUD_AUTOMATION](ART_DEPARTMENT/CLOUD_AUTOMATION/README.md). El repositorio ya incluye una fábrica procedural, catálogo y validación; no se debe crear una segunda fábrica ni asumir que los modelos de entorno equivalen a personajes finales.
+
+- [Auditoría del inventario y huecos visuales](ART_DEPARTMENT/CLOUD_AUTOMATION/PRODUCTION_AUDIT.md)
+- [Índice de los 93 recursos del manifiesto](ART_DEPARTMENT/CLOUD_AUTOMATION/ASSET_LIBRARY_INDEX.json)
+- [64 archivos heredados con IDs y enlaces](ART_DEPARTMENT/CLOUD_AUTOMATION/LEGACY_ASSET_INDEX.json)
+- [Backlog de personajes, enemigos, jefes, NPCs, armas y entornos](ART_DEPARTMENT/CLOUD_AUTOMATION/ASSET_GAP_BACKLOG.json)
+- [Servicios y APIs gratuitas/limitadas](ART_DEPARTMENT/CLOUD_AUTOMATION/PROVIDER_REGISTRY.json)
+- [Portabilidad y copias de seguridad n8n](ART_DEPARTMENT/CLOUD_AUTOMATION/N8N_PORTABILITY.md)
+
+GitHub Actions es el motor cloud principal. Los workflows n8n se versionan como JSON saneado e inactivo en `automation/n8n/workflows/`; nunca se guardan credenciales, tokens, claves de cifrado, bases de datos ni backups privados en este repositorio público. El estado de producción y los enlaces deben actualizarse en cada PR de assets.
+
 ## Marca y licencias
 
 **Juego:** RPG LBA — Las Cenizas de Lythara.  
