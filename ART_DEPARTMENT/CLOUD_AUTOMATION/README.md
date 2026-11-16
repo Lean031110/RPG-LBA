@@ -117,9 +117,16 @@ Rules:
 `ASSET_LIBRARY_INDEX.json` is a navigation/search index, not a second source of truth. Regenerate it from the manifest and asset tree using:
 
 ```bash
-python3 scripts/ci/build_asset_library_index.py --repo Lean031110/RPG-LBA --ref main
-python3 scripts/ci/build_asset_library_index.py --repo Lean031110/RPG-LBA --ref main --check
+python3 scripts/ci/build_asset_library_index.py --repo Lean031110/RPG-LBA --ref agent/asset-cloud-automation
+python3 scripts/ci/build_asset_library_index.py --repo Lean031110/RPG-LBA --ref agent/asset-cloud-automation --check
 ```
+
+The checked-in index is now schema **2.0.0** and CI enforces it strictly
+(`.github/workflows/asset-library-index.yml`): every PR touching `assets/**`,
+the factory manifest or this automation layer must also commit the regenerated
+index, otherwise the run fails. The comparison ignores volatile provenance
+metadata (`source_ref`, `source_commit`, the ref inside blob URLs) so a
+content-identical index never looks stale after a ref change.
 
 The generated rows must expose:
 - stable `asset_id` (or `gap_id` for missing content);

@@ -83,6 +83,7 @@ def build(root: Path, repo: str, ref: str, source_commit: str) -> dict:
         if not asset_id:
             raise ValueError("Manifest entry has no stable id")
         add_id(asset_id)
+        record_from_factory = True
         paths = list(dict.fromkeys([p for p in [source.get("ruta"), *flatten_paths(source.get("files", {}))] if p]))
         files = []
         for rel in paths:
@@ -119,13 +120,17 @@ def build(root: Path, repo: str, ref: str, source_commit: str) -> dict:
             "triangles": source.get("poligonos"),
             "vertices": source.get("vertices"),
             "materials": source.get("materiales"),
+            "textures": source.get("texturas"),
             "scale": source.get("escala"),
             "pivot": source.get("pivote"),
             "collisions": source.get("colisiones"),
             "lod": source.get("lod"),
             "profile": source.get("perfil"),
             "origin": source.get("procedencia"),
+            "creator": source.get("procedencia"),
+            "source_url": github_url(repo, ref, "ART_DEPARTMENT/AI_ASSET_FACTORY/catalog/assets_manifest.json") if record_from_factory else None,
             "license": source.get("licencia"),
+            "license_checked_date": source.get("fecha"),
             "technical_status": source.get("estado"),
             "human_visual_review": "NOT_REVIEWED",
             "godot_import_status": "NOT_TESTED",
@@ -133,6 +138,7 @@ def build(root: Path, repo: str, ref: str, source_commit: str) -> dict:
             "android_device_status": "NOT_TESTED",
             "seed": source.get("seed", source.get("semilla")),
             "backend": source.get("backend"),
+            "generation_parameters": source.get("parametros"),
             "manifest_sha256": source.get("hash"),
         })
 
@@ -211,6 +217,27 @@ def build(root: Path, repo: str, ref: str, source_commit: str) -> dict:
     }
 
 
+def normalize_for_check(text: str, repo: str) -> str:
+    """Drop volatile provenance metadata before comparing index snapshots.
+
+    `source_ref`, `source_commit` and the ref embedded in github_url change with
+    the branch/commit the index was generated on; they must not make a
+    content-identical index look stale (e.g. after merging into main).
+    """
+    obj = json.loads(text)
+    obj.pop("source_ref", None)
+    obj.pop("source_commit", None)
+    rendered = json.dumps(obj, ensure_ascii=False, sort_keys=True)
+    # neutralize the ref segment inside blob URLs
+    import re
+    rendered = re.sub(
+        rf"(https://github\.com/{re.escape(repo)}/blob/)[^/\"]+/",
+        r"\1CANONICAL_REF/",
+        rendered,
+    )
+    return rendered
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
@@ -229,7 +256,7 @@ def main() -> int:
             print(f"Missing index: {output}", file=sys.stderr)
             return 1
         current = output.read_text(encoding="utf-8")
-        if current != rendered:
+        if normalize_for_check(current, args.repo) != normalize_for_check(rendered, args.repo):
             print("ASSET_LIBRARY_INDEX.json is stale. Run the generator and commit the result.", file=sys.stderr)
             return 1
         print(f"PASS: {data['record_count']} records / {data['asset_file_count']} files")
