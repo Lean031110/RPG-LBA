@@ -105,16 +105,24 @@
       "id": "3d_valley",
       "name": "3D Valley",
       "url": "https://3dvalley.com/library",
-      "api_docs": "https://3dvalley.com/",
+      "api_docs": "https://3dvalley.com/docs/api",
       "role": "Search/download CC0 GLB models, rigged characters, animation, textures and audio",
-      "free_tier": "Advertises CC0 library and REST/MCP search",
-      "gpu": false,
-      "api_key_required": false,
-      "availability": "REVIEW_API_AND_LICENSE",
+      "free_tier": "CC0 library (models, textures, HDRIs, animation, audio); REST API free key currently states 1000 requests/hour and 10000/day for library. Some AI models have free daily runs (e.g. TRELLIS.2 Standard, FLUX.2 klein); others consume purchased credits.",
+      "gpu": true,
+      "api_key_required": true,
+      "availability": "PRIORITY_CANDIDATE_WITH_STRICT_ZERO_COST_GUARD",
       "constraints": [
-        "Verify each underlying source, individual license and stable download API before integration",
-        "Do not treat site aggregation as sufficient provenance; keep source-origin URL"
-      ]
+        "Use REST API v1; query GET /tools and GET /account before every AI generation batch.",
+        "Only dispatch a model when the currently returned price and max_credits are exactly zero for the requested run; otherwise skip and send a review notice.",
+        "Set max_credits=0, stable Idempotency-Key, publish=false, and persist job_id before polling GET /jobs/{id}.",
+        "API free key limits documented as 1000/hour and 10000/day for library endpoints; 2 concurrent jobs and a default daily spend cap are documented; monitor returned RateLimit headers and account limits.",
+        "Library assets are described as CC0, but still record each asset ID, creator/source_url, license and exact original source link in the project manifest.",
+        "Any API-backed picker/application displayed to users should show the required 3D Valley link/credit; an asset integrated into the game does not require credit according to its API docs.",
+        "Never buy credits, enable card billing, or let a generation exceed zero cost."
+      ],
+      "openapi": "https://3dvalley.com/api/v1/openapi.json",
+      "mcp_endpoint": "https://3dvalley.com/mcp",
+      "api_key_url": "https://3dvalley.com/account/api"
     },
     {
       "id": "huggingface_zero_gpu",
