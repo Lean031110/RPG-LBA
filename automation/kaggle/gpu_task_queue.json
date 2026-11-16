@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "updated_utc": null,
+  "description": "Persistent GPU task queue for the TripoSR-on-Kaggle prototype. This file is the resumable state: never lose progress, never generate twice for the same task, never hardcode a guaranteed quota.",
+  "policy": {
+    "idempotency": "A task with a completed job_id + output hash in history is never re-dispatched.",
+    "quota": "If Kaggle GPU/quota is unavailable, the task becomes DEFERRED_QUOTA (not failed) and is retried on a later allowed run.",
+    "batch_size": "1-2 tasks per dispatch (master prompt §10: small reviewable batches).",
+    "inputs": "Only original or appropriately licensed images; each input image must have provenance recorded in assets/manifest.csv before a real run.",
+    "outputs": "Raw meshes are cleaned/exported by Blender headless in GitHub Actions BEFORE any catalog registration; TripoSR output alone is never a final asset.",
+    "no_weights_in_repo": "Model weights and datasets are never committed to this repository."
+  },
+  "tasks": [
+    {
+      "task_id": "GPUTASK_001",
+      "gap_id": null,
+      "name": "Pilot: single static object (canon-neutral prop)",
+      "purpose": "End-to-end proof of the GPU lane (dispatch -> kernel -> retrieval -> Blender cleanup -> validation) with one static object that creates no canon conflict.",
+      "input_image": "kernel/batches/gputask_001/input/reference.png",
+      "input_image_provenance": "PLACEHOLDER: original or CC0 image to be added by the owner/agent before the first real run; record it in assets/manifest.csv first.",
+      "status": "QUEUED",
+      "job_id": null,
+      "kernel_slug": null,
+      "history": []
+    }
+  ]
+}
