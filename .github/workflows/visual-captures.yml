@@ -1,0 +1,78 @@
+# RPG-LBA — Capturas visuales automatizadas (mandato §10.G y §8).
+#
+# Renderiza escenas reales del juego en Linux con GL por software (llvmpipe)
+# bajo Xvfb, guarda PNGs 16:9 y 20:9, verifica que NINGUNA sea negra/vacia
+# (estadistica de pixeles) y publica todo como artefacto para revision
+# visual humana (AGENTS.md §10: no declarar aceptacion visual sin revision).
+name: Visual Captures
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scenes/**"
+      - "scripts/**"
+      - "assets/**"
+      - "project.godot"
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: visual-captures-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.7.2"
+
+jobs:
+  capturas:
+    name: "Capturas 16:9 + 20:9 (render por software)"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Instalar Xvfb y Mesa (GL por software)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb mesa-utils libgl1-mesa-dri
+
+      - name: Descargar Godot 4.7.2
+        run: |
+          ARCHIVE="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          curl --fail --location --retry 3 --output "$RUNNER_TEMP/$ARCHIVE" \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/${ARCHIVE}"
+          unzip -q "$RUNNER_TEMP/$ARCHIVE" -d "$RUNNER_TEMP/godot"
+          chmod +x "$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+
+      - name: Importar recursos
+        run: |
+          "$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" --headless --path . --import
+          "$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" --headless --path . --import
+
+      - name: Renderizar y capturar escenas
+        run: |
+          export GODOT="$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          Xvfb :99 -screen 0 1920x1080x24 &
+          echo $! > /tmp/xvfb.pid
+          trap 'kill $(cat /tmp/xvfb.pid) 2>/dev/null || true' EXIT
+          sleep 2
+          export DISPLAY=:99
+          mkdir -p artifacts/visual
+          bash scripts/ci/capture_visual_suite.sh
+
+      - name: Verificar que ninguna captura este vacia o negra
+        run: |
+          python3 -m pip install --user pillow
+          python3 scripts/ci/verify_visual_captures.py artifacts/visual
+
+      - name: Subir capturas como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpg-lba-visual-captures
+          path: artifacts/visual
+          retention-days: 90
