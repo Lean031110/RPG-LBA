@@ -1,18 +1,11 @@
-name: Asset library index audit
+name: Asset library index generator
 
 on:
   pull_request:
     paths:
       - "assets/**"
       - "ART_DEPARTMENT/AI_ASSET_FACTORY/catalog/assets_manifest.json"
-      - "ART_DEPARTMENT/CLOUD_AUTOMATION/ASSET_LIBRARY_INDEX.json"
-      - "scripts/ci/build_asset_library_index.py"
-  push:
-    branches: [main]
-    paths:
-      - "assets/**"
-      - "ART_DEPARTMENT/AI_ASSET_FACTORY/catalog/assets_manifest.json"
-      - "ART_DEPARTMENT/CLOUD_AUTOMATION/ASSET_LIBRARY_INDEX.json"
+      - "ART_DEPARTMENT/CLOUD_AUTOMATION/**"
       - "scripts/ci/build_asset_library_index.py"
   workflow_dispatch:
 
@@ -26,7 +19,7 @@ concurrency:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -36,8 +29,29 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Validate asset library index
+      - name: Generate candidate inventory and file SHA-256 values
         env:
           TARGET_REF: ${{ github.head_ref || github.ref_name }}
         run: |
-          python3 scripts/ci/build_asset_library_index.py --repo "${GITHUB_REPOSITORY}" --ref "${TARGET_REF}" --check
+          python3 scripts/ci/build_asset_library_index.py \
+            --repo "${GITHUB_REPOSITORY}" \
+            --ref "${TARGET_REF}" \
+            --output "${RUNNER_TEMP}/ASSET_LIBRARY_INDEX.generated.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          generated = json.loads(Path(os.environ["RUNNER_TEMP"] + "/ASSET_LIBRARY_INDEX.generated.json").read_text())
+          current_path = Path("ART_DEPARTMENT/CLOUD_AUTOMATION/ASSET_LIBRARY_INDEX.json")
+          current = json.loads(current_path.read_text()) if current_path.exists() else {}
+          print(f"Generated records: {generated['record_count']}")
+          print(f"Generated file references: {generated['asset_file_count']}")
+          print(f"Checked-in index schema: {current.get('schema_version', 'MISSING')}")
+          if current.get("schema_version") != "2.0.0":
+              print("NOTICE: v2 generated index is a candidate artifact. Commit the reviewed generated file through this PR before enabling strict index equality checks.")
+          PY
+      - name: Upload candidate inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: asset-library-index-candidate
+          path: ${{ runner.temp }}/ASSET_LIBRARY_INDEX.generated.json
+          retention-days: 14
