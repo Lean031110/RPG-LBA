@@ -1,0 +1,272 @@
+{
+  "schema_version": "1.0.0",
+  "policy": "FREE_ONLY_NO_CARD_NO_TRIAL_CIRCUMVENTION; verify provider quotas and licenses at each use",
+  "providers": [
+    {
+      "id": "github_actions_public",
+      "name": "GitHub Actions public hosted runners",
+      "url": "https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job",
+      "role": "CPU automation, Python, Blender headless, GLB validation, renders/previews, tests, index builds",
+      "free_tier": "Standard public-repository runners free and unlimited; ubuntu-latest 4 vCPU, 16 GB RAM, 14 GB SSD at current docs",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "AVAILABLE",
+      "constraints": [
+        "No hosted GPU in standard runner",
+        "Keep jobs short and deterministic",
+        "Public repo is public; never put secrets/assets requiring confidentiality in it"
+      ]
+    },
+    {
+      "id": "blender",
+      "name": "Blender",
+      "url": "https://www.blender.org/",
+      "role": "Headless mesh cleanup, procedural generation, UV/material processing, GLB export and CPU rendering",
+      "free_tier": "Free and open source",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "AVAILABLE",
+      "constraints": [
+        "CI runner CPU only",
+        "Use -b / --background",
+        "Pin Blender version and export settings"
+      ]
+    },
+    {
+      "id": "poly_haven",
+      "name": "Poly Haven",
+      "url": "https://polyhaven.com/",
+      "api_docs": "https://api.polyhaven.com",
+      "role": "CC0 PBR textures, HDRIs and models; fetch metadata and downloads",
+      "free_tier": "CC0 assets free including commercial use",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "AVAILABLE",
+      "constraints": [
+        "Record item URL and file hash",
+        "Poly Haven API asks for a distinctive User-Agent and live API credit; asset remains CC0"
+      ]
+    },
+    {
+      "id": "ambientcg",
+      "name": "ambientCG",
+      "url": "https://ambientcg.com/",
+      "api_docs": "https://ambientCG.com/api/v3",
+      "role": "CC0 PBR materials, HDRIs and selected 3D assets",
+      "free_tier": "CC0",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "AVAILABLE",
+      "constraints": [
+        "Use API v3",
+        "Record exact asset id, version, hash and CC0 license"
+      ]
+    },
+    {
+      "id": "kenney",
+      "name": "Kenney",
+      "url": "https://kenney.nl/assets",
+      "role": "Stylized game props, UI, audio, models",
+      "free_tier": "CC0",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "AVAILABLE",
+      "constraints": [
+        "Verify pack-specific license/version and source file"
+      ]
+    },
+    {
+      "id": "quaternius",
+      "name": "Quaternius",
+      "url": "https://quaternius.com/",
+      "role": "Stylized low-poly characters, weapons, props and animation bundles",
+      "free_tier": "Many published packs CC0; check each pack",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "AVAILABLE",
+      "constraints": [
+        "Verify exact pack license and permitted use; log source link"
+      ]
+    },
+    {
+      "id": "kaykit",
+      "name": "KayKit",
+      "url": "https://kaylousberg.com/",
+      "role": "Stylized low-poly environment, characters and props",
+      "free_tier": "Check each package license; some packs CC0",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "REVIEW_LICENSE",
+      "constraints": [
+        "Do not assume every pack CC0"
+      ]
+    },
+    {
+      "id": "3d_valley",
+      "name": "3D Valley",
+      "url": "https://3dvalley.com/library",
+      "api_docs": "https://3dvalley.com/",
+      "role": "Search/download CC0 GLB models, rigged characters, animation, textures and audio",
+      "free_tier": "Advertises CC0 library and REST/MCP search",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "REVIEW_API_AND_LICENSE",
+      "constraints": [
+        "Verify each underlying source, individual license and stable download API before integration",
+        "Do not treat site aggregation as sufficient provenance; keep source-origin URL"
+      ]
+    },
+    {
+      "id": "huggingface_zero_gpu",
+      "name": "Hugging Face ZeroGPU",
+      "url": "https://huggingface.co/docs/hub/spaces-zerogpu",
+      "role": "Occasional AI 3D/image/texturing model inference via existing community Spaces",
+      "free_tier": "5 GPU minutes per day for free accounts; reset 24h after first GPU use",
+      "gpu": true,
+      "api_key_required": "optional for private/authenticated API usage; public Spaces can be accessed without one depending on Space",
+      "availability": "LIMITED_QUOTA",
+      "constraints": [
+        "Queue/demand-dependent; only short jobs",
+        "Use one existing public Space at a time; obey its own license",
+        "Track quota and stop cleanly on exhaustion",
+        "No account cycling"
+      ]
+    },
+    {
+      "id": "kaggle_notebooks",
+      "name": "Kaggle Notebooks",
+      "url": "https://www.kaggle.com/code",
+      "api_docs": "https://github.com/Kaggle/kaggle-api",
+      "role": "Occasional scheduled/batch experimentation with GPU models",
+      "free_tier": "GPU access subject to account quota, weekly cap and availability/queue; published quota can change",
+      "gpu": true,
+      "api_key_required": true,
+      "availability": "LIMITED_QUOTA",
+      "constraints": [
+        "No guaranteed job start or exact GPU SKU",
+        "Use only resumable tasks and persist outputs to GitHub/approved storage",
+        "Check current quota through account/API at execution time"
+      ]
+    },
+    {
+      "id": "google_colab",
+      "name": "Google Colab",
+      "url": "https://colab.research.google.com/",
+      "role": "Manual/resumable cloud notebook for GPU experimentation",
+      "free_tier": "Dynamic GPU availability and session limits; not guaranteed API worker or 24/7 service",
+      "gpu": true,
+      "api_key_required": false,
+      "availability": "MANUAL_FALLBACK",
+      "constraints": [
+        "No guaranteed always-on scheduling",
+        "No automated account cycling",
+        "Persist checkpoints and output to repo or external storage"
+      ]
+    },
+    {
+      "id": "janction_render",
+      "name": "JANCTION Render",
+      "url": "https://render.janction.jp/mcp",
+      "api_docs": "https://render.janction.jp/mcp",
+      "role": "Optional remote Blender rendering; not modeling or texturing generation",
+      "free_tier": "Current trial/preview credit and free preview quota are limited and subject to change; verify live terms",
+      "gpu": true,
+      "api_key_required": true,
+      "availability": "EXPERIMENTAL_REVIEW_REQUIRED",
+      "constraints": [
+        "No payment method or credit spend allowed in this pipeline",
+        "Do not rely on this provider for critical jobs",
+        "Inputs/results may be deleted quickly; copy approved outputs and hashes promptly"
+      ]
+    },
+    {
+      "id": "sheepit",
+      "name": "SheepIt Render Farm",
+      "url": "https://www.sheepit-renderfarm.com/",
+      "role": "Community Blender rendering only, not asset modeling or AI generation",
+      "free_tier": "Community distributed rendering; no confirmed unattended API for this pipeline",
+      "gpu": true,
+      "api_key_required": false,
+      "availability": "MANUAL_ONLY",
+      "constraints": [
+        "Manual setup and contribution model",
+        "Do not make automated dependencies until API/terms confirmed"
+      ]
+    },
+    {
+      "id": "firebase_firestore",
+      "name": "Firebase Spark / Cloud Firestore",
+      "url": "https://firebase.google.com/pricing",
+      "role": "Optional metadata/status dashboard only; GitHub manifest remains canonical",
+      "free_tier": "Spark plan includes Firestore no-cost quota (current published example 1 GiB, 50k reads/day, 20k writes/day, 20k deletes/day, 10 GiB egress/month)",
+      "gpu": false,
+      "api_key_required": true,
+      "availability": "OPTIONAL",
+      "constraints": [
+        "No Cloud Storage or Cloud Functions assumption on Spark; verify current plan matrix",
+        "Never store source GLB/texture blobs in Firestore",
+        "Use server-side Admin SDK only; secure Security Rules; avoid public write"
+      ]
+    },
+    {
+      "id": "cloudflare_r2",
+      "name": "Cloudflare R2",
+      "url": "https://developers.cloudflare.com/r2/pricing/",
+      "role": "Optional binary storage mirror if GitHub repo size becomes unsuitable",
+      "free_tier": "Monthly included tier currently advertises 10 GB-month storage, 1m Class A, 10m Class B, free egress",
+      "gpu": false,
+      "api_key_required": true,
+      "availability": "OPTIONAL_ACCOUNT_SETUP",
+      "constraints": [
+        "No need in MVP; external mirror must store file hash/version",
+        "Usage above free allocation can incur charges; avoid enabling paid overage",
+        "Keep canonical GitHub references and restore manifest"
+      ]
+    },
+    {
+      "id": "telegram_bot_api",
+      "name": "Telegram Bot API",
+      "url": "https://core.telegram.org/bots/api",
+      "role": "Notifications for new asset review requests, PRs, workflow failures and quota thresholds",
+      "free_tier": "Bot API HTTPS interface; no API subscription required",
+      "gpu": false,
+      "api_key_required": true,
+      "availability": "AVAILABLE",
+      "constraints": [
+        "Token from @BotFather is a secret",
+        "Get chat_id only after user starts bot or uses a controlled group",
+        "Do not send tokens/credentials in notifications"
+      ]
+    },
+    {
+      "id": "n8n_cloud",
+      "name": "n8n Cloud trial",
+      "url": "https://n8n.io/pricing/",
+      "role": "Optional workflow orchestrator, exportable/importable JSON only",
+      "free_tier": "No permanent free plan; standard trial is 14 days / 1000 executions",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "TEMPORARY_TRIAL_ONLY",
+      "constraints": [
+        "Never rotate trial accounts to evade expiry",
+        "Before expiration export workflows+credentials and backup encryption key separately",
+        "Cloud trial may not expose public API; use UI export or self-host CE"
+      ]
+    },
+    {
+      "id": "n8n_community",
+      "name": "n8n Community Edition self-hosted",
+      "url": "https://docs.n8n.io/hosting/",
+      "role": "Self-hosted orchestration when server regains internet; repo stores portable workflow JSON not runtime DB/credentials",
+      "free_tier": "Free under Sustainable Use License for personal/internal business; restrictions apply to hosted service and customer use",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "FUTURE_LOCAL_SERVER",
+      "constraints": [
+        "No external service/hosting for customers under standard SUL",
+        "Store N8N_ENCRYPTION_KEY separately in password manager/secret store",
+        "Back up .n8n and external DB; workflows-only export is not full backup"
+      ]
+    }
+  ]
+}
