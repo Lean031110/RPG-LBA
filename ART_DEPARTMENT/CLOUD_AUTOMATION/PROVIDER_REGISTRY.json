@@ -3,18 +3,40 @@
   "policy": "FREE_ONLY_NO_CARD_NO_TRIAL_CIRCUMVENTION; verify provider quotas and licenses at each use",
   "providers": [
     {
-      "id": "github_actions_public",
-      "name": "GitHub Actions public hosted runners",
-      "url": "https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job",
-      "role": "CPU automation, Python, Blender headless, GLB validation, renders/previews, tests, index builds",
-      "free_tier": "Standard public-repository runners free and unlimited; ubuntu-latest 4 vCPU, 16 GB RAM, 14 GB SSD at current docs",
+      "id": "3d_valley",
+      "name": "3D Valley — biblioteca CC0 y generación web/API de pago",
+      "url": "https://3dvalley.com/library",
+      "api_docs": "https://3dvalley.com/docs/api",
+      "role": "Buscar y descargar recursos de la biblioteca CC0; la generación por API es de pago por créditos. La interfaz web puede tener herramientas gratuitas limitadas, pero no es una API gratuita ni una dependencia automatizable.",
+      "free_tier": "Biblioteca/API library gratuita con clave: 1.000 solicitudes/hora y 10.000/día; límites sin clave menores. Cada herramienta de generación/edición por API consume créditos (1 crédito = USD 0.01). Los enlaces de descarga/preview de la biblioteca funcionan sin clave. La interfaz web y sus herramientas gratuitas, si aparecen habilitadas, se consideran uso manual sujeto a los límites vigentes.",
+      "gpu": true,
+      "api_key_required": "Optional for public descriptions/download links; required for authenticated library search and API tools",
+      "availability": "LIBRARY_API_AVAILABLE_GENERATION_API_PAID_WEB_UI_MANUAL_ONLY",
+      "constraints": [
+        "Automatización permitida: consulta de biblioteca y descarga de recursos CC0; guardar ID original, URL exacta de origen, autor, licencia, fecha y SHA-256.",
+        "No invocar generate_model, edit_model, generate_texture ni otras herramientas de generación/edición vía API bajo la política cero costes: la documentación actual dice que cada herramienta consume créditos.",
+        "max_credits=0 es una salvaguarda contra gasto, no una prueba de que la operación sea gratuita; no usarlo para clasificar como gratis una herramienta que cobra créditos.",
+        "La generación gratuita que pudiera ofrecer la interfaz web debe ser manual, con comprobación visual del coste/cuota antes de cada uso, no un job automático ni scraping.",
+        "La biblioteca se atribuye a fuentes de terceros: verificar la ficha individual, su identificador de origen y licencia exacta antes de integrar.",
+        "Guardar RateLimit headers y respetar 429; no reintentar en bucle."
+      ],
+      "openapi": "https://3dvalley.com/api/v1/openapi.json",
+      "mcp_endpoint": "https://3dvalley.com/mcp",
+      "api_key_url": "https://3dvalley.com/account/api"
+    },
+    {
+      "id": "ambientcg",
+      "name": "ambientCG",
+      "url": "https://ambientcg.com/",
+      "api_docs": "https://ambientCG.com/api/v3",
+      "role": "CC0 PBR materials, HDRIs and selected 3D assets",
+      "free_tier": "CC0",
       "gpu": false,
       "api_key_required": false,
       "availability": "AVAILABLE",
       "constraints": [
-        "No hosted GPU in standard runner",
-        "Keep jobs short and deterministic",
-        "Public repo is public; never put secrets/assets requiring confidentiality in it"
+        "Use API v3",
+        "Record exact asset id, version, hash and CC0 license"
       ]
     },
     {
@@ -33,127 +55,48 @@
       ]
     },
     {
-      "id": "poly_haven",
-      "name": "Poly Haven",
-      "url": "https://polyhaven.com/",
-      "api_docs": "https://api.polyhaven.com",
-      "role": "CC0 PBR textures, HDRIs and models; fetch metadata and downloads",
-      "free_tier": "CC0 assets free including commercial use",
+      "id": "cloudflare_r2",
+      "name": "Cloudflare R2",
+      "url": "https://developers.cloudflare.com/r2/pricing/",
+      "role": "Optional binary storage mirror if GitHub repo size becomes unsuitable",
+      "free_tier": "Monthly included tier currently advertises 10 GB-month storage, 1m Class A, 10m Class B, free egress",
       "gpu": false,
-      "api_key_required": false,
-      "availability": "AVAILABLE",
-      "constraints": [
-        "Record item URL and file hash",
-        "Poly Haven API asks for a distinctive User-Agent and live API credit; asset remains CC0"
-      ]
-    },
-    {
-      "id": "ambientcg",
-      "name": "ambientCG",
-      "url": "https://ambientcg.com/",
-      "api_docs": "https://ambientCG.com/api/v3",
-      "role": "CC0 PBR materials, HDRIs and selected 3D assets",
-      "free_tier": "CC0",
-      "gpu": false,
-      "api_key_required": false,
-      "availability": "AVAILABLE",
-      "constraints": [
-        "Use API v3",
-        "Record exact asset id, version, hash and CC0 license"
-      ]
-    },
-    {
-      "id": "kenney",
-      "name": "Kenney",
-      "url": "https://kenney.nl/assets",
-      "role": "Stylized game props, UI, audio, models",
-      "free_tier": "CC0",
-      "gpu": false,
-      "api_key_required": false,
-      "availability": "AVAILABLE",
-      "constraints": [
-        "Verify pack-specific license/version and source file"
-      ]
-    },
-    {
-      "id": "quaternius",
-      "name": "Quaternius",
-      "url": "https://quaternius.com/",
-      "role": "Stylized low-poly characters, weapons, props and animation bundles",
-      "free_tier": "Many published packs CC0; check each pack",
-      "gpu": false,
-      "api_key_required": false,
-      "availability": "AVAILABLE",
-      "constraints": [
-        "Verify exact pack license and permitted use; log source link"
-      ]
-    },
-    {
-      "id": "kaykit",
-      "name": "KayKit",
-      "url": "https://kaylousberg.com/",
-      "role": "Stylized low-poly environment, characters and props",
-      "free_tier": "Check each package license; some packs CC0",
-      "gpu": false,
-      "api_key_required": false,
-      "availability": "REVIEW_LICENSE",
-      "constraints": [
-        "Do not assume every pack CC0"
-      ]
-    },
-    {
-      "id": "3d_valley",
-      "name": "3D Valley",
-      "url": "https://3dvalley.com/library",
-      "api_docs": "https://3dvalley.com/docs/api",
-      "role": "Search/download CC0 GLB models, rigged characters, animation, textures and audio",
-      "free_tier": "CC0 library (models, textures, HDRIs, animation, audio); REST API free key currently states 1000 requests/hour and 10000/day for library. Some AI models have free daily runs (e.g. TRELLIS.2 Standard, FLUX.2 klein); others consume purchased credits.",
-      "gpu": true,
       "api_key_required": true,
-      "availability": "PRIORITY_CANDIDATE_WITH_STRICT_ZERO_COST_GUARD",
+      "availability": "OPTIONAL_ACCOUNT_SETUP",
       "constraints": [
-        "Use REST API v1; query GET /tools and GET /account before every AI generation batch.",
-        "Only dispatch a model when the currently returned price and max_credits are exactly zero for the requested run; otherwise skip and send a review notice.",
-        "Set max_credits=0, stable Idempotency-Key, publish=false, and persist job_id before polling GET /jobs/{id}.",
-        "API free key limits documented as 1000/hour and 10000/day for library endpoints; 2 concurrent jobs and a default daily spend cap are documented; monitor returned RateLimit headers and account limits.",
-        "Library assets are described as CC0, but still record each asset ID, creator/source_url, license and exact original source link in the project manifest.",
-        "Any API-backed picker/application displayed to users should show the required 3D Valley link/credit; an asset integrated into the game does not require credit according to its API docs.",
-        "Never buy credits, enable card billing, or let a generation exceed zero cost."
-      ],
-      "openapi": "https://3dvalley.com/api/v1/openapi.json",
-      "mcp_endpoint": "https://3dvalley.com/mcp",
-      "api_key_url": "https://3dvalley.com/account/api"
-    },
-    {
-      "id": "huggingface_zero_gpu",
-      "name": "Hugging Face ZeroGPU",
-      "url": "https://huggingface.co/docs/hub/spaces-zerogpu",
-      "role": "Occasional AI 3D/image/texturing model inference via existing community Spaces",
-      "free_tier": "5 GPU minutes per day for free accounts; reset 24h after first GPU use",
-      "gpu": true,
-      "api_key_required": "optional for private/authenticated API usage; public Spaces can be accessed without one depending on Space",
-      "availability": "LIMITED_QUOTA",
-      "constraints": [
-        "Queue/demand-dependent; only short jobs",
-        "Use one existing public Space at a time; obey its own license",
-        "Track quota and stop cleanly on exhaustion",
-        "No account cycling"
+        "No need in MVP; external mirror must store file hash/version",
+        "Usage above free allocation can incur charges; avoid enabling paid overage",
+        "Keep canonical GitHub references and restore manifest"
       ]
     },
     {
-      "id": "kaggle_notebooks",
-      "name": "Kaggle Notebooks",
-      "url": "https://www.kaggle.com/code",
-      "api_docs": "https://github.com/Kaggle/kaggle-api",
-      "role": "Occasional scheduled/batch experimentation with GPU models",
-      "free_tier": "GPU access subject to account quota, weekly cap and availability/queue; published quota can change",
-      "gpu": true,
+      "id": "firebase_firestore",
+      "name": "Firebase Spark / Cloud Firestore",
+      "url": "https://firebase.google.com/pricing",
+      "role": "Optional metadata/status dashboard only; GitHub manifest remains canonical",
+      "free_tier": "Spark plan includes Firestore no-cost quota (current published example 1 GiB, 50k reads/day, 20k writes/day, 20k deletes/day, 10 GiB egress/month)",
+      "gpu": false,
       "api_key_required": true,
-      "availability": "LIMITED_QUOTA",
+      "availability": "OPTIONAL",
       "constraints": [
-        "No guaranteed job start or exact GPU SKU",
-        "Use only resumable tasks and persist outputs to GitHub/approved storage",
-        "Check current quota through account/API at execution time"
+        "No Cloud Storage or Cloud Functions assumption on Spark; verify current plan matrix",
+        "Never store source GLB/texture blobs in Firestore",
+        "Use server-side Admin SDK only; secure Security Rules; avoid public write"
+      ]
+    },
+    {
+      "id": "github_actions_public",
+      "name": "GitHub Actions public hosted runners",
+      "url": "https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job",
+      "role": "CPU automation, Python, Blender headless, GLB validation, renders/previews, tests, index builds",
+      "free_tier": "Standard public-repository runners free and unlimited; ubuntu-latest 4 vCPU, 16 GB RAM, 14 GB SSD at current docs",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "AVAILABLE",
+      "constraints": [
+        "No hosted GPU in standard runner",
+        "Keep jobs short and deterministic",
+        "Public repo is public; never put secrets/assets requiring confidentiality in it"
       ]
     },
     {
@@ -169,6 +112,22 @@
         "No guaranteed always-on scheduling",
         "No automated account cycling",
         "Persist checkpoints and output to repo or external storage"
+      ]
+    },
+    {
+      "id": "huggingface_zero_gpu",
+      "name": "Hugging Face ZeroGPU",
+      "url": "https://huggingface.co/docs/hub/spaces-zerogpu",
+      "role": "Occasional AI 3D/image/texturing model inference via existing community Spaces",
+      "free_tier": "5 GPU minutes per day for free accounts; reset 24h after first GPU use",
+      "gpu": true,
+      "api_key_required": "optional for private/authenticated API usage; public Spaces can be accessed without one depending on Space",
+      "availability": "LIMITED_QUOTA",
+      "constraints": [
+        "Queue/demand-dependent; only short jobs",
+        "Use one existing public Space at a time; obey its own license",
+        "Track quota and stop cleanly on exhaustion",
+        "No account cycling"
       ]
     },
     {
@@ -188,62 +147,62 @@
       ]
     },
     {
-      "id": "sheepit",
-      "name": "SheepIt Render Farm",
-      "url": "https://www.sheepit-renderfarm.com/",
-      "role": "Community Blender rendering only, not asset modeling or AI generation",
-      "free_tier": "Community distributed rendering; no confirmed unattended API for this pipeline",
+      "id": "kaggle_notebooks",
+      "name": "Kaggle Notebooks",
+      "url": "https://www.kaggle.com/code",
+      "api_docs": "https://github.com/Kaggle/kaggle-api",
+      "role": "Occasional scheduled/batch experimentation with GPU models",
+      "free_tier": "GPU access subject to account quota, weekly cap and availability/queue; published quota can change",
       "gpu": true,
+      "api_key_required": true,
+      "availability": "LIMITED_QUOTA",
+      "constraints": [
+        "No guaranteed job start or exact GPU SKU",
+        "Use only resumable tasks and persist outputs to GitHub/approved storage",
+        "Check current quota through account/API at execution time"
+      ]
+    },
+    {
+      "id": "kaykit",
+      "name": "KayKit",
+      "url": "https://kaylousberg.com/",
+      "role": "Stylized low-poly environment, characters and props",
+      "free_tier": "Check each package license; some packs CC0",
+      "gpu": false,
       "api_key_required": false,
-      "availability": "MANUAL_ONLY",
+      "availability": "REVIEW_LICENSE",
       "constraints": [
-        "Manual setup and contribution model",
-        "Do not make automated dependencies until API/terms confirmed"
+        "Do not assume every pack CC0"
       ]
     },
     {
-      "id": "firebase_firestore",
-      "name": "Firebase Spark / Cloud Firestore",
-      "url": "https://firebase.google.com/pricing",
-      "role": "Optional metadata/status dashboard only; GitHub manifest remains canonical",
-      "free_tier": "Spark plan includes Firestore no-cost quota (current published example 1 GiB, 50k reads/day, 20k writes/day, 20k deletes/day, 10 GiB egress/month)",
+      "id": "kenney",
+      "name": "Kenney",
+      "url": "https://kenney.nl/assets",
+      "role": "Stylized game props, UI, audio, models",
+      "free_tier": "CC0",
       "gpu": false,
-      "api_key_required": true,
-      "availability": "OPTIONAL",
-      "constraints": [
-        "No Cloud Storage or Cloud Functions assumption on Spark; verify current plan matrix",
-        "Never store source GLB/texture blobs in Firestore",
-        "Use server-side Admin SDK only; secure Security Rules; avoid public write"
-      ]
-    },
-    {
-      "id": "cloudflare_r2",
-      "name": "Cloudflare R2",
-      "url": "https://developers.cloudflare.com/r2/pricing/",
-      "role": "Optional binary storage mirror if GitHub repo size becomes unsuitable",
-      "free_tier": "Monthly included tier currently advertises 10 GB-month storage, 1m Class A, 10m Class B, free egress",
-      "gpu": false,
-      "api_key_required": true,
-      "availability": "OPTIONAL_ACCOUNT_SETUP",
-      "constraints": [
-        "No need in MVP; external mirror must store file hash/version",
-        "Usage above free allocation can incur charges; avoid enabling paid overage",
-        "Keep canonical GitHub references and restore manifest"
-      ]
-    },
-    {
-      "id": "telegram_bot_api",
-      "name": "Telegram Bot API",
-      "url": "https://core.telegram.org/bots/api",
-      "role": "Notifications for new asset review requests, PRs, workflow failures and quota thresholds",
-      "free_tier": "Bot API HTTPS interface; no API subscription required",
-      "gpu": false,
-      "api_key_required": true,
+      "api_key_required": false,
       "availability": "AVAILABLE",
       "constraints": [
-        "Token from @BotFather is a secret",
-        "Get chat_id only after user starts bot or uses a controlled group",
-        "Do not send tokens/credentials in notifications"
+        "Verify pack-specific license/version and source file"
+      ]
+    },
+    {
+      "id": "meshy_free_web",
+      "name": "Meshy Free — generación 3D manual",
+      "url": "https://www.meshy.ai/",
+      "api_docs": "https://help.meshy.ai/en/articles/15696428-what-is-included-on-the-free-plan",
+      "role": "Generación 3D ocasional desde la aplicación web; no automatizar con API en plan gratuito.",
+      "free_tier": "100 créditos/mes; 10 descargas/mes únicamente para modelos Meshy 6 Lite sin texturas. Créditos y descargas reinician el día 1 a las 00:00 UTC.",
+      "gpu": true,
+      "api_key_required": false,
+      "availability": "MANUAL_ONLY_CC_BY_4_0",
+      "constraints": [
+        "El plan Free no tiene API: solo aplicación web.",
+        "Los modelos Free se publican bajo CC BY 4.0 y pueden usarse comercialmente con atribución obligatoria a Meshy.",
+        "Solo se pueden descargar 10 modelos Meshy 6 Lite sin texturizar al mes; modelos Meshy 6/7, T2.5, texturas y 3D Agent requieren plan de pago.",
+        "No automatizar UI, scraping ni creación de cuentas. El propietario debe generar/descargar manualmente, registrar atribución y someter el resultado a QA."
       ]
     },
     {
@@ -275,6 +234,104 @@
         "Store N8N_ENCRYPTION_KEY separately in password manager/secret store",
         "Back up .n8n and external DB; workflows-only export is not full backup"
       ]
+    },
+    {
+      "id": "poly_haven",
+      "name": "Poly Haven",
+      "url": "https://polyhaven.com/",
+      "api_docs": "https://api.polyhaven.com",
+      "role": "CC0 PBR textures, HDRIs and models; fetch metadata and downloads",
+      "free_tier": "CC0 assets free including commercial use",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "AVAILABLE",
+      "constraints": [
+        "Record item URL and file hash",
+        "Poly Haven API asks for a distinctive User-Agent and live API credit; asset remains CC0"
+      ]
+    },
+    {
+      "id": "quaternius",
+      "name": "Quaternius",
+      "url": "https://quaternius.com/",
+      "role": "Stylized low-poly characters, weapons, props and animation bundles",
+      "free_tier": "Many published packs CC0; check each pack",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "AVAILABLE",
+      "constraints": [
+        "Verify exact pack license and permitted use; log source link"
+      ]
+    },
+    {
+      "id": "sheepit",
+      "name": "SheepIt Render Farm",
+      "url": "https://www.sheepit-renderfarm.com/",
+      "role": "Community Blender rendering only, not asset modeling or AI generation",
+      "free_tier": "Community distributed rendering; no confirmed unattended API for this pipeline",
+      "gpu": true,
+      "api_key_required": false,
+      "availability": "MANUAL_ONLY",
+      "constraints": [
+        "Manual setup and contribution model",
+        "Do not make automated dependencies until API/terms confirmed"
+      ]
+    },
+    {
+      "id": "smithsonian_open_access",
+      "name": "Smithsonian Open Access",
+      "url": "https://www.si.edu/openaccess",
+      "api_docs": "https://www.si.edu/openaccess/devtools",
+      "api_key_url": "https://api.data.gov/signup/",
+      "role": "Referencias históricas, objetos culturales y modelos/medios 3D de objetos de colección expresamente marcados CC0.",
+      "free_tier": "API pública con clave gratuita de api.data.gov. No todos los registros tienen modelos 3D ni medios descargables.",
+      "gpu": false,
+      "api_key_required": true,
+      "availability": "AVAILABLE_CC0_FILTER_REQUIRED",
+      "constraints": [
+        "La API devuelve metadatos de colecciones; usar contenido multimedia solo cuando el propio registro identifica el objeto como Open Access/CC0.",
+        "Algunos registros pueden exponer metadatos pero no archivo de medios por restricciones de derechos.",
+        "Conservar el identificador del objeto, URL de registro, URL del medio, creador y licencia exacta.",
+        "Usar como referencia o recurso puntual; revisar si el objeto encaja con el canon ficticio cubano de 1953 y no introducir objetos fuera de época sin justificación."
+      ]
+    },
+    {
+      "id": "telegram_bot_api",
+      "name": "Telegram Bot API",
+      "url": "https://core.telegram.org/bots/api",
+      "role": "Notifications for new asset review requests, PRs, workflow failures and quota thresholds",
+      "free_tier": "Bot API HTTPS interface; no API subscription required",
+      "gpu": false,
+      "api_key_required": true,
+      "availability": "AVAILABLE",
+      "constraints": [
+        "Token from @BotFather is a secret",
+        "Get chat_id only after user starts bot or uses a controlled group",
+        "Do not send tokens/credentials in notifications"
+      ]
+    },
+    {
+      "id": "tripo_free_web",
+      "name": "Tripo — plan gratuito (excluido por defecto hasta revisión legal)",
+      "url": "https://www.tripo3d.ai/",
+      "api_docs": "https://www.tripo3d.ai/product-doc/getting-started/pricing-credits",
+      "role": "Generación 3D web exploratoria; no es proveedor aprobado para integrar automáticamente assets de producción.",
+      "free_tier": "La documentación de precios consultada indica 200 créditos/mes. Los resultados del plan Free atribuyen la propiedad intelectual a Tripo y requieren atribución para el uso comercial.",
+      "gpu": true,
+      "api_key_required": false,
+      "availability": "MANUAL_ONLY_LEGAL_REVIEW_REQUIRED",
+      "constraints": [
+        "No enviar resultados al juego hasta que se revise el contrato/licencia completa vigente y se confirme por escrito que cubre la distribución del juego.",
+        "El plan Free no debe tratarse como propiedad exclusiva del proyecto: la ficha oficial indica que la IP del output pertenece a Tripo.",
+        "No usar API ni automatizar exportaciones sin confirmar términos y coste exactos.",
+        "No es proveedor base; preferir recursos CC0 o generación original con derechos claros."
+      ]
     }
+  ],
+  "last_verified_utc": "2026-11-15",
+  "notes": [
+    "Actualización 2026-11-15: 3D Valley API separa biblioteca gratuita de herramientas que consumen créditos; no usar generación por API como servicio gratis.",
+    "Meshy Free es manual-only (sin API), 100 créditos/mes, 10 descargas Meshy 6 Lite sin texturas y licencia CC BY 4.0 con atribución.",
+    "Tripo Free no está aprobado como proveedor de producción por defecto: sus términos de salida requieren revisión de la titularidad/licencia antes de integración."
   ]
 }
