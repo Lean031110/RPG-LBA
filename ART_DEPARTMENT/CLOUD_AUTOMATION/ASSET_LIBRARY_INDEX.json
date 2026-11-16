@@ -2248,7 +2248,7 @@
     }
   ],
   "legacy_index_path": "ART_DEPARTMENT/CLOUD_AUTOMATION/LEGACY_ASSET_INDEX.json",
-  "legacy_index_url": "https://github.com/Lean031110/RPG-LBA/blob/agent/asset-cloud-automation/ART_DEPARTMENT/CLOUD_AUTOMATION/LEGACY_ASSET_INDEX.json",
+  "legacy_index_url": "https://github.com/Lean031110/RPG-LBA/blob/main/ART_DEPARTMENT/CLOUD_AUTOMATION/LEGACY_ASSET_INDEX.json",
   "manifest_asset_count": 93,
   "legacy_asset_file_count": 64,
   "total_supported_file_count": 262,
