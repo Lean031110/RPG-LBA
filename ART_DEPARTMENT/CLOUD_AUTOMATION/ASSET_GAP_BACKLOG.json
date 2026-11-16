@@ -1,0 +1,559 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at_utc": "2026-11-15T23:58:00Z",
+  "canonical_source": "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md; docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md; README.md; ART_DEPARTMENT/AI_ASSET_FACTORY/catalog/assets_manifest.json",
+  "status_legend": {
+    "MISSING": "No se ha encontrado un recurso final equivalente en el árbol inspeccionado.",
+    "PLACEHOLDER": "Existe un recurso temporal o genérico que no satisface el arte final.",
+    "NEEDS_IMPROVEMENT": "Existe material básico, pero necesita revisión, estilo, rig, animación, LOD, texturas o integración.",
+    "TECH_VALIDATED_NOT_VISUALLY_APPROVED": "Pasa validaciones automáticas declaradas, pero falta revisión visual humana.",
+    "NOT_TESTED": "No se ha verificado en Godot/Android/escena."
+  },
+  "rules": [
+    "Los IDs de necesidades usan prefijo GAP_ y no se reutilizan como asset_id de recursos producidos.",
+    "No cambiar estos estados sin evidencia: archivo real, validación, preview, revisión humana y/o prueba de integración.",
+    "Para los jefes y NPCs, los nombres se extraen de la biblia narrativa, no se inventan.",
+    "No integrar un asset descargado sin licencia, autor, URL de fuente y hash SHA-256.",
+    "Cada recurso creado obtiene un asset_id permanente y su propio registro completo en assets_manifest.json."
+  ],
+  "items": [
+    {
+      "gap_id": "GAP_CHAR_MACHETERO_SIERRA",
+      "tipo": "Personaje jugador",
+      "nombre": "Machetero de la Sierra",
+      "ruta_existente": "assets/characters/player/3DGodotRobot.glb",
+      "estado": "PLACEHOLDER",
+      "prioridad": "P0",
+      "descripcion": "Crear personaje original humano completo, silueta campesina/guerrera del canon, rig humanoide, materiales, set de animaciones y sockets de arma/equipo. El robot actual es solo placeholder.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_CHAR_BRUJA_MANIGUA",
+      "tipo": "Personaje jugador",
+      "nombre": "Bruja de la Manigua",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Modelo original humanoide, rig común, vestuario y accesorios botánicos; set de combate/magia y VFX de raíces.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_CHAR_SEPULTURERO_GUANABACOA",
+      "tipo": "Personaje jugador",
+      "nombre": "Sepulturero de Guanabacoa",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Modelo original humanoide, silueta de invocador, herramientas rituales ficticias, rig común y animaciones.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_CHAR_TIRADOR_MALECON",
+      "tipo": "Personaje jugador",
+      "nombre": "Tirador del Malecón",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Modelo original humanoide, arma a distancia compatible con sockets y animaciones de disparo/recarga.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_CHAR_CIMARRON_SOMBRIO",
+      "tipo": "Personaje jugador",
+      "nombre": "Cimarrón Sombrío",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Modelo original humanoide, silueta de duelista ágil, dos sockets de armas y animaciones de evasión/ataque.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_CHAR_BARDO_SOLAR",
+      "tipo": "Personaje jugador",
+      "nombre": "Bardo del Solar",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Modelo original humanoide, instrumento original y animaciones de apoyo rítmico.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_ENEMY_GUAJIRO_SIN_ROSTRO",
+      "tipo": "Jefe principal",
+      "nombre": "El Guajiro sin Rostro",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Jefe del Acto I; diseñar modelo/rig, estados de liberación, telegráficos y fases. Basarse en biblia narrativa.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_ENEMY_DAMA_MALECON",
+      "tipo": "Jefe principal",
+      "nombre": "La Dama del Malecón",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Jefa del Acto II; apariencia espectral marina, tres faroles/boya como elementos de encuentro, fases y VFX.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_ENEMY_MAYORAL_HIERRO",
+      "tipo": "Jefe principal",
+      "nombre": "El Mayoral de Hierro",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Jefe del Acto III; coloso de engranajes, caña, hierro y huesos de locomotora; módulos animables y arena dinámica.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_ENEMY_VENADO_MIL_OJOS",
+      "tipo": "Jefe principal",
+      "nombre": "El Venado de los Mil Ojos",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Jefe del Acto IV; guardián corrompido, ojos legibles, rastreo/emboscada y fase de luz.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_ENEMY_AURELIO_VARELA",
+      "tipo": "Jefe principal",
+      "nombre": "Aurelio Varela",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Jefe humano del Acto V con tres fases; distinguir vestuario/armas/estados, conservar identidad del NPC aliado público antes del giro.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_ENEMY_REY_CENIZA",
+      "tipo": "Jefe final",
+      "nombre": "El Rey de la Ceniza, Señor del Recuerdo Vacío",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Jefe final del Acto VI con cuatro fases; corona fragmentada, máscara de carbón e interior estelar apagado; no resolver su continuidad de expansión.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_ENEMY_SOMBRA_PORTAL",
+      "tipo": "Enemigo",
+      "nombre": "Sombra de Portal",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Existe lógica de enemigo en gameplay; falta un modelo final con silueta alargada, materiales oscuros y animaciones de emboscada.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_ENEMY_PERRO_CENIZA",
+      "tipo": "Enemigo",
+      "nombre": "Perro de ceniza",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Existe lógica de enemigo; falta modelo animal original con locomoción, rodeo, aullido y muerte.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_ENEMY_GUARAPO_NEGRO",
+      "tipo": "Enemigo",
+      "nombre": "Guarapo negro",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Existe lógica de enemigo; falta criatura viscosa de caña/resina, deformación/efectos y animaciones de trampa.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_ENEMY_ROSTER_5_REGIONS",
+      "tipo": "Monstruario regional",
+      "nombre": "Criaturas regionales adicionales",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P2",
+      "descripcion": "Ampliar con especies del monstruario canónico: Ahogados del Malecón, Murciélagos de campana, Jinetes sin sombra, Monjas del eco, jíbaros espectrales y guardianes de piedra. Priorizar por región/encuentro; no generar duplicados.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_NPC_CHEO",
+      "tipo": "NPC principal",
+      "nombre": "Cheo",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P1",
+      "descripcion": "NPC humano, retrato/expresiones, rig y animaciones sociales; canon en biblia/narrativa.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_NPC_MAELA",
+      "tipo": "NPC principal",
+      "nombre": "Maela",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P1",
+      "descripcion": "NPC humano, retrato/expresiones, rig y animaciones sociales; preservar cascabel como objeto clave.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_NPC_INES",
+      "tipo": "NPC principal",
+      "nombre": "Inés",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P1",
+      "descripcion": "NPC humana, rol médico, rig y animaciones sociales.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_NPC_AURELIO",
+      "tipo": "NPC principal",
+      "nombre": "Aurelio Varela (forma de aliado)",
+      "ruta_existente": null,
+      "estado": "NEEDS_IMPROVEMENT",
+      "prioridad": "P1",
+      "descripcion": "El mismo personaje sirve como aliado y jefe; diseñar una base de modelo con variantes de atuendo/armadura, no duplicar identidad.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_WEAPON_MACHETE",
+      "tipo": "Arma de clase",
+      "nombre": "Machete cubano ficticio de campaña",
+      "ruta_existente": null,
+      "estado": "NEEDS_IMPROVEMENT",
+      "prioridad": "P1",
+      "descripcion": "Existen FBX genéricos axe/sword/sword_big; falta un machete original canon, variantes de calidad y socket/animación de agarre.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_WEAPON_CLASS_SET",
+      "tipo": "Armas de seis clases",
+      "nombre": "Familia de armas original",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P2",
+      "descripcion": "Crear un set completo por clase alineado al documento de clases, con sockets, escalas, materiales y nivel de detalle móvil.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_ARMOR_CLASS_SET",
+      "tipo": "Armaduras",
+      "nombre": "Conjuntos por clase y progresión",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P1",
+      "descripcion": "Crear siluetas de equipo por nivel/progresión; slots, variantes por material, sin reemplazar IDs de gameplay.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_ANIM_HUMANOID_BASE",
+      "tipo": "Animaciones",
+      "nombre": "Rig y animaciones humanas reutilizables",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Rig humanoide normalizado y clips idle/walk/run/turn/jump/attack/heavy/dodge/hit/block/death/interact; verificar retargeting en Godot.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_ANIM_CREATURE_BASE",
+      "tipo": "Animaciones",
+      "nombre": "Rig y animaciones de criaturas",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P0",
+      "descripcion": "Rigs por arquetipo (cuadrúpedo, alado, espectral, masa amorfa, coloso) con clips base; medir deformación y rendimiento.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_NPC_POPULATION",
+      "tipo": "NPCs de mundo",
+      "nombre": "Habitantes y oficios por región",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P2",
+      "descripcion": "Crear base modular de habitantes de época ficticia 1953 con diversidad de edad/vestuario corporal respetuosa, profesiones y variantes.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_REGION_ENVIRONMENTS",
+      "tipo": "Entornos",
+      "nombre": "Mapas/biomas de las siete regiones",
+      "ruta_existente": null,
+      "estado": "NEEDS_IMPROVEMENT",
+      "prioridad": "P2",
+      "descripcion": "Hay primera biblioteca de arquitectura, vegetación, rocas y materiales; faltan kit sets específicos de La Habana de las Campanas, Valdeluz, Mogotes, Central, Sierra, Ciénaga y Morro Negro, además de integración en escenas.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_DUNGEON_KITS",
+      "tipo": "Mazmorras",
+      "nombre": "Kits modulares de las tres mazmorras",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P2",
+      "descripcion": "Obtener los nombres/definiciones exactos de las tres mazmorras del GDD vigente; no asumir que las tres coinciden con los tres escenarios narrativos citados.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_BOSS_ARENAS",
+      "tipo": "Arenas de jefe",
+      "nombre": "Seis arenas principales",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P2",
+      "descripcion": "Arenas con módulos, elementos interactivos, telegráficos, navegación y perfil móvil, según mecánicas de cada jefe.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_VFX",
+      "tipo": "Efectos visuales",
+      "nombre": "VFX de habilidades y criaturas",
+      "ruta_existente": null,
+      "estado": "NEEDS_IMPROVEMENT",
+      "prioridad": "P2",
+      "descripcion": "Existe primer VFX de combate; expandir catálogo por habilidades, estados, impactos, ceniza, raíces, vapor, agua y jefes; mantener lectura móvil.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    },
+    {
+      "gap_id": "GAP_AUDIO_VISUAL",
+      "tipo": "Presentación audiovisual",
+      "nombre": "Audio y feedback coordinado",
+      "ruta_existente": null,
+      "estado": "MISSING",
+      "prioridad": "P2",
+      "descripcion": "Música/ambientes/foley/ataques originales y licenciados; no copiar grabaciones ni temas protegidos.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md",
+        "README.md"
+      ],
+      "requiere_revision_visual": true,
+      "requiere_prueba_godot": true,
+      "requiere_prueba_android": true
+    }
+  ],
+  "summary": {
+    "current_factory_manifest_assets": 93,
+    "environment_models_glb_in_factory": 62,
+    "texture_sets_in_first_batch": 21,
+    "godot_material_definitions": 10,
+    "confirmed_final_player_class_models": 0,
+    "current_player_model_is_placeholder": true,
+    "confirmed_production_enemy_models": 0,
+    "confirmed_boss_models": 0,
+    "confirmed_npc_models": 0
+  }
+}
