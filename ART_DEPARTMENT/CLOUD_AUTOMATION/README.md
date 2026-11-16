@@ -270,3 +270,20 @@ Report PASS / FAIL / SKIPPED / NOT TESTED only with evidence.
 **n8n:** no usar el Source Control/Environments integrado como solución gratuita: la guía oficial lo limita a Business y Enterprise. El Cloud Trial tampoco tiene API pública. El camino gratuito/portable es versionar workflows JSON sanitizados en GitHub, exportar explícitamente tablas/datos por separado y guardar credenciales/clave de cifrado/DB en backup privado cifrado. Referencias: https://docs.n8n.io/administer/use-source-control-and-environments/tutorial-create-environments-with-source-control/ y https://support.n8n.io/article/can-i-have-api-access-while-i-am-on-a-trial
 
 No se considerará conectada una integración hasta que haya prueba real. La documentación de proveedores no sustituye la configuración de secrets ni las pruebas de llamada.
+
+
+## 15. First GPU generation experiment — TripoSR on Kaggle
+
+The preferred first automated GPU experiment is the open-source **TripoSR** model (not the Tripo AI website). Its upstream repository states that code and pretrained weights are MIT-licensed and that a single image requires approximately 6 GB VRAM: https://github.com/VAST-AI-Research/TripoSR
+
+Kaggle's official CLI supports remote notebook submission with `kaggle kernels push -p <FOLDER_PATH>` and accelerator selection such as `--accelerator NvidiaTeslaT4`: https://github.com/Kaggle/kaggle-cli/blob/main/docs/kernels.md
+
+Implementation constraints:
+- A GitHub Actions job dispatches a versioned, private Kaggle kernel only when a live quota/accelerator check indicates it can run.
+- The Kaggle notebook downloads a pinned TripoSR revision and pinned weights; it processes one bounded batch of original/licensed images and writes compact checkpoints.
+- The result is uploaded back through a controlled artifact handoff; GitHub Actions then runs Blender headless for mesh cleanup/decimation/scale/pivot/export GLB, validates SHA-256 and creates a candidate PR.
+- The job must be idempotent and resumable. Never rerun the same expensive generation if a completed job ID/checkpoint exists.
+- Quota unavailable => `DEFERRED_QUOTA`, not failure loops. Never use multiple accounts or paid accelerators.
+- TripoSR is for rough single-view reconstruction of static objects; it does not replace character modeling, rigging, retargeting, animation, art direction or human review.
+
+Stable Fast 3D is an optional alternative only after confirming the Community License commercial-revenue threshold (USD 1M/year) and GPU compatibility: https://huggingface.co/stabilityai/stable-fast-3d
