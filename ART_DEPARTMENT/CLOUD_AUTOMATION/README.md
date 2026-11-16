@@ -255,3 +255,18 @@ An asset batch is not complete until:
 - PR is linked and no changes were pushed directly to main.
 
 Report PASS / FAIL / SKIPPED / NOT TESTED only with evidence. 
+
+
+## 14. Correcciones de proveedores verificadas (15 November 2026)
+
+**3D Valley:** automatizar únicamente búsqueda/descarga de recursos de su biblioteca CC0. La API oficial aclara que cada herramienta API (generar, editar, texturizar, etc.) consume créditos; 1 crédito equivale a USD 0.01. `max_credits=0` evita gasto, pero no convierte una operación de pago en gratuita. No automatizar generación por API con presupuesto cero. La interfaz web puede ofrecer operaciones gratuitas limitadas, pero se trata como uso manual, variable y no garantizado. Referencia: https://3dvalley.com/docs/api
+
+**Meshy Free:** manual-only, 100 créditos/mes y hasta 10 descargas por mes de modelos Meshy 6 Lite sin textura. No ofrece API en el plan gratuito. Los outputs Free usan CC BY 4.0, permiten uso comercial con atribución a Meshy. No presupuestar modelos texturizados como descarga gratuita. Referencia: https://help.meshy.ai/en/articles/15696428-what-is-included-on-the-free-plan
+
+**Smithsonian Open Access:** fuente opcional para referencias y objetos culturales; la API requiere una clave gratuita de api.data.gov. Solo descargar medios cuando el registro individual esté marcado CC0; algunos elementos ofrecen metadatos sin archivo descargable. Referencias: https://www.si.edu/openaccess/devtools y https://www.si.edu/openaccess/faq
+
+**Tripo Free:** no aprobado por defecto como proveedor de producción. Aunque el plan publica créditos gratuitos, la documentación consultada indica que la IP del output pertenece a Tripo y el uso comercial gratuito requiere atribución. No integrar resultados hasta revisar términos completos y aprobar la procedencia/licencia en el manifiesto.
+
+**n8n:** no usar el Source Control/Environments integrado como solución gratuita: la guía oficial lo limita a Business y Enterprise. El Cloud Trial tampoco tiene API pública. El camino gratuito/portable es versionar workflows JSON sanitizados en GitHub, exportar explícitamente tablas/datos por separado y guardar credenciales/clave de cifrado/DB en backup privado cifrado. Referencias: https://docs.n8n.io/administer/use-source-control-and-environments/tutorial-create-environments-with-source-control/ y https://support.n8n.io/article/can-i-have-api-access-while-i-am-on-a-trial
+
+No se considerará conectada una integración hasta que haya prueba real. La documentación de proveedores no sustituye la configuración de secrets ni las pruebas de llamada.
