@@ -152,14 +152,17 @@
       "url": "https://www.kaggle.com/code",
       "api_docs": "https://github.com/Kaggle/kaggle-api",
       "role": "Occasional scheduled/batch experimentation with GPU models",
-      "free_tier": "GPU access subject to account quota, weekly cap and availability/queue; published quota can change",
+      "free_tier": "GPU notebooks can be submitted and polled via Kaggle CLI/API; free GPU quota and accelerator availability are account-, demand- and policy-dependent. Do not assume a guaranteed weekly allowance or a fixed GPU model. Current CLI supports accelerator selection (e.g. NvidiaTeslaT4) where the user's account is eligible.",
       "gpu": true,
       "api_key_required": true,
       "availability": "LIMITED_QUOTA",
       "constraints": [
-        "No guaranteed job start or exact GPU SKU",
-        "Use only resumable tasks and persist outputs to GitHub/approved storage",
-        "Check current quota through account/API at execution time"
+        "Use the official Kaggle CLI `kaggle kernels push -p <folder>` with a checked-in kernel-metadata.json; store KAGGLE_USERNAME and KAGGLE_KEY only in GitHub Actions Secrets.",
+        "Use a private notebook unless the owner explicitly approves public release; enable Internet only when needed and ensure no private credentials are uploaded as notebook input/output.",
+        "Check accelerator eligibility/quota before dispatch; record the requested accelerator, actual accelerator, kernel version, start/end time, and outcome.",
+        "Tasks must be checkpointable and idempotent; store only final outputs and compact checkpoint state, not large model weights in Git.",
+        "Do not rely on exact reset time or a guaranteed GPU queue; handle unavailable quota with DEFERRED_QUOTA and resume later.",
+        "No account rotation, no quota evasion and no paid accelerators."
       ]
     },
     {
@@ -296,6 +299,23 @@
       ]
     },
     {
+      "id": "stable_fast_3d_model",
+      "name": "Stable Fast 3D — Stability AI single-image reconstruction",
+      "url": "https://github.com/Stability-AI/stable-fast-3d",
+      "api_docs": "https://huggingface.co/stabilityai/stable-fast-3d",
+      "role": "Alternative image-to-textured-GLB reconstruction experiment for single static objects.",
+      "free_tier": "Model weights are under the Stability AI Community License: commercial use is free only for individuals/organizations with annual revenue no greater than USD 1,000,000; above that requires an Enterprise license. Requires checking the current license before use.",
+      "gpu": true,
+      "api_key_required": "Hugging Face access may be required for model weights; no paid hosted API assumed",
+      "availability": "EXPERIMENTAL_LEGAL_REVIEW_AND_GPU_QUOTA",
+      "constraints": [
+        "Confirm and document that project/owner commercial revenue is within the Community License threshold before commercial distribution; otherwise do not use.",
+        "Kaggle GPU runtime and memory compatibility must be benchmarked; do not assume support.",
+        "Treat as optional alternative to TripoSR, not a required pipeline dependency.",
+        "Input image rights, source revision, weight revision, output hash and license must be recorded."
+      ]
+    },
+    {
       "id": "telegram_bot_api",
       "name": "Telegram Bot API",
       "url": "https://core.telegram.org/bots/api",
@@ -326,12 +346,34 @@
         "No usar API ni automatizar exportaciones sin confirmar términos y coste exactos.",
         "No es proveedor base; preferir recursos CC0 o generación original con derechos claros."
       ]
+    },
+    {
+      "id": "triposr_open_model",
+      "name": "TripoSR — open-source single-image 3D reconstruction model",
+      "url": "https://github.com/VAST-AI-Research/TripoSR",
+      "api_docs": "https://github.com/VAST-AI-Research/TripoSR#readme",
+      "role": "Generate a rough static 3D mesh from an owner-created or properly licensed single-view image, then clean/retopologize/export through Blender.",
+      "free_tier": "Open-source code and pretrained weights under MIT according to the upstream repository. Upstream README estimates approximately 6 GB VRAM for one image. No paid API is required when self-hosted inside an eligible free GPU notebook.",
+      "gpu": true,
+      "api_key_required": "Kaggle API credentials only if dispatched through Kaggle; no TripoSR service API key",
+      "availability": "EXPERIMENTAL_KAGGLE_GPU_QUOTA",
+      "constraints": [
+        "Different product from the Tripo AI website: use only the open-source TripoSR repository and its MIT-licensed code/weights.",
+        "Kaggle free GPU availability is quota- and queue-dependent; no always-on or guaranteed GPU promise.",
+        "Best suited to props, rocks, furniture, weapons prototypes and static objects; output requires Blender cleanup, scale/pivot, retopology, UV/material, collision and Godot validation.",
+        "Do not assume a one-image reconstruction is a production-ready character, rig or animation.",
+        "Input images must be original or licensed for this use; no copyrighted game character references.",
+        "Record commit hash, model weight revision, environment lock, input hash, random seed if applicable, output SHA-256 and full license notices."
+      ]
     }
   ],
   "last_verified_utc": "2026-11-15",
   "notes": [
     "Actualización 2026-11-15: 3D Valley API separa biblioteca gratuita de herramientas que consumen créditos; no usar generación por API como servicio gratis.",
     "Meshy Free es manual-only (sin API), 100 créditos/mes, 10 descargas Meshy 6 Lite sin texturas y licencia CC BY 4.0 con atribución.",
-    "Tripo Free no está aprobado como proveedor de producción por defecto: sus términos de salida requieren revisión de la titularidad/licencia antes de integración."
+    "Tripo Free no está aprobado como proveedor de producción por defecto: sus términos de salida requieren revisión de la titularidad/licencia antes de integración.",
+    "TripoSR open-source model is distinct from Tripo AI web service; upstream repository states MIT license for code and pretrained weights and approximately 6 GB VRAM for one image.",
+    "Kaggle CLI supports kernel submission and accelerator selection, but free quota/availability must be checked live; no fixed usage promise.",
+    "Stable Fast 3D Community License permits free commercial use only under USD 1M annual revenue; require legal gate."
   ]
 }
