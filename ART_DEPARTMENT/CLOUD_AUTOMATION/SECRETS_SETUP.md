@@ -55,3 +55,17 @@ Firebase no es necesario para producir assets. El plan Spark permite usar Firest
 - Claves privadas, service-account JSON, backups de credenciales n8n o credenciales descifradas.
 - `.n8n`, SQLite, dump PostgreSQL, backups binarios o execution data.
 - Model weights/datasets grandes sin una revisión de almacenamiento/licencia.
+
+
+## Fuentes adicionales de recursos
+
+| Variable | Cómo obtenerla | Para qué sirve |
+|---|---|---|
+| `SMITHSONIAN_API_KEY` | Solicitar clave gratuita en https://api.data.gov/signup/ | Consultar API de Smithsonian Open Access. Descargar solo objetos y medios que estén marcados CC0 en el registro individual. |
+| `3DVALLEY_API_KEY` | https://3dvalley.com/account/api | Opcional: búsquedas autenticadas de la biblioteca CC0. No usar para generación por API bajo el presupuesto cero: las herramientas API consumen créditos. |
+
+Meshy Free no ofrece API; no existe una clave que debamos colocar para automatizarlo. Su uso gratuito es manual desde https://www.meshy.ai/ y sus outputs exigen atribución CC BY 4.0. Tripo no está aprobado para producción hasta revisar la titularidad/licencia exacta de cada resultado. No poner claves de estos servicios dentro del prompt de Z.ai.
+
+## Regla para agentes
+
+Z.ai y los agentes de código solo deben crear referencias a nombres de secrets (por ejemplo `${{ secrets.TELEGRAM_BOT_TOKEN }}`), nunca pedir su valor en el chat, mostrarlo en logs ni guardarlo en un archivo. El propietario introduce los valores directamente en GitHub Settings > Secrets and variables > Actions.
