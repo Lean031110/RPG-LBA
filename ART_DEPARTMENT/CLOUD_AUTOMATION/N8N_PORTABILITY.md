@@ -122,3 +122,19 @@ Official references:
 - [n8n CLI](https://docs.n8n.io/hosting/cli-commands/)
 - [n8n Cloud trial FAQ](https://support.n8n.io/article/how-do-i-cancel-my-trial)
 - [n8n pricing](https://n8n.io/pricing/)
+
+
+## 9. Source control built into n8n is not a free-plan migration path
+
+The official n8n source-control/environments feature is documented as available on **Business and Enterprise** plans. Do not design the Free Cloud trial or Community Edition workflow around that feature. Official guide: https://docs.n8n.io/administer/use-source-control-and-environments/tutorial-create-environments-with-source-control/
+
+For this project:
+- Keep sanitized workflow JSON templates under GitHub, using normal commits/PRs.
+- Treat the Git repository as the canonical asset catalogue and backlog. Do not make n8n Data Tables the only place containing asset IDs, provenance, license state, job checkpoints or progress.
+- If any n8n Data Tables are used, create an explicit export/import procedure per table (CSV/JSON), with table name, schema version, row count, export timestamp, checksum and restore test. The standard Cloud workflow backup export is not proof that Data Table rows, credentials, executions or other instance state are included.
+- Before a Cloud trial ends, use Cloud console > Export > select backup date > Download workflows. The backup is a workflow recovery route, not a complete clone. The download is available up to 90 days after trial/subscription end; after that the backups are deleted. Official guide: https://support.n8n.io/article/how-to-export-workflows-from-the-n-8-n-cloud-admin-panel
+- Public API is unavailable during the Cloud free trial. Do not build automation that expects API access on trial accounts. Official confirmation: https://support.n8n.io/article/can-i-have-api-access-while-i-am-on-a-trial
+
+## 10. The migration test that must pass before retiring an instance
+
+Create a fresh destination only through a legitimate plan/Community Edition deployment. Import the sanitized workflows, recreate credential bindings securely, restore private database/table exports, and run synthetic test fixtures. Compare workflow count, workflow names, table names, row counts, schema versions, active/inactive status and webhook URLs. Record a restore report and SHA-256 checksums. Do not deactivate the old instance until the new one passes. If any table or secret cannot be restored, mark it FAIL/NOT TESTED and retain the prior instance within its valid period.
