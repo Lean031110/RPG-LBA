@@ -1,0 +1,110 @@
+name: Asset review Telegram notifications
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, review_requested]
+    paths:
+      - "assets/**"
+      - "ART_DEPARTMENT/**"
+  workflow_run:
+    workflows:
+      - "Asset Factory (produccion)"
+      - "Asset Validation"
+      - "Asset Publication"
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asset-telegram-${{ github.event.pull_request.number || github.event.workflow_run.id || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Send notification when Telegram credentials exist
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_PATH: ${{ github.event_path }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+          import urllib.parse
+          import urllib.request
+
+          token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+          chat_id = os.environ.get("TELEGRAM_CHAT_ID", "")
+          if not token or not chat_id:
+              print("SKIPPED: configure TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in repository Actions secrets.")
+              sys.exit(0)
+
+          with open(os.environ["EVENT_PATH"], "r", encoding="utf-8") as handle:
+              event = json.load(handle)
+
+          repo = os.environ["REPOSITORY"]
+          event_name = os.environ["EVENT_NAME"]
+          if event_name == "pull_request":
+              pr = event.get("pull_request", {})
+              action = event.get("action", "updated")
+              title = pr.get("title", "Asset PR")
+              url = pr.get("html_url", "")
+              number = pr.get("number", "")
+              text = (
+                  f"RPG LBA — revisión de assets\n"
+                  f"PR #{number}: {title}\n"
+                  f"Evento: {action}\n"
+                  f"Revisa catálogo, previews, licencias y reportes antes de aprobar.\n"
+                  f"{url}"
+              )
+          elif event_name == "workflow_run":
+              run = event.get("workflow_run", {})
+              conclusion = run.get("conclusion") or run.get("status") or "unknown"
+              if conclusion in ("skipped", "cancelled"):
+                  print(f"SKIPPED: workflow conclusion={conclusion}")
+                  sys.exit(0)
+              name = run.get("name", "Asset workflow")
+              url = run.get("html_url") or os.environ["RUN_URL"]
+              branch = run.get("head_branch", "unknown")
+              prs = run.get("pull_requests") or []
+              pr_line = f"PR: {prs[0].get('html_url', '')}\n" if prs else ""
+              prefix = "⚠️" if conclusion != "success" else "✅"
+              text = (
+                  f"{prefix} RPG LBA — {name}\n"
+                  f"Resultado: {conclusion}\n"
+                  f"Rama: {branch}\n"
+                  f"{pr_line}{url}"
+              )
+          else:
+              print("SKIPPED: unsupported event")
+              sys.exit(0)
+
+          payload = urllib.parse.urlencode({
+              "chat_id": chat_id,
+              "text": text[:3900],
+              "disable_web_page_preview": "true"
+          }).encode("utf-8")
+          request = urllib.request.Request(
+              f"https://api.telegram.org/bot{token}/sendMessage",
+              data=payload,
+              headers={"Content-Type": "application/x-www-form-urlencoded"},
+              method="POST",
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  result = json.loads(response.read().decode("utf-8"))
+              if not result.get("ok"):
+                  raise RuntimeError("Telegram API returned ok=false")
+              print("PASS: Telegram notification sent; response content withheld.")
+          except Exception as exc:
+              print(f"FAIL: Telegram notification failed ({type(exc).__name__}); no token was printed.")
+              raise
+          PY
