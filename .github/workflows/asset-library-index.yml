@@ -54,6 +54,7 @@ jobs:
       - name: Consolidated asset-factory validation (master prompt §15)
         run: |
           set -euo pipefail
+          python -m pip install --quiet pyyaml
           python3 scripts/ci/validate_asset_factory.py
 
       - name: Upload generated candidate (for diffing on failure)

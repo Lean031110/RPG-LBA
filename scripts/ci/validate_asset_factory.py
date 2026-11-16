@@ -329,7 +329,11 @@ def check_n8n() -> None:
 
 # ------------------------------------------------------------- 13/14. CI
 def check_workflows() -> None:
-    import yaml
+    try:
+        import yaml
+    except ImportError:
+        warn("PyYAML no disponible: análisis YAML de workflows OMITIDO (instalar pyyaml para CI completo)")
+        return
     files = sorted(WORKFLOWS_DIR.glob("*.yml"))
     for path in files:
         try:
