@@ -57,3 +57,7 @@ Workflow export/import reuses definitions; it does not automatically migrate exe
 - Encryption-key backup: NOT TESTED.
 - Restore into clean instance: NOT TESTED.
 - Telegram/GitHub/Firebase credentials: NOT CONFIGURED.
+
+
+## Límites importantes de la prueba Cloud
+La tabla oficial de n8n indica que el trial Cloud actual excluye la API pública de n8n. Por tanto, no diseñar la exportación automática suponiendo que el trial permite administrar workflows mediante API. Durante el trial, usar export/import desde la interfaz cuando sea necesario; comprobar nuevamente el plan antes de automatizarlo. La prueba incluye 1.000 ejecuciones, cinco simultáneas y timeout de 180 segundos.
