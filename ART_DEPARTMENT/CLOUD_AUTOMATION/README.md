@@ -16,13 +16,14 @@ The official `main` already contains an AI Asset Factory. Do not create a compet
 - `assets/models/`: 62 procedural GLB models in the first batch.
 - `assets/environment/textures/`: 21 PBR texture sets (the maps are individual PNG files).
 - `assets/materials/`: 10 Godot material definitions.
-- `assets/AI_ASSET_FACTORY/catalog/assets_manifest.json`: canonical machine catalogue (actual path is `ART_DEPARTMENT/AI_ASSET_FACTORY/catalog/assets_manifest.json`).
+- `ART_DEPARTMENT/AI_ASSET_FACTORY/catalog/assets_manifest.json`: canonical machine catalogue.
 - Production report: 93/93 first-batch assets in the catalogue; technical checks and tests were reported PASS; visual human approval and in-scene/mobile validation remain separate gates.
 
-The 93 catalogue entries are predominantly environment/prop assets. They do **not** mean the six player classes, all enemies, bosses and NPCs already have final character meshes.
+The current inventory scan found 262 supported binary/source asset files: 198 file references associated with the 93 manifest entries, plus 64 legacy files indexed separately. The count of 198 counts file references (some logical assets contain multiple files), not 198 extra assets. The 93 catalogue entries are predominantly environment/prop assets. They do **not** mean the six player classes, all enemies, bosses and NPCs already have final character meshes.
 
 See:
-- `ASSET_LIBRARY_INDEX.json`: fast link index for every catalogue entry and GitHub file.
+- `ASSET_LIBRARY_INDEX.json`: 93 manifest entries linked to their files, previews and technical reports.
+- `LEGACY_ASSET_INDEX.json`: 64 additional legacy file records with stable LEGACY IDs and direct GitHub links; Git blob SHA-1 values are explicitly not SHA-256.
 - `ASSET_GAP_BACKLOG.json`: missing/placeholder/improvement needs with stable GAP IDs.
 - `PROVIDER_REGISTRY.json`: providers, official links, current free tiers and safety guards.
 - `../DOCUMENTATION/PRODUCTION_STATUS.md`: original factory report; update it because its branch/PR wording is stale relative to the current main.
