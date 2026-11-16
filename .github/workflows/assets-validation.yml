@@ -1,0 +1,49 @@
+name: RPG LBA - Asset Library Validation
+
+on:
+  pull_request:
+    paths:
+      - "assets/library/**"
+      - "assets/manifest.csv"
+      - "scripts/ci/validate_asset_library.py"
+      - ".github/workflows/assets-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "assets/library/**"
+      - "assets/manifest.csv"
+      - "scripts/ci/validate_asset_library.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lba-assets-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  catalog-validation:
+    name: Validate asset catalog and manifest
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Validate asset catalog
+        run: python scripts/ci/validate_asset_library.py
+
+      - name: Upload catalog files for audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpg-lba-asset-catalog-${{ github.sha }}
+          path: |
+            assets/library/catalog.csv
+            assets/manifest.csv
+          retention-days: 30
