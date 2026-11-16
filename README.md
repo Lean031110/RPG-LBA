@@ -123,3 +123,18 @@ El código y los recursos pueden tener licencias distintas. Cada asset externo d
 ## Contribuir
 
 Lee `AGENTS.md`, trabaja en una rama y abre PR. Cambios visuales incluyen capturas reales 16:9 y 20:9. Cambios de gameplay incluyen pruebas unitarias e integración. No hacer merge automático.
+
+
+## Producción visual y biblioteca de assets
+
+La fábrica de assets tiene su propio inventario, política de licencias, fuentes gratuitas, procedimientos de n8n y validación automatizada:
+
+- [Asset Factory — arquitectura y flujo de trabajo](docs/art-pipeline/README.md)
+- [Proveedores gratuitos, APIs y límites](docs/art-pipeline/PROVIDERS.md)
+- [Backup y migración de n8n](docs/art-pipeline/N8N_BACKUP_AND_MIGRATION.md)
+- [Biblioteca de assets y taxonomía](assets/library/README.md)
+- [Catálogo maestro de assets](assets/library/catalog.csv)
+- [Registro de workflows n8n](n8n/WORKFLOW_INDEX.csv)
+- [Exportaciones n8n](n8n/workflows/README.md)
+
+El catálogo distingue recursos existentes documentados, recursos pendientes, licencias por revisar y slots de producción aún sin modelo. Un estado PLANNED no significa que el asset ya exista. Cada recurso externo requiere licencia verificada en assets/manifest.csv.
