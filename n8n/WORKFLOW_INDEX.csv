@@ -1,0 +1,8 @@
+workflow_id,name,file,status,trigger,credentials_required,critical_dependencies,verification
+lba.n8n.asset-source-scan,Asset source scan,,PLANNED,Manual or scheduled,none,Poly Haven API,NOT TESTED
+lba.n8n.asset-license-audit,Asset license audit,,PLANNED,GitHub event or manual,GitHub App or GITHUB_TOKEN,assets/manifest.csv,NOT TESTED
+lba.n8n.asset-job-dispatch,Asset generation dispatcher,,PLANNED,Manual or queue,provider-specific tokens,provider adapters and quota controller,NOT TESTED
+lba.n8n.blender-process,Blender processing,,PLANNED,GitHub Actions dispatch,GITHUB_TOKEN,Blender scripts and job manifest,NOT TESTED
+lba.n8n.godot-validation,Godot asset validation,,PLANNED,GitHub Actions dispatch,GITHUB_TOKEN,Godot 4.7.2 import and smoke tests,NOT TESTED
+lba.n8n.telegram-review,Telegram review notifications,,PLANNED,Webhook or workflow event,TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID,Telegram Bot API,NOT TESTED
+lba.n8n.backup-export,Workflow backup export,,PLANNED,Schedule and before migration,n8n admin access,workflow exports and secure backup location,NOT TESTED
