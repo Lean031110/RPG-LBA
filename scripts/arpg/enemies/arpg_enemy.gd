@@ -47,6 +47,8 @@ var _strike_done := false
 var _target_lost_timer := 0.0
 var _patrol_direction := Vector3.ZERO
 var _patrol_timer := 0.0
+var _home_target: Node3D = null
+var _summon_check_left := 0.0
 
 
 func setup(new_enemy_id: String) -> void:
@@ -94,6 +96,11 @@ func _setup_detection() -> void:
 
 
 func set_target(target: Node3D) -> void:
+	## Objetivo de la FSM. El PRIMER objetivo registrado es el "hogar" (el
+	## jugador de la escena): si la bandera engage_summons le roba la atencion
+	## a un eco, al perderlo el enemigo vuelve al hogar (nunca queda sin meta).
+	if _home_target == null:
+		_home_target = target
 	_target = target
 
 
@@ -141,6 +148,17 @@ func _physics_process(delta: float) -> void:
 		# El aturdimiento interrumpe cualquier acción y bloquea la FSM.
 
 		# El aturdimiento interrumpe cualquier acción y bloquea la FSM.
+	# Contencion de amenazas (Fase 2, Sepulturero): con la bandera de datos
+	# engage_summons, el enemigo reparte su atencion entre el jugador y los ecos
+	# invocados (grupo arpg_summons). Sin ecos en escena — o sin bandera — la
+	# FSM se comporta EXACTAMENTE como antes (regla del motor comun: ningun
+	# cambio de comportamiento para las clases y escenas ya existentes).
+	var engage_summons := bool(enemy_data.get("engage_summons", false))
+	if _summon_check_left > 0.0:
+		_summon_check_left -= delta
+	elif engage_summons and state in [InternalState.IDLE, InternalState.PATROL, InternalState.CHASE]:
+		_summon_check_left = 0.4
+		_consider_summon_threats()
 	tick_combat(delta)
 	skills.advance(delta)
 	state_time += delta
@@ -354,6 +372,60 @@ func _has_line_of_sight_to_player() -> bool:
 	if collider == null:
 		return true
 	return collider == _target or collider.is_ancestor_of(_target)
+
+
+# ---------------------------------------------------------------------------
+# Contencion de amenazas (Fase 2, Sepulturero)
+# ---------------------------------------------------------------------------
+
+
+func _consider_summon_threats() -> void:
+	## Con engage_summons, el enemigo reparte su atencion entre el hogar (el
+	## jugador) y los ecos vivos del grupo arpg_summons: persigue al VALIDO
+	## mas cercano con linea de vision. Sin ecos, la lista de candidatos es solo
+	## el hogar y el comportamiento es el de siempre.
+	var candidates: Array[Node3D] = []
+	if _home_target != null and is_instance_valid(_home_target):
+		candidates.append(_home_target)
+	for body: Node in get_tree().get_nodes_in_group("arpg_summons"):
+		var node := body as Node3D
+		if node == null or not is_instance_valid(node):
+			continue
+		if not node.has_method("take_damage"):
+			continue
+		if node.has_method("is_dead") and bool(node.call("is_dead")):
+			continue
+		candidates.append(node)
+	var best: Node3D = null
+	var best_dist := INF
+	for node: Node3D in candidates:
+		var dist := global_position.distance_to(node.global_position)
+		if dist > float(enemy_data.get("detect_radius", 9.0)) * 1.2:
+			continue
+		if not _has_line_of_sight_to_node(node):
+			continue
+		if dist < best_dist:
+			best_dist = dist
+			best = node
+	if best != null and best != _target:
+		_target = best
+
+
+func _has_line_of_sight_to_node(node: Node3D) -> bool:
+	## Linea de vision generica (el _detection_raycast es de escena/muros).
+	if node == null or _detection_raycast == null:
+		return false
+	var from := global_position + Vector3(0, 1.4, 0)
+	var to := node.global_position + Vector3(0, 1.0, 0)
+	_detection_raycast.global_position = from
+	_detection_raycast.target_position = _detection_raycast.to_local(to)
+	_detection_raycast.enabled = true
+	_detection_raycast.force_raycast_update()
+	var collider := _detection_raycast.get_collider()
+	_detection_raycast.enabled = false
+	if collider == null:
+		return true
+	return collider == node or collider.is_ancestor_of(node)
 
 
 # ---------------------------------------------------------------------------

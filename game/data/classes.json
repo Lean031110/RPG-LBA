@@ -564,7 +564,8 @@
         "id": "ceniza",
         "name_key": "resource.ceniza",
         "base": 115,
-        "per_level": 6
+        "per_level": 6,
+        "regen_per_second": 2.0
       },
       "base_stats": {
         "hp": 95,
@@ -587,15 +588,207 @@
       },
       "basic_attack": {
         "name_key": "skill.sepulturero.basic",
+        "description_key": "skill.sepulturero.basic.desc",
+        "kind": "strike",
+        "damage_coeff": 0.8,
+        "potency": 5.5,
         "damage_type": "arcane",
         "attribute": "intelecto",
-        "implemented": false
+        "cooldown": 0.55,
+        "windup": 0.14,
+        "active_until": 0.32,
+        "total_time": 0.52,
+        "cancel_after": 0.12,
+        "range": 2.0,
+        "arc_deg": 72.0,
+        "implemented": true
       },
-      "skills": [],
+      "skills": [
+        {
+          "id": "llamada_del_osario",
+          "name_key": "skill.sepulturero.osario",
+          "description_key": "skill.sepulturero.osario.desc",
+          "unlock_level": 1,
+          "kind": "summon",
+          "summon_kind": "guardian",
+          "damage_coeff": 0.0,
+          "potency": 0.0,
+          "damage_type": "arcane",
+          "attribute": "intelecto",
+          "resource_cost": 30,
+          "cooldown": 10.0,
+          "windup": 0.4,
+          "active_until": 0.55,
+          "total_time": 0.8,
+          "cancel_after": 0.25,
+          "range": 0.0,
+          "arc_deg": 0.0,
+          "implemented": true
+        },
+        {
+          "id": "marca_del_ultimo_nombre",
+          "name_key": "skill.sepulturero.marca",
+          "description_key": "skill.sepulturero.marca.desc",
+          "unlock_level": 2,
+          "kind": "mark",
+          "damage_coeff": 0.0,
+          "potency": 0.0,
+          "damage_type": "arcane",
+          "attribute": "intelecto",
+          "resource_cost": 20,
+          "cooldown": 8.0,
+          "windup": 0.25,
+          "active_until": 0.4,
+          "total_time": 0.65,
+          "cancel_after": 0.15,
+          "range": 0.0,
+          "arc_deg": 0.0,
+          "mark": {
+            "range": 12.0,
+            "arc_deg": 55.0,
+            "duration": 6.0,
+            "vulnerability_multiplier": 1.3
+          },
+          "implemented": true
+        },
+        {
+          "id": "procesion_hueso_bronce",
+          "name_key": "skill.sepulturero.procesion",
+          "description_key": "skill.sepulturero.procesion.desc",
+          "unlock_level": 3,
+          "kind": "procession",
+          "damage_coeff": 0.0,
+          "potency": 0.0,
+          "damage_type": "arcane",
+          "attribute": "intelecto",
+          "resource_cost": 15,
+          "cooldown": 9.0,
+          "windup": 0.3,
+          "active_until": 0.45,
+          "total_time": 0.7,
+          "cancel_after": 0.2,
+          "range": 0.0,
+          "arc_deg": 0.0,
+          "charge": {
+            "speed": 9.0,
+            "duration": 0.8,
+            "knockback": 4.5,
+            "damage_coeff": 0.9,
+            "potency": 8.0,
+            "hit_width": 2.4
+          },
+          "implemented": true
+        },
+        {
+          "id": "vela_de_ausentes",
+          "name_key": "skill.sepulturero.vela",
+          "description_key": "skill.sepulturero.vela.desc",
+          "unlock_level": 4,
+          "kind": "veil",
+          "damage_coeff": 0.0,
+          "potency": 0.0,
+          "damage_type": "arcane",
+          "attribute": "intelecto",
+          "resource_cost": 0,
+          "cooldown": 12.0,
+          "windup": 0.35,
+          "active_until": 0.5,
+          "total_time": 0.75,
+          "cancel_after": 0.2,
+          "range": 0.0,
+          "arc_deg": 0.0,
+          "veil": {
+            "duration_sacrifice_fraction": 0.5,
+            "heal_fraction": 0.15,
+            "resource_restore": 25.0
+          },
+          "implemented": true
+        }
+      ],
       "ultimate": {
         "id": "patio_vuelven",
         "name_key": "skill.sepulturero.ultimate",
-        "implemented": false
+        "description_key": "skill.sepulturero.ultimate.desc",
+        "unlock_level": 3,
+        "kind": "patio",
+        "damage_coeff": 0.0,
+        "potency": 0.0,
+        "damage_type": "arcane",
+        "attribute": "intelecto",
+        "resource_cost": 0,
+        "cooldown": 1.0,
+        "windup": 0.5,
+        "active_until": 0.7,
+        "total_time": 1.05,
+        "cancel_after": 0.9,
+        "range": 0.0,
+        "arc_deg": 0.0,
+        "implemented": true
+      },
+      "ultimate_charge": {
+        "max": 100,
+        "per_hit_dealt": 8,
+        "per_hit_taken": 5
+      },
+      "passives": {
+        "nombre_prestado": {
+          "name_key": "passive.sepulturero.prestado",
+          "fragment_gain": 25.0
+        },
+        "ultimo_encargo": {
+          "name_key": "passive.sepulturero.encargo",
+          "wave_radius": 2.5,
+          "wave_duration": 0.45,
+          "wave_slow_duration": 1.2,
+          "wave_slow_fraction": 0.35,
+          "wave_damage_coeff": 0.4,
+          "wave_potency": 5.0
+        }
+      },
+      "summons": {
+        "max_active": 3,
+        "sight_radius": 10.0,
+        "retarget_interval": 0.35,
+        "guardian": {
+          "hp": 55,
+          "duration": 14.0,
+          "move_speed": 3.4,
+          "follow_distance": 2.2,
+          "leash_radius": 18.0,
+          "armor": 2.0,
+          "resistance": 2.0,
+          "attack": {
+            "range": 1.7,
+            "windup": 0.5,
+            "window": 0.22,
+            "recover": 0.9,
+            "arc_deg": 70.0,
+            "damage_coeff": 0.6,
+            "potency": 6.0,
+            "damage_type": "arcane",
+            "attribute": "intelecto"
+          }
+        },
+        "patio": {
+          "hp": 40,
+          "duration": 8.0,
+          "move_speed": 4.2,
+          "follow_distance": 2.6,
+          "leash_radius": 20.0,
+          "armor": 2.0,
+          "resistance": 2.0,
+          "attack": {
+            "range": 1.8,
+            "windup": 0.4,
+            "window": 0.2,
+            "recover": 0.7,
+            "arc_deg": 70.0,
+            "damage_coeff": 0.5,
+            "potency": 7.0,
+            "damage_type": "arcane",
+            "attribute": "intelecto"
+          }
+        }
       },
       "specializations": [
         {
@@ -831,7 +1024,24 @@
       "skill.bruja.mariposa.desc": "Familiar ardiente que persigue y hostiga al objetivo marcado.",
       "passive.bruja.oido": "Oido de la Manigua",
       "passive.bruja.raiz": "Raiz Persistente",
-      "skill.bruja.ultimate.desc": "La manigua despierta: tormenta de raices y viento alrededor de la Bruja."
+      "skill.bruja.ultimate.desc": "La manigua despierta: tormenta de raices y viento alrededor de la Bruja.",
+      "skill.sepulturero.basic": "Barrido de Farol",
+      "skill.sepulturero.basic.desc": "Golpe corto de arcano con el farol de ceniza. Alcance menor que el machete: el Sepulturero pega de cerca, no a distancia.",
+      "skill.sepulturero.osario": "Llamada del Osario",
+      "skill.sepulturero.osario.desc": "Invoca un guardián espectral temporal que combate junto al Sepulturero hasta que su eco se apaga.",
+      "skill.sepulturero.marca": "Marca del Último Nombre",
+      "skill.sepulturero.marca.desc": "Debilita y marca a un enemigo: recibe más daño y, al caer marcado, entrega fragmentos de ceniza.",
+      "skill.sepulturero.procesion": "Procesión de Hueso y Bronce",
+      "skill.sepulturero.procesion.desc": "Los ecos activos avanzan en línea al frente del Sepulturero, empujando a los enemigos que encuentran.",
+      "skill.sepulturero.vela": "Vela de los Ausentes",
+      "skill.sepulturero.vela.desc": "Sacrifica parte de la duración de una invocación para curar al Sepulturero y recuperar ceniza.",
+      "skill.sepulturero.ultimate.desc": "El Patio de los que Vuelven: convoca una procesión de ecos con vida propia durante una ventana limitada.",
+      "passive.sepulturero.prestado": "Nombre prestado",
+      "passive.sepulturero.encargo": "Último encargo",
+      "summon.sepulturero.guardian": "Guardián del Osario",
+      "summon.sepulturero.guardian.desc": "Eco de un antiguo combatiente. Ataca cuerpo a cuerpo y vela por su invocador.",
+      "summon.sepulturero.patio": "Eco del Patio",
+      "summon.sepulturero.patio.desc": "Miembro de la procesión invocada por la definitiva. Breve, veloz y persistente."
     }
   }
 }

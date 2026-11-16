@@ -41,6 +41,50 @@ Auditar `devmoreir4/godot-3d-multiplayer-template` release v2.0.0. Reutilizar so
 
 GdUnit4 para unit/integration tests de GDScript, además de scripts de import/smoke y test real Android. La versión master 7.0.0 declara compatibilidad con Godot 4.7; fijar release exacta y action version en el bootstrap.
 
+
+## ADR-F2-INV — Sistema de invocaciones del Sepulturero (Fase 2)
+
+Numeración con prefijo de fase: la reorganización documental abierta (PR #17)
+ya reserva ADR-008..012 en su rama; este bloque evita colisiones al fusionar.
+
+- **ADR-F2-INV-01 — Los ecos son combatientes, no adornos.** `ArpgEcho` hereda
+  de `ArpgCombatant`: los enemigos lo golpean por el pipeline común y los
+  estados le aplican igual. Motivo: canon de Fase 2 ("entidades funcionales del
+  sistema de combate"). La hitbox del eco se monta INERTE (capa/máscara 0)
+  porque su golpe es un duelo directo resuelto por el dueño — pero el contrato
+  de la base (muerte → `hitbox.close()`) se cumple.
+- **ADR-F2-INV-02 — Capa PLAYER para el cuerpo del eco.** Sus golpes enemigos
+  usan máscara PLAYER; poner al eco en esa capa hace que lo ataquen sin tocar
+  el motor. Los golpes del propio jugador (máscara ENEMY) nunca lo dañan, y
+  los recogibles lo ignoran (exigen `add_potion`, API exclusiva del jugador).
+- **ADR-F2-INV-03 — El daño del eco sale del dueño.** Toda ofensiva del eco
+  (golpe, carga de la Procesión) se resuelve con `resolve_strike` del
+  Sepulturero: escala con intelecto del jugador y respeta la regla canon de
+  que las invocaciones no generan XP/botín por sí mismas (el crédito es del
+  dueño). El eco nunca consulta la capa PLAYER al elegir objetivos: no puede
+  dañar al dueño ni a otros ecos.
+- **ADR-F2-INV-04 — Contención de amenazas tras bandera de datos.**
+  `ArpgEnemy` reparte su atención entre el jugador (hogar) y los ecos vivos
+  SOLO si `enemy_data.engage_summons` está activa. Sin ecos en escena el
+  comportamiento es bit a bit el anterior (regla del motor común). Al perder
+  al eco, el enemigo vuelve al hogar: nunca se queda sin meta.
+- **ADR-F2-INV-05 — La onda de Último encargo es una zona del dueño.**
+  Reutiliza `ArpgAreaEffect` (un tick: daño + slow). Una onda no es un eco: no
+  engendra cadenas (regla anti-cadena del canon). Solo la expiración natural
+  por duración la produce; morir en combate o la Vela no la provocan.
+- **ADR-F2-INV-06 — Balance provisional en JSON, no en código.** El canon da
+  nombres y efectos cualitativos pero ninguna cifra. Costes, cooldowns, vida
+  de ecos, duraciones y fragmentos viven en `game/data/classes.json` (nota del
+  propio archivo: "hipótesis de diseño sin validar"). El `fragment_gain` de
+  Nombre prestado (25) se fijó neto-positivo frente al coste de la Marca (20);
+  el resto de cifras sigue las magnitudes de Bruja/Machetero. Ajustar con
+  telemetría, no a mano en los kits.
+- **ADR-F2-INV-07 — La "revelación" de la Marca queda tendida, no activa.**
+  El canon pide "debilita y revela": lo mecánico vigente es `vulnerable` (+30%
+  daño entrante) + registro para la pasiva. La revelación completa (marcados
+  visibles en sigilosos/detección) se activa cuando existan enemigos con
+  sigilo (fases futuras); el estado y el registro ya existen.
+
 ## Decisión pendiente del responsable
 
 - Propietario/nombre exacto del repo GitHub.
