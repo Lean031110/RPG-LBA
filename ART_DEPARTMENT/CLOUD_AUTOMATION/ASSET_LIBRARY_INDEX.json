@@ -1,6 +1,6 @@
 {
-  "schema_version": "1.0.0",
-  "generated_from": "ART_DEPARTMENT/AI_ASSET_FACTORY/catalog/assets_manifest.json",
+  "schema_version": "1.1.0",
+  "generated_from": "ART_DEPARTMENT/AI_ASSET_FACTORY/catalog/assets_manifest.json; legacy inventory separately indexed in LEGACY_ASSET_INDEX.json",
   "generated_at_utc": "2026-11-14T20:50:53+00:00",
   "source_branch": "main",
   "source_commit": "83c11940d55254d7dbbd21549128ef17a0e9f5ba",
@@ -2246,5 +2246,11 @@
       "aprobado_para_produccion": false,
       "nota": "Validación técnica registrada en el manifiesto; no equivale a aprobación visual humana ni a integración en escenas."
     }
-  ]
+  ],
+  "legacy_index_path": "ART_DEPARTMENT/CLOUD_AUTOMATION/LEGACY_ASSET_INDEX.json",
+  "legacy_index_url": "https://github.com/Lean031110/RPG-LBA/blob/agent/asset-cloud-automation/ART_DEPARTMENT/CLOUD_AUTOMATION/LEGACY_ASSET_INDEX.json",
+  "manifest_asset_count": 93,
+  "legacy_asset_file_count": 64,
+  "total_supported_file_count": 262,
+  "coverage_note": "93 logical manifest assets plus 64 legacy file records. Existing 93 catalogue logical assets have 198 referenced files. Do not add 93 + 64 + 198 as a count of logical assets."
 }
