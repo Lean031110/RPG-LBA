@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "policy": "FREE_ONLY_NO_CARD_NO_TRIAL_CIRCUMVENTION; verify provider quotas and licenses at each use",
   "providers": [
     {
@@ -22,7 +22,14 @@
       ],
       "openapi": "https://3dvalley.com/api/v1/openapi.json",
       "mcp_endpoint": "https://3dvalley.com/mcp",
-      "api_key_url": "https://3dvalley.com/account/api"
+      "api_key_url": "https://3dvalley.com/account/api",
+      "classification": "AVAILABLE",
+      "quota": "Library API with key: 1000 req/h, 10000 req/day (lower without key). Generation/edit API tools have no free quota: every call consumes credits.",
+      "license_policy": "Library assets listed CC0; verify the individual asset card and its original source identifier before integration.",
+      "cost_policy": "Library search/download endpoints free. Generation/edit API tools are PAID (1 credit = USD 0.01); max_credits=0 is a spend barrier, not a free pass. Web UI free tools = manual use only, never automated or scraped.",
+      "limitations": "Only library search/download may be automated. Record original ID, exact source URL, author, license, date and SHA-256. Respect 429/RateLimit headers.",
+      "notes": "Prefer this over Poly Haven/ambientCG only when they lack an asset; do not call generate_model/edit_model/generate_texture under the zero-cost policy.",
+      "last_verified": "2026-11-17"
     },
     {
       "id": "ambientcg",
@@ -37,7 +44,14 @@
       "constraints": [
         "Use API v3",
         "Record exact asset id, version, hash and CC0 license"
-      ]
+      ],
+      "classification": "AVAILABLE",
+      "quota": "Public GET API; no published hard rate limit encountered in normal catalogue polling — keep request volume modest.",
+      "license_policy": "CC0 for standard asset packs; each pack page states its license — record asset id, version and license per download.",
+      "cost_policy": "Free, no account required for public API/downloads.",
+      "limitations": "Use API v3; record exact asset id, version, hash. Download zips can be large; do not commit whole packs into Git.",
+      "notes": "Primary CC0 PBR source together with Poly Haven.",
+      "last_verified": "2026-11-17"
     },
     {
       "id": "blender",
@@ -52,6 +66,36 @@
         "CI runner CPU only",
         "Use -b / --background",
         "Pin Blender version and export settings"
+      ],
+      "classification": "AVAILABLE",
+      "quota": "No quota (local/CI software). Runner disk and job timeout are the only limits.",
+      "license_policy": "GPL for the software; output geometry/materials you create are yours. Bundle-licensed assets must not be redistributed inside .blend files.",
+      "cost_policy": "Free, open source; no account, no API key.",
+      "limitations": "CI runner CPU only; pin the version (bpy 4.2.0 / Blender 4.2.0) and export settings; use -b/--background.",
+      "notes": "Primary geometry backend of the factory (bpy in Actions, trimesh fallback).",
+      "last_verified": "2026-11-17",
+      "api_docs": null
+    },
+    {
+      "id": "blendkit",
+      "name": "BlendKit",
+      "url": "https://www.blendkit.com/",
+      "api_docs": null,
+      "role": "Selective materials/asset add-on library for Blender (migrated from PR #19 provider review)",
+      "free_tier": "Limited free plan; wider library is paid",
+      "gpu": false,
+      "api_key_required": true,
+      "availability": "MANUAL_ONLY",
+      "classification": "MANUAL_ONLY",
+      "quota": "Free plan offers a rotating limited asset subset.",
+      "license_policy": "Royalty-free for use in projects; NOT CC0 — redistribution/re-selling assets as assets is not allowed. Distinguish from CC0 sources.",
+      "cost_policy": "Free plan only; paid subscriptions excluded by the zero-cost policy.",
+      "limitations": "Manual use inside Blender; attribution model differs from CC0 — record license terms per asset in assets/manifest.csv.",
+      "notes": "Verified documentally 2026-11-15 (PR #19 docs/art-pipeline/PROVIDERS.md); re-verify before first production use.",
+      "last_verified": "2026-11-15",
+      "constraints": [
+        "Manual use only",
+        "Royalty-free, not CC0; no re-sale of assets as assets"
       ]
     },
     {
@@ -67,7 +111,15 @@
         "No need in MVP; external mirror must store file hash/version",
         "Usage above free allocation can incur charges; avoid enabling paid overage",
         "Keep canonical GitHub references and restore manifest"
-      ]
+      ],
+      "classification": "OPTIONAL",
+      "quota": "Monthly included tier currently advertises 10 GB storage, 1M Class A ops, 10M Class B ops, free egress.",
+      "license_policy": "Storage service; asset licenses unaffected. Keep the canonical license record in Git.",
+      "cost_policy": "No card needed for the free allocation, but paid overage must stay disabled; do not activate billing for the MVP.",
+      "limitations": "Not needed in the MVP; only if the repo outgrows Git. Must store file hash/version and a restore manifest.",
+      "notes": "Disabled until repo size actually becomes a problem.",
+      "last_verified": "2026-11-17",
+      "api_docs": null
     },
     {
       "id": "firebase_firestore",
@@ -82,7 +134,15 @@
         "No Cloud Storage or Cloud Functions assumption on Spark; verify current plan matrix",
         "Never store source GLB/texture blobs in Firestore",
         "Use server-side Admin SDK only; secure Security Rules; avoid public write"
-      ]
+      ],
+      "classification": "OPTIONAL",
+      "quota": "Spark published quotas: 1 GiB stored, 50k reads/day, 20k writes/day, 20k deletes/day, 10 GiB egress/month (only one database per project gets the free quota).",
+      "license_policy": "Service terms apply; store only project metadata, never third-party binaries.",
+      "cost_policy": "Spark plan is no-cost; Blaze (Storage/Functions) is FORBIDDEN under the zero-billing policy.",
+      "limitations": "Metadata/status mirror only; GitHub stays canonical. Rules are deny-by-default (firebase/firestore.rules). No GLB/textures in Firestore.",
+      "notes": "Status: OPTIONAL / NOT CONFIGURED — no Firebase project is connected to this repo.",
+      "last_verified": "2026-11-17",
+      "api_docs": null
     },
     {
       "id": "github_actions_public",
@@ -97,7 +157,15 @@
         "No hosted GPU in standard runner",
         "Keep jobs short and deterministic",
         "Public repo is public; never put secrets/assets requiring confidentiality in it"
-      ]
+      ],
+      "classification": "AVAILABLE",
+      "quota": "Standard public-repo hosted runners currently free and unlimited (ubuntu-latest: 4 vCPU, 16 GB RAM, 14 GB SSD); artifacts have quota/retention limits.",
+      "license_policy": "Service terms apply; the repo itself is public — never place confidential content in it.",
+      "cost_policy": "Free for public repositories; no runner-minute charge. Do not enable paid larger runners.",
+      "limitations": "No hosted GPU. Jobs must stay short/deterministic; artifact retention is temporary and never long-term storage.",
+      "notes": "Primary cloud orchestrator for the whole asset pipeline.",
+      "last_verified": "2026-11-17",
+      "api_docs": null
     },
     {
       "id": "google_colab",
@@ -112,7 +180,15 @@
         "No guaranteed always-on scheduling",
         "No automated account cycling",
         "Persist checkpoints and output to repo or external storage"
-      ]
+      ],
+      "classification": "MANUAL_ONLY",
+      "quota": "Dynamic free GPU availability and session limits; disconnects are normal.",
+      "license_policy": "Google Terms of Service apply to content processed there; do not upload confidential material.",
+      "cost_policy": "Free tier has no card requirement; never start a paid compute session.",
+      "limitations": "No guaranteed GPU, no unattended 24/7 worker, no automated account cycling; persist checkpoints externally.",
+      "notes": "Manual fallback for one-off GPU experiments while Kaggle quota is unavailable.",
+      "last_verified": "2026-11-17",
+      "api_docs": null
     },
     {
       "id": "huggingface_zero_gpu",
@@ -128,7 +204,15 @@
         "Use one existing public Space at a time; obey its own license",
         "Track quota and stop cleanly on exhaustion",
         "No account cycling"
-      ]
+      ],
+      "classification": "LIMITED_QUOTA",
+      "quota": "Free accounts: about 5 GPU minutes/day, reset 24h after first GPU use; shared queues.",
+      "license_policy": "Each Space/model carries its own license; check the Space license before use.",
+      "cost_policy": "Free tier only; PRO quotas are paid and excluded.",
+      "limitations": "Tiny batches only; queue-dependent; not a production dependency. Track quota and stop cleanly on exhaustion.",
+      "notes": "Experimental lane; never a critical dependency.",
+      "last_verified": "2026-11-17",
+      "api_docs": null
     },
     {
       "id": "janction_render",
@@ -144,7 +228,14 @@
         "No payment method or credit spend allowed in this pipeline",
         "Do not rely on this provider for critical jobs",
         "Inputs/results may be deleted quickly; copy approved outputs and hashes promptly"
-      ]
+      ],
+      "classification": "DISABLED",
+      "quota": "Trial/preview credits are limited and terms can change; no stable free quota confirmed.",
+      "license_policy": "Terms not fully reviewed.",
+      "cost_policy": "Unknown/trial credits — under the zero-cost policy the provider stays disabled until zero cost, availability and current terms are confirmed.",
+      "limitations": "Rendering only (no modeling/texturing); MCP endpoint experimental.",
+      "notes": "Disabled per master prompt §7 until verified.",
+      "last_verified": "2026-11-17"
     },
     {
       "id": "kaggle_notebooks",
@@ -163,7 +254,14 @@
         "Tasks must be checkpointable and idempotent; store only final outputs and compact checkpoint state, not large model weights in Git.",
         "Do not rely on exact reset time or a guaranteed GPU queue; handle unavailable quota with DEFERRED_QUOTA and resume later.",
         "No account rotation, no quota evasion and no paid accelerators."
-      ]
+      ],
+      "classification": "LIMITED_QUOTA",
+      "quota": "Free GPU (T4/P100) when available; weekly quota is dynamic and must be checked before every push. Do not hardcode a guaranteed weekly number.",
+      "license_policy": "Notebook content is yours; uploaded data must respect its license. Keep kernels private.",
+      "cost_policy": "Free tier only; never select paid accelerators.",
+      "limitations": "Idempotent, resumable tasks only; if no GPU is available mark DEFERRED_QUOTA instead of retry loops. No weights/datasets committed to the game repo.",
+      "notes": "Runs the TripoSR prototype kernel (automation/kaggle/).",
+      "last_verified": "2026-11-17"
     },
     {
       "id": "kaykit",
@@ -176,7 +274,15 @@
       "availability": "REVIEW_LICENSE",
       "constraints": [
         "Do not assume every pack CC0"
-      ]
+      ],
+      "classification": "REVIEW_LICENSE",
+      "quota": "Free packs downloadable per pack; some packs are paid.",
+      "license_policy": "Verify the exact pack LICENSE/README (KayKit by Kay Lousberg; several packs CC0, but confirm per pack) and style coherence before use.",
+      "cost_policy": "Free packs only; no purchases.",
+      "limitations": "Stylized low-poly look must match LBA art direction; attribution guidance per pack.",
+      "notes": "Candidate for dungeon/character prototyping after license check.",
+      "last_verified": "2026-11-17",
+      "api_docs": null
     },
     {
       "id": "kenney",
@@ -189,7 +295,15 @@
       "availability": "AVAILABLE",
       "constraints": [
         "Verify pack-specific license/version and source file"
-      ]
+      ],
+      "classification": "AVAILABLE",
+      "quota": "Individual packs downloadable free; no API.",
+      "license_policy": "Pack-level license (most are CC0) — verify the pack page and included LICENSE; do not assume bundles/special packs share it.",
+      "cost_policy": "Free; some premium bundles exist — never purchase for the MVP.",
+      "limitations": "Manual downloads; record exact pack URL, version, license and check date in assets/manifest.csv.",
+      "notes": "Good source for UI/prototype props.",
+      "last_verified": "2026-11-17",
+      "api_docs": null
     },
     {
       "id": "meshy_free_web",
@@ -206,7 +320,14 @@
         "Los modelos Free se publican bajo CC BY 4.0 y pueden usarse comercialmente con atribución obligatoria a Meshy.",
         "Solo se pueden descargar 10 modelos Meshy 6 Lite sin texturizar al mes; modelos Meshy 6/7, T2.5, texturas y 3D Agent requieren plan de pago.",
         "No automatizar UI, scraping ni creación de cuentas. El propietario debe generar/descargar manualmente, registrar atribución y someter el resultado a QA."
-      ]
+      ],
+      "classification": "MANUAL_ONLY",
+      "quota": "100 credits/month; up to 10 downloads/month of Meshy 6 Lite models without textures.",
+      "license_policy": "Free-plan outputs are CC BY 4.0: commercial use allowed WITH mandatory attribution to Meshy. Register attribution obligations in assets/manifest.csv.",
+      "cost_policy": "No API on the free plan; no automation possible. Never buy credits.",
+      "limitations": "Textured models are NOT free downloads; do not budget them as such.",
+      "notes": "Manual exploratory use only; no MESHY_API_KEY secret exists.",
+      "last_verified": "2026-11-17"
     },
     {
       "id": "n8n_cloud",
@@ -221,7 +342,15 @@
         "Never rotate trial accounts to evade expiry",
         "Before expiration export workflows+credentials and backup encryption key separately",
         "Cloud trial may not expose public API; use UI export or self-host CE"
-      ]
+      ],
+      "classification": "OPTIONAL",
+      "quota": "14-day trial: 1,000 executions, 5 concurrent, 180s timeout; no public API during trial; no permanent free plan.",
+      "license_policy": "n8n service terms.",
+      "cost_policy": "Trial only; never convert to a paid plan for the MVP and never create successive trial accounts.",
+      "limitations": "Cannot be a dependency while the local server is offline; export/import via Cloud Console UI.",
+      "notes": "Optional orchestrator; GitHub Actions is primary.",
+      "last_verified": "2026-11-17",
+      "api_docs": null
     },
     {
       "id": "n8n_community",
@@ -236,6 +365,36 @@
         "No external service/hosting for customers under standard SUL",
         "Store N8N_ENCRYPTION_KEY separately in password manager/secret store",
         "Back up .n8n and external DB; workflows-only export is not full backup"
+      ],
+      "classification": "OPTIONAL",
+      "quota": "Self-hosted; limited by local hardware.",
+      "license_policy": "Sustainable Use License: free for internal personal/business use; not for hosting as a service to third parties.",
+      "cost_policy": "Free self-hosted when the Proxmox/Xubuntu server regains internet.",
+      "limitations": "Not available now (server offline). Restore path documented in N8N_PORTABILITY.md.",
+      "notes": "Future local orchestrator; templates live in automation/n8n/workflows/.",
+      "last_verified": "2026-11-17",
+      "api_docs": null
+    },
+    {
+      "id": "open_game_art",
+      "name": "OpenGameArt",
+      "url": "https://opengameart.org/",
+      "api_docs": null,
+      "role": "Occasional audio, textures and models (migrated from PR #19 provider review)",
+      "free_tier": "Free downloads, no account for most files",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "MANUAL_ONLY",
+      "classification": "MANUAL_ONLY",
+      "quota": "No API; manual downloads.",
+      "license_policy": "License is PER ASSET (CC0, CC-BY, CC-BY-SA, GPL, etc.) — read the full license of each file; GPL content must not be mixed into proprietary bundles.",
+      "cost_policy": "Free.",
+      "limitations": "Mixed licenses make automation risky; only manual picks with recorded license.",
+      "notes": "Verified documentally 2026-11-15 (PR #19 docs); re-verify per asset.",
+      "last_verified": "2026-11-15",
+      "constraints": [
+        "Per-asset license check mandatory",
+        "Avoid GPL for bundled content"
       ]
     },
     {
@@ -251,6 +410,35 @@
       "constraints": [
         "Record item URL and file hash",
         "Poly Haven API asks for a distinctive User-Agent and live API credit; asset remains CC0"
+      ],
+      "classification": "AVAILABLE",
+      "quota": "Public API without key for public endpoints; be gentle (small free service) — manual/polling cadence, respect 429.",
+      "license_policy": "All assets CC0. API etiquette asks for an identifiable User-Agent and a 'Powered by Poly Haven' credit in derived tooling.",
+      "cost_policy": "Free; donations optional and never required.",
+      "limitations": "Record asset id, exact URL, author and SHA-256 per download.",
+      "notes": "Primary CC0 texture/HDRI/model source. n8n template 01 queries its catalog.",
+      "last_verified": "2026-11-17"
+    },
+    {
+      "id": "poly_pizza",
+      "name": "Poly Pizza",
+      "url": "https://poly.pizza/",
+      "api_docs": null,
+      "role": "Occasional low-poly models (migrated from PR #19 provider review; one CC-BY hat pack already appears in assets/manifest.csv)",
+      "free_tier": "Many free models",
+      "gpu": false,
+      "api_key_required": false,
+      "availability": "MANUAL_ONLY",
+      "classification": "MANUAL_ONLY",
+      "quota": "No formal API for this use; manual downloads.",
+      "license_policy": "License is PER MODEL (CC0/CC-BY/CC-BY-SA variants) — never assume by site or author; record exact model URL and license.",
+      "cost_policy": "Free.",
+      "limitations": "Low-poly style fits prototyping more than final canon art.",
+      "notes": "Verified documentally 2026-11-15 (PR #19 docs); re-verify per model.",
+      "last_verified": "2026-11-15",
+      "constraints": [
+        "Per-model license check mandatory",
+        "CC-BY requires attribution kept in ATTRIBUTIONS.md"
       ]
     },
     {
@@ -264,7 +452,15 @@
       "availability": "AVAILABLE",
       "constraints": [
         "Verify exact pack license and permitted use; log source link"
-      ]
+      ],
+      "classification": "AVAILABLE",
+      "quota": "Packs downloadable free; no API.",
+      "license_policy": "Verify each pack's license: current packs use the Quaternius Animation License (QAL); older pages may say CC0 — check the exact pack.",
+      "cost_policy": "Free packs only.",
+      "limitations": "Manual downloads; record pack URL + license in assets/manifest.csv.",
+      "notes": "Good stylized characters/props/animation reference.",
+      "last_verified": "2026-11-17",
+      "api_docs": null
     },
     {
       "id": "sheepit",
@@ -278,6 +474,36 @@
       "constraints": [
         "Manual setup and contribution model",
         "Do not make automated dependencies until API/terms confirmed"
+      ],
+      "classification": "MANUAL_ONLY",
+      "quota": "Community render farm: you contribute machines to earn render points; no documented unattended API for this use case.",
+      "license_policy": "Service terms; only upload frames/scenes you own.",
+      "cost_policy": "Free (contribution-based); never purchase points.",
+      "limitations": "Rendering only — no modeling/generation. Not a dependable automated dependency.",
+      "notes": "Optional manual render assist; not part of the pipeline.",
+      "last_verified": "2026-11-17",
+      "api_docs": null
+    },
+    {
+      "id": "sketchfab",
+      "name": "Sketchfab (free catalog)",
+      "url": "https://sketchfab.com/features/free-3d-models",
+      "api_docs": "https://docs.sketchfab.com/",
+      "role": "Occasional reference/one-off models (migrated from PR #19 provider review)",
+      "free_tier": "Free-to-download catalog exists alongside paid store",
+      "gpu": false,
+      "api_key_required": true,
+      "availability": "MANUAL_ONLY",
+      "classification": "MANUAL_ONLY",
+      "quota": "Download API requires OAuth and an account; not automated here.",
+      "license_policy": "License is PER MODEL (many CC variants, some editorial-only); CC-BY requires attribution.",
+      "cost_policy": "Free-tagged downloads only; store purchases excluded.",
+      "limitations": "Manual downloads; record model URL, author and license per asset.",
+      "notes": "Verified documentally 2026-11-15 (PR #19 docs); re-verify per model.",
+      "last_verified": "2026-11-15",
+      "constraints": [
+        "Per-model license check mandatory",
+        "No automated downloads in MVP"
       ]
     },
     {
@@ -296,7 +522,14 @@
         "Algunos registros pueden exponer metadatos pero no archivo de medios por restricciones de derechos.",
         "Conservar el identificador del objeto, URL de registro, URL del medio, creador y licencia exacta.",
         "Usar como referencia o recurso puntual; revisar si el objeto encaja con el canon ficticio cubano de 1953 y no introducir objetos fuera de época sin justificación."
-      ]
+      ],
+      "classification": "AVAILABLE",
+      "quota": "API with free api.data.gov key; standard api.data.gov limits apply.",
+      "license_policy": "Download only media/models whose individual record is marked CC0; many records are metadata-only. Record identifier, creator, source URL and exact license.",
+      "cost_policy": "Free API key via https://api.data.gov/signup/.",
+      "limitations": "Secret SMITHSONIAN_API_KEY required; per-record license check mandatory.",
+      "notes": "Reference/cultural-objects source (1953 Cuba era props).",
+      "last_verified": "2026-11-17"
     },
     {
       "id": "stable_fast_3d_model",
@@ -313,7 +546,14 @@
         "Kaggle GPU runtime and memory compatibility must be benchmarked; do not assume support.",
         "Treat as optional alternative to TripoSR, not a required pipeline dependency.",
         "Input image rights, source revision, weight revision, output hash and license must be recorded."
-      ]
+      ],
+      "classification": "EXPERIMENTAL",
+      "quota": "Runs on paid/limited GPU hosts or local GPU; no free hosted quota guaranteed.",
+      "license_policy": "Stability AI Community License: commercial use free only under the USD 1M/year revenue threshold — document compliance before production use.",
+      "cost_policy": "Model weights free to download under Community License; compute cost depends on host.",
+      "limitations": "Experimental alternative to TripoSR; not an obligation.",
+      "notes": "Only after license threshold confirmation and GPU availability.",
+      "last_verified": "2026-11-17"
     },
     {
       "id": "telegram_bot_api",
@@ -328,7 +568,15 @@
         "Token from @BotFather is a secret",
         "Get chat_id only after user starts bot or uses a controlled group",
         "Do not send tokens/credentials in notifications"
-      ]
+      ],
+      "classification": "AVAILABLE",
+      "quota": "Bot API free; ~30 msg/second and per-chat limits are far above our use.",
+      "license_policy": "Bot API terms; never send tokens/logs/private data in messages.",
+      "cost_policy": "Free.",
+      "limitations": "Notification-only until a signed callback flow with an authorized-user list is reviewed; approvals happen in GitHub PRs.",
+      "notes": "Workflow asset-review-telegram.yml sends alerts when secrets exist; otherwise SKIPPED.",
+      "last_verified": "2026-11-17",
+      "api_docs": null
     },
     {
       "id": "tripo_free_web",
@@ -345,7 +593,14 @@
         "El plan Free no debe tratarse como propiedad exclusiva del proyecto: la ficha oficial indica que la IP del output pertenece a Tripo.",
         "No usar API ni automatizar exportaciones sin confirmar términos y coste exactos.",
         "No es proveedor base; preferir recursos CC0 o generación original con derechos claros."
-      ]
+      ],
+      "classification": "MANUAL_ONLY",
+      "quota": "Free web credits; download limits vary.",
+      "license_policy": "Documentation consulted indicates the output IP belongs to Tripo — NOT approved for production until full terms review and per-output license decision.",
+      "cost_policy": "Free web tier only; never purchase credits.",
+      "limitations": "Do not confuse with TripoSR (open-source model). Do not auto-approve any output.",
+      "notes": "Exploratory manual use only.",
+      "last_verified": "2026-11-17"
     },
     {
       "id": "triposr_open_model",
@@ -364,16 +619,16 @@
         "Do not assume a one-image reconstruction is a production-ready character, rig or animation.",
         "Input images must be original or licensed for this use; no copyrighted game character references.",
         "Record commit hash, model weight revision, environment lock, input hash, random seed if applicable, output SHA-256 and full license notices."
-      ]
+      ],
+      "classification": "EXPERIMENTAL",
+      "quota": "No service quota (open-source model); execution bound by Kaggle GPU quota when run there.",
+      "license_policy": "Upstream repository declares MIT for code and weights (https://github.com/VAST-AI-Research/TripoSR).",
+      "cost_policy": "Free software/weights; only free GPU lanes (Kaggle/ZeroGPU/Colab) allowed.",
+      "limitations": "~6 GB VRAM per image; rough single-view static reconstruction only — no characters, rigging or animation. Requires Blender cleanup + human review.",
+      "notes": "First automated GPU experiment: automation/kaggle/ kernel dispatched by asset-gpu-triposr.yml.",
+      "last_verified": "2026-11-17"
     }
   ],
-  "last_verified_utc": "2026-11-15",
-  "notes": [
-    "Actualización 2026-11-15: 3D Valley API separa biblioteca gratuita de herramientas que consumen créditos; no usar generación por API como servicio gratis.",
-    "Meshy Free es manual-only (sin API), 100 créditos/mes, 10 descargas Meshy 6 Lite sin texturas y licencia CC BY 4.0 con atribución.",
-    "Tripo Free no está aprobado como proveedor de producción por defecto: sus términos de salida requieren revisión de la titularidad/licencia antes de integración.",
-    "TripoSR open-source model is distinct from Tripo AI web service; upstream repository states MIT license for code and pretrained weights and approximately 6 GB VRAM for one image.",
-    "Kaggle CLI supports kernel submission and accelerator selection, but free quota/availability must be checked live; no fixed usage promise.",
-    "Stable Fast 3D Community License permits free commercial use only under USD 1M annual revenue; require legal gate."
-  ]
+  "last_verified_utc": "2026-11-17",
+  "notes": "Schema 1.1.0 adds the master-prompt required fields (classification, quota, license_policy, cost_policy, limitations, notes, last_verified) to every provider and migrates four providers documented in PR #19 (BlendKit, OpenGameArt, Poly Pizza, Sketchfab). Classification enum: AVAILABLE, LIMITED_QUOTA, MANUAL_ONLY, OPTIONAL, EXPERIMENTAL, REVIEW_LICENSE, DISABLED, PAID, UNKNOWN. Compound 'availability' strings are kept as human detail; 'classification' is the machine field. Zero-cost policy: no purchases, no billing, no card, no account cycling, no calls to providers whose cost is unknown."
 }

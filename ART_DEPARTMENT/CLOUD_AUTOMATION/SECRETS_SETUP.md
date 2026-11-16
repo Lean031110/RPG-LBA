@@ -69,3 +69,28 @@ Meshy Free no ofrece API; no existe una clave que debamos colocar para automatiz
 ## Regla para agentes
 
 Z.ai y los agentes de código solo deben crear referencias a nombres de secrets (por ejemplo `${{ secrets.TELEGRAM_BOT_TOKEN }}`), nunca pedir su valor en el chat, mostrarlo en logs ni guardarlo en un archivo. El propietario introduce los valores directamente en GitHub Settings > Secrets and variables > Actions.
+
+## PAT fine-grained: solo si es imprescindible
+
+(Sección absorbida de PR #19.) El `GITHUB_TOKEN` automático de Actions cubre todo el pipeline actual. Un PAT personal solo se justifica si un servicio externo (p. ej. n8n) debe llamar a la API de GitHub sin Actions. En ese caso:
+
+1. GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens.
+2. Acceso únicamente a `Lean031110/RPG-LBA`.
+3. Permisos mínimos: Contents (read/write) y Pull requests (read/write) solo si se exigen; Actions (read/write) solo para despachar workflows; Metadata read es automático.
+4. Guardarlo como Actions secret o credencial n8n. Documentar exactamente qué workflow/permiso lo requiere, y nunca enviarlo a un agente de IA por chat.
+
+Si un token llega a exponerse (chat, issue, commit, log), revocarlo y generar uno nuevo (AGENTS.md §11).
+
+## Checklist de alta del propietario
+
+- [ ] Bot de Telegram creado; token guardado como `TELEGRAM_BOT_TOKEN`
+- [ ] Chat ID obtenido de forma segura; guardado como `TELEGRAM_CHAT_ID`
+- [ ] `HF_TOKEN` creado solo si se necesitan modelos gated
+- [ ] Token Kaggle creado solo si se activa la automatización de notebooks
+- [ ] `SMITHSONIAN_API_KEY` creada solo si se activa esa fuente
+- [ ] Proyecto Firebase Spark creado sin billing; reglas deny-by-default de `firebase/firestore.rules` desplegadas y validadas con Emulator Suite antes de cualquier uso
+- [ ] Secrets de Actions configurados sin commitear valores
+- [ ] Credenciales n8n recreadas tras importar plantillas; mensaje de prueba recibido
+- [ ] Export/import y restauración de n8n probados con datos sintéticos
+
+Cada ítem marcado sin evidencia real debe reportarse como NOT TESTED, nunca como PASS.

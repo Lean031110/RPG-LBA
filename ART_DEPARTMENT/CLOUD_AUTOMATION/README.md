@@ -26,7 +26,10 @@ See:
 - `LEGACY_ASSET_INDEX.json`: 64 additional legacy file records with stable LEGACY IDs and direct GitHub links; Git blob SHA-1 values are explicitly not SHA-256.
 - `ASSET_GAP_BACKLOG.json`: missing/placeholder/improvement needs with stable GAP IDs.
 - `PROVIDER_REGISTRY.json`: providers, official links, current free tiers and safety guards.
+- `ASSET_CONVENTIONS.md`: taxonomy, stable ID formats, naming, mobile budgets and lifecycle states — where every class, NPC, enemy, boss, weapon, kit, material and VFX belongs.
+- `PR19_RECONCILIATION.md`: map of what was migrated from PR #19 and what was superseded (single factory, single catalogue).
 - `../DOCUMENTATION/PRODUCTION_STATUS.md`: original factory report; update it because its branch/PR wording is stale relative to the current main.
+- `../../firebase/`: deny-by-default Firestore rules and optional-Firebase guide (Spark quotas, data model, NOT CONFIGURED status).
 
 ## 2. Source-of-truth hierarchy
 
@@ -162,7 +165,7 @@ AI generation is a separate, quota-limited lane:
 
 ## 6. Preferred providers
 
-The live source and limits are in `PROVIDER_REGISTRY.json`. Prioritize:
+The live source and limits are in `PROVIDER_REGISTRY.json` (27 providers, schema 1.1.0, each with classification/quota/license_policy/cost_policy/limitations/notes/last_verified). Prioritize:
 1. **GitHub Actions + Blender headless** for reliable CPU production, validation and preview generation.
 2. **3D Valley REST API/MCP** for searching the CC0 library and limited AI model/texturing/animation runs. Its API has separate paid-credit tools and daily free models. Query `GET /tools` and `GET /account` before generation; refuse anything whose exact price is not zero; set `max_credits=0`; use idempotency keys.
 3. **Poly Haven API** and **ambientCG API v3** for CC0 textures, HDRIs and models; record exact asset IDs/source URLs and hashes.
