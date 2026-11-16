@@ -53,7 +53,7 @@ static func _build_ground(root: Node3D, palette: Dictionary) -> void:
 	root.add_child(ground)
 	VisualKit.add_box(
 		ground,
-		Vector3(CITY_HALF_WIDTH * 2.0 + 12.0, 0.5, CITY_HALF_DEPTH * 2.0 + 12.0),
+		Vector3(CITY_HALF_WIDTH * 2.0 + 26.0, 0.5, CITY_HALF_DEPTH * 2.0 + 26.0),
 		Vector3(0.0, -0.28, 0.0),
 		palette["ground"]
 	)
@@ -61,7 +61,7 @@ static func _build_ground(root: Node3D, palette: Dictionary) -> void:
 	body.name = "GroundCollision"
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
-	box.size = Vector3(CITY_HALF_WIDTH * 2.0 + 12.0, 0.5, CITY_HALF_DEPTH * 2.0 + 12.0)
+	box.size = Vector3(CITY_HALF_WIDTH * 2.0 + 26.0, 0.5, CITY_HALF_DEPTH * 2.0 + 26.0)
 	shape.shape = box
 	body.add_child(shape)
 	body.position.y = -0.28
@@ -78,16 +78,28 @@ static func _build_roads(root: Node3D, palette: Dictionary) -> void:
 	VisualKit.add_box(roads, Vector3(ROAD_WIDTH, 0.10, road_length), Vector3(0.0, 0.035, 0.0), palette["road"])
 	VisualKit.add_box(roads, Vector3(CITY_HALF_WIDTH * 2.0, 0.10, ROAD_WIDTH), Vector3(0.0, 0.04, 0.0), palette["road"])
 	VisualKit.add_box(roads, Vector3(ROAD_WIDTH - 1.0, 0.11, road_length), Vector3(0.0, 0.045, 0.0), palette["cobble"])
-	VisualKit.add_box(roads, Vector3(CITY_HALF_WIDTH * 2.0, 0.11, ROAD_WIDTH - 1.0), Vector3(0.0, 0.05, 0.0), palette["cobble"])
+	VisualKit.add_box(
+		roads, Vector3(CITY_HALF_WIDTH * 2.0, 0.11, ROAD_WIDTH - 1.0), Vector3(0.0, 0.05, 0.0), palette["cobble"]
+	)
 	# Calles de conexión entre barrios y anillo perimetral.
 	for z_value in [-25.0, 25.0]:
-		VisualKit.add_box(roads, Vector3(CITY_HALF_WIDTH * 2.0, 0.09, 4.2), Vector3(0.0, 0.025, z_value), palette["road"])
+		VisualKit.add_box(
+			roads, Vector3(CITY_HALF_WIDTH * 2.0, 0.09, 4.2), Vector3(0.0, 0.025, z_value), palette["road"]
+		)
+
+		# Bordillos claros definen las aceras sin elevar el terreno jugable.
 	for x_value in [-31.0, 31.0]:
-		VisualKit.add_box(roads, Vector3(4.2, 0.09, CITY_HALF_DEPTH * 2.0), Vector3(x_value, 0.025, 0.0), palette["road"])
-	# Bordillos claros definen las aceras sin elevar el terreno jugable.
+		VisualKit.add_box(
+			roads, Vector3(4.2, 0.09, CITY_HALF_DEPTH * 2.0), Vector3(x_value, 0.025, 0.0), palette["road"]
+		)
+		# Bordillos claros definen las aceras sin elevar el terreno jugable.
 	for side in [-1.0, 1.0]:
-		VisualKit.add_box(roads, Vector3(0.42, 0.22, road_length), Vector3(side * 3.85, 0.11, 0.0), palette["limestone"])
-		VisualKit.add_box(roads, Vector3(CITY_HALF_WIDTH * 2.0, 0.22, 0.42), Vector3(0.0, 0.11, side * 3.85), palette["limestone"])
+		VisualKit.add_box(
+			roads, Vector3(0.42, 0.22, road_length), Vector3(side * 3.85, 0.11, 0.0), palette["limestone"]
+		)
+		VisualKit.add_box(
+			roads, Vector3(CITY_HALF_WIDTH * 2.0, 0.22, 0.42), Vector3(0.0, 0.11, side * 3.85), palette["limestone"]
+		)
 
 
 static func _build_plaza(root: Node3D, palette: Dictionary) -> void:
@@ -97,8 +109,18 @@ static func _build_plaza(root: Node3D, palette: Dictionary) -> void:
 	VisualKit.add_box(plaza, Vector3(PLAZA_SIZE, 0.12, PLAZA_SIZE), Vector3(0.0, 0.08, 0.0), palette["limestone"])
 	# Adoquines de borde y bandas radiales discretas.
 	for side in [-1.0, 1.0]:
-		VisualKit.add_box(plaza, Vector3(PLAZA_SIZE + 1.2, 0.16, 0.48), Vector3(0.0, 0.13, side * (PLAZA_SIZE * 0.5)), palette["roof_shadow"])
-		VisualKit.add_box(plaza, Vector3(0.48, 0.16, PLAZA_SIZE + 1.2), Vector3(side * (PLAZA_SIZE * 0.5), 0.13, 0.0), palette["roof_shadow"])
+		VisualKit.add_box(
+			plaza,
+			Vector3(PLAZA_SIZE + 1.2, 0.16, 0.48),
+			Vector3(0.0, 0.13, side * (PLAZA_SIZE * 0.5)),
+			palette["roof_shadow"]
+		)
+		VisualKit.add_box(
+			plaza,
+			Vector3(0.48, 0.16, PLAZA_SIZE + 1.2),
+			Vector3(side * (PLAZA_SIZE * 0.5), 0.13, 0.0),
+			palette["roof_shadow"]
+		)
 	_build_fountain(plaza, palette)
 	_build_bench(plaza, Vector3(-7.2, 0.0, 5.8), 0.0, palette)
 	_build_bench(plaza, Vector3(7.2, 0.0, 5.8), 0.0, palette)
@@ -122,35 +144,157 @@ static func _build_districts(root: Node3D, rng: RandomNumberGenerator, palette: 
 	districts.name = "Districts"
 	root.add_child(districts)
 	var specs: Array[Dictionary] = [
-		{"district": "BarrioDelSol", "pos": Vector3(-18.0, 0.0, -16.0), "size": Vector3(10.0, 5.8, 8.0), "rot": 90.0, "mat": "plaster_ochre"},
-		{"district": "BarrioDelSol", "pos": Vector3(-43.0, 0.0, -16.0), "size": Vector3(9.0, 5.0, 8.0), "rot": 90.0, "mat": "plaster_cream"},
-		{"district": "BarrioDelSol", "pos": Vector3(-18.0, 0.0, -36.0), "size": Vector3(10.0, 5.5, 8.0), "rot": 0.0, "mat": "plaster_rose"},
-		{"district": "BarrioDelSol", "pos": Vector3(-43.0, 0.0, -36.0), "size": Vector3(9.0, 4.8, 8.0), "rot": 0.0, "mat": "plaster_teal"},
-		{"district": "BarrioDelSol", "pos": Vector3(18.0, 0.0, -16.0), "size": Vector3(10.0, 5.8, 8.0), "rot": -90.0, "mat": "plaster_cream"},
-		{"district": "BarrioDelSol", "pos": Vector3(43.0, 0.0, -16.0), "size": Vector3(9.0, 5.0, 8.0), "rot": -90.0, "mat": "plaster_ochre"},
-		{"district": "BarrioDelSol", "pos": Vector3(18.0, 0.0, -36.0), "size": Vector3(10.0, 5.5, 8.0), "rot": 0.0, "mat": "plaster_teal"},
-		{"district": "BarrioDelSol", "pos": Vector3(43.0, 0.0, -36.0), "size": Vector3(9.0, 4.8, 8.0), "rot": 0.0, "mat": "plaster_rose"},
-		{"district": "BarrioDelSur", "pos": Vector3(-18.0, 0.0, 16.0), "size": Vector3(10.0, 5.8, 8.0), "rot": 90.0, "mat": "plaster_teal"},
-		{"district": "BarrioDelSur", "pos": Vector3(-43.0, 0.0, 16.0), "size": Vector3(9.0, 5.0, 8.0), "rot": 90.0, "mat": "plaster_rose"},
-		{"district": "BarrioDelSur", "pos": Vector3(-18.0, 0.0, 36.0), "size": Vector3(10.0, 5.5, 8.0), "rot": 180.0, "mat": "plaster_cream"},
-		{"district": "BarrioDelSur", "pos": Vector3(-43.0, 0.0, 36.0), "size": Vector3(9.0, 4.8, 8.0), "rot": 180.0, "mat": "plaster_ochre"},
-		{"district": "BarrioDelSur", "pos": Vector3(18.0, 0.0, 16.0), "size": Vector3(10.0, 5.8, 8.0), "rot": -90.0, "mat": "plaster_rose"},
-		{"district": "BarrioDelSur", "pos": Vector3(43.0, 0.0, 16.0), "size": Vector3(9.0, 5.0, 8.0), "rot": -90.0, "mat": "plaster_teal"},
-		{"district": "BarrioDelSur", "pos": Vector3(18.0, 0.0, 36.0), "size": Vector3(10.0, 5.5, 8.0), "rot": 180.0, "mat": "plaster_ochre"},
-		{"district": "BarrioDelSur", "pos": Vector3(43.0, 0.0, 36.0), "size": Vector3(9.0, 4.8, 8.0), "rot": 180.0, "mat": "plaster_cream"}
+		{
+			"district": "BarrioDelSol",
+			"pos": Vector3(-18.0, 0.0, -16.0),
+			"size": Vector3(10.0, 5.8, 8.0),
+			"rot": 90.0,
+			"mat": "plaster_ochre"
+		},
+		{
+			"district": "BarrioDelSol",
+			"pos": Vector3(-43.0, 0.0, -16.0),
+			"size": Vector3(9.0, 5.0, 8.0),
+			"rot": 90.0,
+			"mat": "plaster_cream"
+		},
+		{
+			"district": "BarrioDelSol",
+			"pos": Vector3(-18.0, 0.0, -36.0),
+			"size": Vector3(10.0, 5.5, 8.0),
+			"rot": 0.0,
+			"mat": "plaster_rose"
+		},
+		{
+			"district": "BarrioDelSol",
+			"pos": Vector3(-43.0, 0.0, -36.0),
+			"size": Vector3(9.0, 4.8, 8.0),
+			"rot": 0.0,
+			"mat": "plaster_teal"
+		},
+		{
+			"district": "BarrioDelSol",
+			"pos": Vector3(18.0, 0.0, -16.0),
+			"size": Vector3(10.0, 5.8, 8.0),
+			"rot": -90.0,
+			"mat": "plaster_cream"
+		},
+		{
+			"district": "BarrioDelSol",
+			"pos": Vector3(43.0, 0.0, -16.0),
+			"size": Vector3(9.0, 5.0, 8.0),
+			"rot": -90.0,
+			"mat": "plaster_ochre"
+		},
+		{
+			"district": "BarrioDelSol",
+			"pos": Vector3(18.0, 0.0, -36.0),
+			"size": Vector3(10.0, 5.5, 8.0),
+			"rot": 0.0,
+			"mat": "plaster_teal"
+		},
+		{
+			"district": "BarrioDelSol",
+			"pos": Vector3(43.0, 0.0, -36.0),
+			"size": Vector3(9.0, 4.8, 8.0),
+			"rot": 0.0,
+			"mat": "plaster_rose"
+		},
+		{
+			"district": "BarrioDelSur",
+			"pos": Vector3(-18.0, 0.0, 16.0),
+			"size": Vector3(10.0, 5.8, 8.0),
+			"rot": 90.0,
+			"mat": "plaster_teal"
+		},
+		{
+			"district": "BarrioDelSur",
+			"pos": Vector3(-43.0, 0.0, 16.0),
+			"size": Vector3(9.0, 5.0, 8.0),
+			"rot": 90.0,
+			"mat": "plaster_rose"
+		},
+		{
+			"district": "BarrioDelSur",
+			"pos": Vector3(-18.0, 0.0, 36.0),
+			"size": Vector3(10.0, 5.5, 8.0),
+			"rot": 180.0,
+			"mat": "plaster_cream"
+		},
+		{
+			"district": "BarrioDelSur",
+			"pos": Vector3(-43.0, 0.0, 36.0),
+			"size": Vector3(9.0, 4.8, 8.0),
+			"rot": 180.0,
+			"mat": "plaster_ochre"
+		},
+		{
+			"district": "BarrioDelSur",
+			"pos": Vector3(18.0, 0.0, 16.0),
+			"size": Vector3(10.0, 5.8, 8.0),
+			"rot": -90.0,
+			"mat": "plaster_rose"
+		},
+		{
+			"district": "BarrioDelSur",
+			"pos": Vector3(43.0, 0.0, 16.0),
+			"size": Vector3(9.0, 5.0, 8.0),
+			"rot": -90.0,
+			"mat": "plaster_teal"
+		},
+		{
+			"district": "BarrioDelSur",
+			"pos": Vector3(18.0, 0.0, 36.0),
+			"size": Vector3(10.0, 5.5, 8.0),
+			"rot": 180.0,
+			"mat": "plaster_ochre"
+		},
+		{
+			"district": "BarrioDelSur",
+			"pos": Vector3(43.0, 0.0, 36.0),
+			"size": Vector3(9.0, 4.8, 8.0),
+			"rot": 180.0,
+			"mat": "plaster_cream"
+		}
 	]
 	var index := 0
 	for spec in specs:
 		var material: Material = palette[String(spec["mat"])]
 		_build_house(districts, spec, index, material, palette, rng)
 		index += 1
-	# Edificios singulares, situados en los extremos de sus manzanas.
-	_build_landmark(districts, "CasaDeCabildo", Vector3(-18.0, 0.0, 0.0), Vector3(12.0, 7.0, 9.0), palette["plaster_cream"], palette, true)
-	_build_landmark(districts, "MercadoDelPuerto", Vector3(18.0, 0.0, 0.0), Vector3(12.0, 5.4, 10.0), palette["plaster_ochre"], palette, false)
-	_build_landmark(districts, "SantuarioDeLasCampanas", Vector3(43.0, 0.0, 0.0), Vector3(10.0, 8.0, 12.0), palette["plaster_teal"], palette, true)
+		# Edificios singulares, situados en los extremos de sus manzanas.
+	_build_landmark(
+		districts,
+		"CasaDeCabildo",
+		Vector3(-18.0, 0.0, 0.0),
+		Vector3(12.0, 7.0, 9.0),
+		palette["plaster_cream"],
+		palette,
+		true
+	)
+	_build_landmark(
+		districts,
+		"MercadoDelPuerto",
+		Vector3(18.0, 0.0, 0.0),
+		Vector3(12.0, 5.4, 10.0),
+		palette["plaster_ochre"],
+		palette,
+		false
+	)
+	_build_landmark(
+		districts,
+		"SantuarioDeLasCampanas",
+		Vector3(43.0, 0.0, 0.0),
+		Vector3(10.0, 8.0, 12.0),
+		palette["plaster_teal"],
+		palette,
+		true
+	)
 
 
-static func _build_house(parent: Node3D, spec: Dictionary, index: int, wall_mat: Material, palette: Dictionary, rng: RandomNumberGenerator) -> void:
+static func _build_house(
+	parent: Node3D, spec: Dictionary, index: int, wall_mat: Material, palette: Dictionary, rng: RandomNumberGenerator
+) -> void:
 	var house := Node3D.new()
 	house.name = "%s_Casa_%02d" % [String(spec["district"]), index + 1]
 	house.position = spec["pos"]
@@ -162,27 +306,65 @@ static func _build_house(parent: Node3D, spec: Dictionary, index: int, wall_mat:
 	var depth := size.z
 	VisualKit.add_box(house, Vector3(width + 0.45, 0.42, depth + 0.45), Vector3(0.0, 0.21, 0.0), palette["limestone"])
 	VisualKit.add_box(house, Vector3(width, height, depth), Vector3(0.0, height * 0.5 + 0.35, 0.0), wall_mat)
-	VisualKit.add_box(house, Vector3(width + 0.9, 0.38, depth + 0.9), Vector3(0.0, height + 0.54, 0.0), palette["roof_shadow"])
-	VisualKit.add_box(house, Vector3(width + 0.55, 0.52, depth + 0.55), Vector3(0.0, height + 0.92, 0.0), palette["roof"])
+	VisualKit.add_box(
+		house, Vector3(width + 0.9, 0.38, depth + 0.9), Vector3(0.0, height + 0.54, 0.0), palette["roof_shadow"]
+	)
+	VisualKit.add_box(
+		house, Vector3(width + 0.55, 0.52, depth + 0.55), Vector3(0.0, height + 0.92, 0.0), palette["roof"]
+	)
 	# Cornisas y pilastras de caliza para romper las masas planas.
 	for side in [-1.0, 1.0]:
-		VisualKit.add_box(house, Vector3(0.28, height, 0.32), Vector3(side * (width * 0.5 - 0.22), height * 0.5 + 0.35, -depth * 0.5 - 0.08), palette["limestone"])
-	VisualKit.add_box(house, Vector3(width + 0.45, 0.22, 0.28), Vector3(0.0, height + 0.28, -depth * 0.5 - 0.08), palette["limestone"])
+		VisualKit.add_box(
+			house,
+			Vector3(0.28, height, 0.32),
+			Vector3(side * (width * 0.5 - 0.22), height * 0.5 + 0.35, -depth * 0.5 - 0.08),
+			palette["limestone"]
+		)
+
+		# Entrada, marco y hojas de madera.
+
+		# Balcón corrido de madera y baranda de hierro.
+
+		# Collisión única por edificio: el interior no es transitable en esta entrega.
+
+		# Variación mínima reproducible para que la calle no parezca una repetición rígida.
+	VisualKit.add_box(
+		house, Vector3(width + 0.45, 0.22, 0.28), Vector3(0.0, height + 0.28, -depth * 0.5 - 0.08), palette["limestone"]
+	)
 	# Entrada, marco y hojas de madera.
 	VisualKit.add_box(house, Vector3(1.55, 2.55, 0.18), Vector3(0.0, 1.62, -depth * 0.5 - 0.12), palette["wood"])
 	VisualKit.add_box(house, Vector3(1.18, 2.2, 0.12), Vector3(0.0, 1.56, -depth * 0.5 - 0.23), palette["wood_light"])
 	VisualKit.add_box(house, Vector3(0.10, 0.10, 0.08), Vector3(0.42, 1.45, -depth * 0.5 - 0.31), palette["gold"])
 	for window_x in [-width * 0.29, width * 0.29]:
-		VisualKit.add_box(house, Vector3(1.25, 1.28, 0.12), Vector3(window_x, 2.55, -depth * 0.5 - 0.14), palette["wood"])
-		VisualKit.add_box(house, Vector3(0.96, 0.98, 0.08), Vector3(window_x, 2.55, -depth * 0.5 - 0.23), palette["glass"])
+		VisualKit.add_box(
+			house, Vector3(1.25, 1.28, 0.12), Vector3(window_x, 2.55, -depth * 0.5 - 0.14), palette["wood"]
+		)
+		VisualKit.add_box(
+			house, Vector3(0.96, 0.98, 0.08), Vector3(window_x, 2.55, -depth * 0.5 - 0.23), palette["glass"]
+		)
 		for shutter_side in [-1.0, 1.0]:
-			VisualKit.add_box(house, Vector3(0.18, 1.34, 0.16), Vector3(window_x + shutter_side * 0.69, 2.55, -depth * 0.5 - 0.22), palette["wood_light"])
-	# Balcón corrido de madera y baranda de hierro.
+			VisualKit.add_box(
+				house,
+				Vector3(0.18, 1.34, 0.16),
+				Vector3(window_x + shutter_side * 0.69, 2.55, -depth * 0.5 - 0.22),
+				palette["wood_light"]
+			)
+		# Balcón corrido de madera y baranda de hierro.
+
+		# Collisión única por edificio: el interior no es transitable en esta entrega.
+
+		# Variación mínima reproducible para que la calle no parezca una repetición rígida.
 	VisualKit.add_box(house, Vector3(width * 0.72, 0.16, 1.0), Vector3(0.0, 2.05, -depth * 0.5 - 0.75), palette["wood"])
-	VisualKit.add_box(house, Vector3(width * 0.72, 0.12, 0.12), Vector3(0.0, 2.62, -depth * 0.5 - 1.15), palette["iron"])
+	VisualKit.add_box(
+		house, Vector3(width * 0.72, 0.12, 0.12), Vector3(0.0, 2.62, -depth * 0.5 - 1.15), palette["iron"]
+	)
 	for rail_x in range(-3, 4):
-		VisualKit.add_box(house, Vector3(0.07, 0.58, 0.07), Vector3(float(rail_x) * 0.7, 2.34, -depth * 0.5 - 1.15), palette["iron"])
-	# Collisión única por edificio: el interior no es transitable en esta entrega.
+		VisualKit.add_box(
+			house, Vector3(0.07, 0.58, 0.07), Vector3(float(rail_x) * 0.7, 2.34, -depth * 0.5 - 1.15), palette["iron"]
+		)
+		# Collisión única por edificio: el interior no es transitable en esta entrega.
+
+		# Variación mínima reproducible para que la calle no parezca una repetición rígida.
 	var body := StaticBody3D.new()
 	body.name = "BuildingCollision"
 	var collision := CollisionShape3D.new()
@@ -196,20 +378,36 @@ static func _build_house(parent: Node3D, spec: Dictionary, index: int, wall_mat:
 	house.add_child(body)
 	# Variación mínima reproducible para que la calle no parezca una repetición rígida.
 	if rng.randf() > 0.45:
-		VisualKit.add_box(house, Vector3(0.7, 0.16, 0.7), Vector3(-width * 0.36, height + 1.23, depth * 0.25), palette["limestone"])
+		VisualKit.add_box(
+			house, Vector3(0.7, 0.16, 0.7), Vector3(-width * 0.36, height + 1.23, depth * 0.25), palette["limestone"]
+		)
 
 
-static func _build_landmark(parent: Node3D, landmark_name: String, position: Vector3, size: Vector3, wall_mat: Material, palette: Dictionary, tower: bool) -> void:
+static func _build_landmark(
+	parent: Node3D,
+	landmark_name: String,
+	position: Vector3,
+	size: Vector3,
+	wall_mat: Material,
+	palette: Dictionary,
+	tower: bool
+) -> void:
 	var landmark := Node3D.new()
 	landmark.name = landmark_name
 	landmark.position = position
 	parent.add_child(landmark)
 	VisualKit.add_box(landmark, Vector3(size.x + 0.8, 0.5, size.z + 0.8), Vector3(0.0, 0.25, 0.0), palette["limestone"])
 	VisualKit.add_box(landmark, size, Vector3(0.0, size.y * 0.5 + 0.5, 0.0), wall_mat)
-	VisualKit.add_box(landmark, Vector3(size.x + 1.4, 0.42, size.z + 1.4), Vector3(0.0, size.y + 0.72, 0.0), palette["roof_shadow"])
-	VisualKit.add_box(landmark, Vector3(size.x + 0.8, 0.48, size.z + 0.8), Vector3(0.0, size.y + 1.15, 0.0), palette["roof"])
+	VisualKit.add_box(
+		landmark, Vector3(size.x + 1.4, 0.42, size.z + 1.4), Vector3(0.0, size.y + 0.72, 0.0), palette["roof_shadow"]
+	)
+	VisualKit.add_box(
+		landmark, Vector3(size.x + 0.8, 0.48, size.z + 0.8), Vector3(0.0, size.y + 1.15, 0.0), palette["roof"]
+	)
 	for window_x in [-size.x * 0.28, size.x * 0.28]:
-		VisualKit.add_box(landmark, Vector3(1.3, 1.8, 0.12), Vector3(window_x, 2.7, -size.z * 0.5 - 0.12), palette["glass"])
+		VisualKit.add_box(
+			landmark, Vector3(1.3, 1.8, 0.12), Vector3(window_x, 2.7, -size.z * 0.5 - 0.12), palette["glass"]
+		)
 	if tower:
 		VisualKit.add_box(landmark, Vector3(3.0, 4.2, 3.0), Vector3(0.0, size.y + 2.6, 0.0), palette["limestone"])
 		VisualKit.add_cone(landmark, 2.2, 2.4, Vector3(0.0, size.y + 6.0, 0.0), palette["roof"])
@@ -270,7 +468,18 @@ static func _build_market_stall(parent: Node3D, position: Vector3, palette: Dict
 	for x_value in [-1.65, 1.65]:
 		for z_value in [-0.95, 0.95]:
 			VisualKit.add_cylinder(stall, 0.09, 2.7, Vector3(x_value, 1.35, z_value), palette["wood"], 6)
+
+		# Toldos alternos rosa/verde: identidad de mercado portuario caribeno.
 	VisualKit.add_box(stall, Vector3(4.3, 0.14, 2.8), Vector3(0.0, 2.75, 0.0), palette["roof"])
+	# Toldos alternos rosa/verde: identidad de mercado portuario caribeno.
+	var awning_materials: Array = [palette["plaster_rose"], palette["plaster_teal"]]
+	for awning_index in range(4):
+		VisualKit.add_box(
+			stall,
+			Vector3(1.12, 0.10, 3.0),
+			Vector3(-1.72 + awning_index * 1.15, 2.95, 0.0),
+			awning_materials[awning_index % 2]
+		)
 
 
 static func _build_bench(parent: Node3D, position: Vector3, rotation: float, palette: Dictionary) -> void:
@@ -289,13 +498,15 @@ static func _build_greenery(root: Node3D, rng: RandomNumberGenerator, density: f
 	var greenery := Node3D.new()
 	greenery.name = "Greenery"
 	root.add_child(greenery)
-	var tree_count := int(14.0 * density) + 6
+	var tree_count := int(18.0 * density) + 6
 	for index in range(tree_count):
 		var side := -1.0 if index % 2 == 0 else 1.0
-		var x_value := side * rng.randf_range(43.0, 51.0)
+		var x_value := side * rng.randf_range(39.0, 47.0)
 		var z_value := rng.randf_range(-38.0, 38.0)
 		_build_tree(greenery, Vector3(x_value, 0.0, z_value), rng, palette)
-	for position in [Vector3(-8.8, 0.0, -8.8), Vector3(8.8, 0.0, -8.8), Vector3(-8.8, 0.0, 8.8), Vector3(8.8, 0.0, 8.8)]:
+	for position in [
+		Vector3(-8.8, 0.0, -8.8), Vector3(8.8, 0.0, -8.8), Vector3(-8.8, 0.0, 8.8), Vector3(8.8, 0.0, 8.8)
+	]:
 		_build_tree(greenery, position, rng, palette)
 
 
@@ -318,12 +529,26 @@ static func _build_city_edges(root: Node3D, palette: Dictionary) -> void:
 	edges.name = "CityEdgeAndEntrances"
 	root.add_child(edges)
 	for x_value in [-CITY_HALF_WIDTH, CITY_HALF_WIDTH]:
-		VisualKit.add_box(edges, Vector3(0.8, 2.2, CITY_HALF_DEPTH * 2.0), Vector3(x_value, 1.1, 0.0), palette["limestone"])
+		VisualKit.add_box(
+			edges, Vector3(0.8, 2.2, CITY_HALF_DEPTH * 2.0), Vector3(x_value, 1.1, 0.0), palette["limestone"]
+		)
+
+		# Portales visuales abiertos en los dos extremos del camino principal.
 	for z_value in [-CITY_HALF_DEPTH, CITY_HALF_DEPTH]:
 		var segment_width := CITY_HALF_WIDTH - 4.5
-		VisualKit.add_box(edges, Vector3(segment_width, 2.2, 0.8), Vector3(-CITY_HALF_WIDTH * 0.5 - 2.25, 1.1, z_value), palette["limestone"])
-		VisualKit.add_box(edges, Vector3(segment_width, 2.2, 0.8), Vector3(CITY_HALF_WIDTH * 0.5 + 2.25, 1.1, z_value), palette["limestone"])
-	# Portales visuales abiertos en los dos extremos del camino principal.
+		VisualKit.add_box(
+			edges,
+			Vector3(segment_width, 2.2, 0.8),
+			Vector3(-CITY_HALF_WIDTH * 0.5 - 2.25, 1.1, z_value),
+			palette["limestone"]
+		)
+		VisualKit.add_box(
+			edges,
+			Vector3(segment_width, 2.2, 0.8),
+			Vector3(CITY_HALF_WIDTH * 0.5 + 2.25, 1.1, z_value),
+			palette["limestone"]
+		)
+		# Portales visuales abiertos en los dos extremos del camino principal.
 	for z_value in [-CITY_HALF_DEPTH, CITY_HALF_DEPTH]:
 		VisualKit.add_box(edges, Vector3(0.65, 5.2, 0.65), Vector3(-4.2, 2.6, z_value), palette["limestone"])
 		VisualKit.add_box(edges, Vector3(0.65, 5.2, 0.65), Vector3(4.2, 2.6, z_value), palette["limestone"])

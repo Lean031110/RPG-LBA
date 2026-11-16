@@ -9,8 +9,8 @@ script = ExtResource("1_preview")
 position = Vector3(0, 0.2, 30)
 
 [node name="PreviewCamera" type="Camera3D" parent="."]
-position = Vector3(0, 68, 78)
-rotation = Vector3(-0.67, 0, 0)
+position = Vector3(0, 46, 54)
+rotation = Vector3(-0.7, 0, 0)
 projection = 1
-size = 112.0
+size = 96.0
 current = true

@@ -34,10 +34,7 @@ func test_density_is_clamped_and_scene_remains_deterministic() -> void:
 	add_child(second)
 	ValdeluzCapitalBuilder.build(first, -10.0)
 	ValdeluzCapitalBuilder.build(second, 10.0)
-	assert_int(first.get_node("Districts").get_child_count()).is_equal(
-		second.get_node("Districts").get_child_count()
-	)
-
+	assert_int(first.get_node("Districts").get_child_count()).is_equal(second.get_node("Districts").get_child_count())
 
 
 func test_preview_scene_loads_and_builds_city() -> void:

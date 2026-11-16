@@ -8,6 +8,10 @@ extends Node3D
 @export var auto_advance := true
 @export_range(1.0, 90.0, 1.0) var weather_transition_seconds := 18.0
 @export var enable_rain_particles := true
+## Multiplicador de densidad de niebla (1.0 = look estandar del juego). Las vistas
+## cenitales de revision (p. ej. la capital) lo reducen porque acumulan 70-110 m de
+## profundidad y la niebla pensada para la camara en tercera persona las lava.
+@export_range(0.0, 1.0, 0.05) var fog_scale := 1.0
 
 var day_cycle: DayNightCycle
 var weather_controller: WeatherController
@@ -348,8 +352,11 @@ func _apply_visual_state() -> void:
 	active_environment.fog_light_color = state["fog_color"].lerp(
 		Color(0.43, 0.50, 0.56), maxf(fog_weight, rain_weight * 0.45)
 	)
-	active_environment.fog_density = clampf(
-		float(state["fog_density"]) + fog_weight * 0.014 + rain_weight * 0.003 + cloud_weight * 0.002, 0.002, 0.026
+	active_environment.fog_density = (
+		clampf(
+			float(state["fog_density"]) + fog_weight * 0.014 + rain_weight * 0.003 + cloud_weight * 0.002, 0.002, 0.026
+		)
+		* fog_scale
 	)
 
 	sun_light.light_color = state["sun_color"]
