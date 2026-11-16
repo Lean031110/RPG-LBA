@@ -67,9 +67,9 @@ Every item must be checked at the exact pack/file level. A source portal's gener
 ## Existing factory and workflow risks
 
 - Existing paths and CLI should be preserved. It already supports procedural texture/model generation, queue, previews, reports, validation and PR publication.
-- The existing `asset-factory.yml` has a gated schedule, but the factory can commit to the ref it is running on. Enabling its old `FACTORY_CRON_ENABLED` variable while it runs on the default branch may write directly to `main`; this must be corrected before scheduled production is enabled.
-- Existing workflow documentation references a previous branch/PR state and needs updating.
-- Existing pipeline currently uses CPU procedural backends/fallback; no proof of an integrated cloud AI 3D generation provider or Telegram review notifier was found on main.
+- ~~The existing `asset-factory.yml` schedule risked writing to `main`~~ **CORREGIDO (2026-11-16):** la fábrica lleva guarda de rama (falla en main/release*) y el despacho programado pasa por `asset-factory-scheduler.yml`, que valida `^(agent|feature)/` antes de llamar a `gh workflow run`; su cron queda comentado hasta una prueba e2e manual aprobada.
+- Existing workflow documentation references a previous branch/PR state and needs updating (PRODUCTION_STATUS.md still points at the merged PR#12 branch wording).
+- Existing pipeline currently uses CPU procedural backends/fallback; no proof of an integrated cloud AI 3D generation provider or Telegram review notifier was found on main (GPU lane prototype: NOT TESTED, see `automation/kaggle/`).
 
 ## Verification states
 
@@ -80,8 +80,13 @@ Every item must be checked at the exact pack/file level. A source portal's gener
 | Manifest report read | PASS (historical report) | Report's recorded outcome, not rerun now |
 | Duplicate report read | PASS (historical report) | Report's recorded outcome, not rerun now |
 | Current tree scan | PASS | File paths and extensions inspected |
+| Consolidated factory validator | PASS (2026-11-16) | `scripts/ci/validate_asset_factory.py`: 20 PASS / 3 WARN / 0 FAIL (WARN = cuarentena `close.svg`, 4 contenidos duplicados reales, 13 nombres de terceros exentos por AGENTS.md §5) |
+| Index consistency (schema 2.0.0) | PASS (2026-11-16) | `build_asset_library_index.py --check` normalizado: 157 registros / 262 archivos / hashes SHA-256 re-verificados |
+| Blender headless asset processing | PASS (2026-11-16) | `EVIDENCE/BLENDER_HEADLESS_2026-11-16.md`: import→dedup/normales/triangulación→GLB verificable (2 assets, trimesh externo) |
+| Godot 4.7.2 import (proyecto completo) | PASS (2026-11-16) | `EVIDENCE/GODOT_IMPORT_2026-11-16.md`: exit 0, 349 pasos, 0 ERROR, 148 entradas GLB en caché |
 | Human visual approval | NOT TESTED | Owner review still needed |
-| Godot import of all 93 now | NOT TESTED | Must validate with target Godot version |
 | S22 Ultra scene/visual test | NOT TESTED | Not replaced by CI success |
+| Kaggle/TripoSR GPU lane | NOT TESTED | SKIPPED / KAGGLE_NOT_CONFIGURED until secrets exist; prototype ready in `automation/kaggle/` |
 | n8n instance inspection | NOT TESTED | Connected n8n preferences/workflow calls failed |
-| Firebase integration | NOT TESTED | No connected Firebase app/tool found |
+| Firebase integration | NOT CONFIGURED | No connected Firebase app/tool found; rules committed deny-by-default |
+| Telegram notifications | NOT TESTED | Workflow ready; secrets TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not configured |

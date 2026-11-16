@@ -54,6 +54,24 @@ jobs:
               print(godot_import_check(Path("."), g))
           PY
 
+      - name: Motor Blender (bpy) — opcional, con fallback trimesh
+        continue-on-error: true   # sin bpy, el humo reporta SKIPPED (77) honesto
+        run: pip install bpy==4.2.0
+
+      - name: Blender headless smoke — procesa un GLB y exporta GLB verificable
+        continue-on-error: false
+        run: |
+          set -uo pipefail
+          python scripts/ci/blender_headless_smoke.py \
+            --input assets/models/urban/mdl_urban_bollard_001.glb \
+            --output "${RUNNER_TEMP}/blender_smoke_bollard.glb"
+          rc=$?
+          if [ "$rc" = "77" ]; then
+            echo "SKIPPED: bpy no disponible en este runner (NOT TESTED; la suite trimesh ya corrió arriba)"
+          elif [ "$rc" != "0" ]; then
+            exit "$rc"
+          fi
+
       - name: Subir informes (artifact NO permanente)
         uses: actions/upload-artifact@v4
         with:
