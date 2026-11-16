@@ -137,4 +137,6 @@ La fábrica de assets tiene su propio inventario, política de licencias, fuente
 - [Registro de workflows n8n](n8n/WORKFLOW_INDEX.csv)
 - [Exportaciones n8n](n8n/workflows/README.md)
 
+- [Firebase Spark: arquitectura, cuotas y seguridad](firebase/README.md)
+
 El catálogo distingue recursos existentes documentados, recursos pendientes, licencias por revisar y slots de producción aún sin modelo. Un estado PLANNED no significa que el asset ya exista. Cada recurso externo requiere licencia verificada en assets/manifest.csv.
