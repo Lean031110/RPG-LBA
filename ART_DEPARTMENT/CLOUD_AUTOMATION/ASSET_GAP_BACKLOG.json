@@ -555,5 +555,26 @@
     "confirmed_production_enemy_models": 0,
     "confirmed_boss_models": 0,
     "confirmed_npc_models": 0
-  }
+  },
+  "decision_conflicts": [
+    {
+      "id": "DECISION_BOSS_COUNT",
+      "severity": "HIGH",
+      "summary": "El resumen de alcance del proyecto menciona cinco jefes principales, pero docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md y docs/narrativa/01_MISIONES_Y_CADENAS.md nombran seis encuentros de jefe: El Guajiro sin Rostro, La Dama del Malecón, El Mayoral de Hierro, El Venado de los Mil Ojos, Aurelio Varela y El Rey de la Ceniza.",
+      "required_action": "No borrar ni renombrar candidatos. Mantener los seis en el backlog como canon narrativo provisional y solicitar decisión del propietario sobre si el alcance es cinco jefes + jefe final o seis encuentros en total antes de cerrar el plan de producción.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md",
+        "docs/narrativa/01_MISIONES_Y_CADENAS.md"
+      ]
+    },
+    {
+      "id": "DECISION_REGION_COUNT",
+      "severity": "INFO",
+      "summary": "El resumen de alcance dice cinco regiones exteriores, mientras la biblia enumera siete regiones/nodos principales; dos de los nombres son hubs (Valdeluz y La Habana de las Campanas) y cinco son regiones exteriores.",
+      "required_action": "Interpretar provisionalmente Valdeluz y La Habana como hubs y las cinco restantes como exteriores, pero verificarlo contra el roadmap/GDD antes de generar mapas o kits de región.",
+      "source_docs": [
+        "docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md"
+      ]
+    }
+  ]
 }
