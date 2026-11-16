@@ -132,6 +132,7 @@ La fábrica de assets tiene su propio inventario, política de licencias, fuente
 - [Asset Factory — arquitectura y flujo de trabajo](docs/art-pipeline/README.md)
 - [Proveedores gratuitos, APIs y límites](docs/art-pipeline/PROVIDERS.md)
 - [Backup y migración de n8n](docs/art-pipeline/N8N_BACKUP_AND_MIGRATION.md)
+- [Configuración de APIs y secretos](docs/art-pipeline/SECRETS_AND_SETUP.md)
 - [Biblioteca de assets y taxonomía](assets/library/README.md)
 - [Catálogo maestro de assets](assets/library/catalog.csv)
 - [Registro de workflows n8n](n8n/WORKFLOW_INDEX.csv)
