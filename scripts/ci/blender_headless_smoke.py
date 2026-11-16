@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 
 
@@ -101,8 +102,15 @@ def main() -> int:
     report = {"result": "PASS", "input": args.input, "output": args.output,
               "before": before, "after": after}
     print("BLENDER_SMOKE_REPORT " + json.dumps(report))
-    return 0
+    sys.stdout.flush()
+    # The pip bpy module can segfault during interpreter teardown on some
+    # runners (C atexit order). All work is complete and flushed here, so we
+    # bypass teardown with os._exit to keep the honest exit code.
+    os._exit(0)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    rc = main()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(rc)
