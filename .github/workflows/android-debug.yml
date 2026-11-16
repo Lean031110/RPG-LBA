@@ -436,6 +436,7 @@ jobs:
           if-no-files-found: warn
 
   informe:
+    timeout-minutes: 20
     name: Informe de instalación (emulador vs físico)
     needs: [build-sign-verify, emulator-x86_64, arm64-abi-sanity]
     if: ${{ !cancelled() }}

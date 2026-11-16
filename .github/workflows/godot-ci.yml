@@ -30,6 +30,7 @@ jobs:
   gdscript-quality:
     name: GDScript lint and format
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -56,6 +57,7 @@ jobs:
   godot-headless-check:
     name: Godot headless check
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository

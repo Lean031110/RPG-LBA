@@ -188,8 +188,8 @@ Never use a free trial or a provider that needs a card, paid credits, or billing
 The repository is public. Standard hosted runner usage is currently free and unlimited for public repositories, but artifact retention is temporary and never the long-term storage mechanism.
 
 - Keep all new work on `agent/*` or `feature/*` branches.
-- Never enable the legacy `FACTORY_CRON_ENABLED` schedule as currently documented without first correcting its write target: the old factory workflow can commit directly to the ref it runs on, and a schedule in the default branch therefore risks writing to `main`.
-- A scheduler must dispatch the factory workflow specifically to a protected/non-main agent branch.
+- `asset-factory.yml` now carries a first-step branch guard: it hard-fails if dispatched to `main`, `release*` or protected refs, before any checkout or write. `asset-publication.yml` keeps its job-level `if: github.ref_name != 'main'`.
+- Scheduled execution goes through `asset-factory-scheduler.yml`, a dispatch-only safe dispatcher that validates the target ref against `agent/*|feature/*` (rejecting `main`/`release*`/empty) before calling `gh workflow run`. Its cron stays commented out until a full manual end-to-end pass (dispatcher → factory → validation → publication → PR) is approved by the owner; when enabled it always targets `ASSET_WORK_BRANCH`, never `main`.
 - Actions permissions: least privilege. Prefer the automatic short-lived `GITHUB_TOKEN`; only grant `contents: write` to the asset branch publisher and `pull-requests: write` to PR creation.
 - Avoid recursive workflow loops; add `[skip ci]` only where the commit genuinely should not retrigger the workflow.
 - Never merge a PR automatically.

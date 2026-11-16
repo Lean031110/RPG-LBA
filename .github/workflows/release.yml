@@ -31,6 +31,7 @@ concurrency:
 jobs:
   validate:
     name: Validate project
+    timeout-minutes: 25
     permissions:
       contents: read
     uses: ./.github/workflows/godot-ci.yml
@@ -39,6 +40,7 @@ jobs:
 
   release:
     name: Draft GitHub release
+    timeout-minutes: 10
     needs: validate
     runs-on: ubuntu-latest
 
