@@ -1,0 +1,43 @@
+name: Asset library index audit
+
+on:
+  pull_request:
+    paths:
+      - "assets/**"
+      - "ART_DEPARTMENT/AI_ASSET_FACTORY/catalog/assets_manifest.json"
+      - "ART_DEPARTMENT/CLOUD_AUTOMATION/ASSET_LIBRARY_INDEX.json"
+      - "scripts/ci/build_asset_library_index.py"
+  push:
+    branches: [main]
+    paths:
+      - "assets/**"
+      - "ART_DEPARTMENT/AI_ASSET_FACTORY/catalog/assets_manifest.json"
+      - "ART_DEPARTMENT/CLOUD_AUTOMATION/ASSET_LIBRARY_INDEX.json"
+      - "scripts/ci/build_asset_library_index.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asset-library-index-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate asset library index
+        env:
+          TARGET_REF: ${{ github.head_ref || github.ref_name }}
+        run: |
+          python3 scripts/ci/build_asset_library_index.py --repo "${GITHUB_REPOSITORY}" --ref "${TARGET_REF}" --check
