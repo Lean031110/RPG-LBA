@@ -781,6 +781,8 @@ func _build_kit() -> ClassKit:
 	match class_id:
 		"bruja":
 			return BrujaKit.new()
+		"sepulturero":
+			return SepultureroKit.new()
 		_:
 			return MacheteroKit.new()
 
@@ -791,6 +793,8 @@ func _build_puppet() -> ClassPuppet:
 	match class_id:
 		"bruja":
 			return BrujaPuppet.new()
+		"sepulturero":
+			return SepultureroPuppet.new()
 		_:
 			return MacheteroPuppet.new()
 

@@ -35,7 +35,8 @@
           "chance": 1.0
         }
       ],
-      "level": 2
+      "level": 2,
+      "engage_summons": true
     },
     {
       "id": "perro_de_ceniza",
@@ -71,7 +72,8 @@
           "chance": 0.35
         }
       ],
-      "level": 1
+      "level": 1,
+      "engage_summons": true
     },
     {
       "id": "guarapo_negro",
@@ -113,7 +115,8 @@
           "chance": 0.6
         }
       ],
-      "level": 4
+      "level": 4,
+      "engage_summons": true
     }
   ],
   "strings": {
