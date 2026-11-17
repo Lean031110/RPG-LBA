@@ -68,12 +68,12 @@ var joystick_vector := Vector2.ZERO:
 		joystick_vector = value
 		input.joystick_vector = value
 
-var kit := MacheteroKit.new()
+var kit: ClassKit = null
 var input := PlayerInputProvider.new()
 var equipment := PlayerEquipment.new()
 var targeting := TargetingSystem.new()
 
-var _puppet: MacheteroPuppet = null
+var _puppet: ClassPuppet = null
 var _attributes := {}
 var _walk_phase := 0.0
 var _run_blend := 0.0
@@ -88,6 +88,7 @@ func setup(new_class_id: String) -> void:
 	if class_data.is_empty():
 		push_error("ArpgPlayer: clase desconocida %s" % class_id)
 		return
+	kit = _build_kit()
 	collision_layer = BODY_LAYER
 	collision_mask = BODY_MASK
 	_build_body_shape()
@@ -345,6 +346,8 @@ func _skill_id_at(index: int) -> String:
 func add_xp(amount: int) -> void:
 	if amount <= 0 or is_dead():
 		return
+
+		# Diseño de la rebanada: al subir de nivel se restaura por completo (documentado).
 
 		# Diseño de la rebanada: al subir de nivel se restaura por completo (documentado).
 	var result := ProgressionService.add_xp(level, xp_into_level, amount, RpgDB.get_progression())
@@ -638,7 +641,7 @@ func _apply_motion(delta: float) -> void:
 	else:
 		_animate_idle(delta)
 	if _vigor_regen > 0.0 and vigor < max_vigor:
-		vigor = minf(vigor + _vigor_regen * delta, max_vigor)
+		vigor = minf(vigor + _vigor_regen * kit.resource_regen_multiplier() * delta, max_vigor)
 		stats_changed.emit()
 
 
@@ -767,8 +770,29 @@ func set_ultimate_charge(value: float) -> void:
 
 
 func _build_visual() -> void:
-	_puppet = MacheteroPuppet.new()
+	_puppet = _build_puppet()
 	add_child(_puppet)
+
+
+func _build_kit() -> ClassKit:
+	## Fabrica de kits (Fase 2): cada clase aporta su identidad mecanica con
+	## la interfaz comun de ClassKit; el jugador y el HUD nunca dependen del
+	## tipo concreto.
+	match class_id:
+		"bruja":
+			return BrujaKit.new()
+		_:
+			return MacheteroKit.new()
+
+
+func _build_puppet() -> ClassPuppet:
+	## Fabrica de marionetas: misma interfaz (ClassPuppet), montaje propio de
+	## cada clase.
+	match class_id:
+		"bruja":
+			return BrujaPuppet.new()
+		_:
+			return MacheteroPuppet.new()
 
 
 func _animate_walk(phase: float) -> void:
