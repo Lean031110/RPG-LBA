@@ -39,7 +39,6 @@ plan canónico de fases en [ROADMAP.md](ROADMAP.md).
 | [04_MUNDO_DUNGEONS.md](04_MUNDO_DUNGEONS.md) | Mundo, región de Camagüey, localidad de Verdaluz y mazmorras |
 | [DECISIONS/ADR-013_jerarquia_mundo_camaguey_verdaluz.md](DECISIONS/ADR-013_jerarquia_mundo_camaguey_verdaluz.md) | Canon territorial: jerarquía mundo → Camagüey → Verdaluz y reglas de streaming |
 | [direccion-artistica/03_DIRECCION_ARTISTICA_Y_UX.md](direccion-artistica/03_DIRECCION_ARTISTICA_Y_UX.md) | Dirección artística y UX |
-| [direccion-artistica/VALDELUZ_WORLD_ART_BIBLE.md](direccion-artistica/VALDELUZ_WORLD_ART_BIBLE.md) | Biblia visual de Valdeluz (rama capital, PR #15) |
 | [environment/01_SISTEMA_AMBIENTAL.md](environment/01_SISTEMA_AMBIENTAL.md) | Sistema ambiental (ciclo día/noche, clima) |
 | [08_DIRECCION_ARTISTICA_ASSETS.md](08_DIRECCION_ARTISTICA_ASSETS.md) | Assets y dirección artística |
 
