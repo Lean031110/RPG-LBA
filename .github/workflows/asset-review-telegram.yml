@@ -34,6 +34,14 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID || secrets.TELEGRAM_ADMIN_CHAT_ID || vars.TELEGRAM_CHAT_ID }}
           EVENT_NAME: ${{ github.event_name }}
           EVENT_PATH: ${{ github.event_path }}
+          # Fix 2026-11-18: en eventos workflow_run github.event_path llega VACIO en
+          # esta plataforma (run 44306896445: FileNotFoundError al abrir ''). Los
+          # campos del run disparador se pasan via expresiones del contexto github,
+          # que NO dependen del archivo de evento.
+          TRIGGER_NAME: ${{ github.event.workflow_run.name }}
+          TRIGGER_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          TRIGGER_URL: ${{ github.event.workflow_run.html_url }}
+          TRIGGER_BRANCH: ${{ github.event.workflow_run.head_branch }}
           REPOSITORY: ${{ github.repository }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
@@ -50,8 +58,17 @@ jobs:
               print("SKIPPED: configure TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in repository Actions secrets.")
               sys.exit(0)
 
-          with open(os.environ["EVENT_PATH"], "r", encoding="utf-8") as handle:
-              event = json.load(handle)
+          event = {}
+          event_path = os.environ.get("EVENT_PATH", "")
+          if event_path and os.path.isfile(event_path):
+              with open(event_path, "r", encoding="utf-8") as handle:
+                  event = json.load(handle)
+          else:
+              # Fix 2026-11-18: workflow_run no siempre expone event_path en esta
+              # plataforma; los TRIGGER_* del env cubren ese caso.
+              if os.environ.get("EVENT_NAME") == "workflow_run" and not os.environ.get("TRIGGER_CONCLUSION"):
+                  print("SKIPPED: sin carga de evento ni TRIGGER_* disponibles.")
+                  sys.exit(0)
 
           repo = os.environ["REPOSITORY"]
           event_name = os.environ["EVENT_NAME"]
@@ -70,13 +87,13 @@ jobs:
               )
           elif event_name == "workflow_run":
               run = event.get("workflow_run", {})
-              conclusion = run.get("conclusion") or run.get("status") or "unknown"
+              conclusion = run.get("conclusion") or os.environ.get("TRIGGER_CONCLUSION") or run.get("status") or "unknown"
               if conclusion in ("skipped", "cancelled"):
                   print(f"SKIPPED: workflow conclusion={conclusion}")
                   sys.exit(0)
-              name = run.get("name", "Asset workflow")
-              url = run.get("html_url") or os.environ["RUN_URL"]
-              branch = run.get("head_branch", "unknown")
+              name = run.get("name") or os.environ.get("TRIGGER_NAME") or "Asset workflow"
+              url = run.get("html_url") or os.environ.get("TRIGGER_URL") or os.environ["RUN_URL"]
+              branch = run.get("head_branch") or os.environ.get("TRIGGER_BRANCH") or "unknown"
               prs = run.get("pull_requests") or []
               pr_line = f"PR: {prs[0].get('html_url', '')}\n" if prs else ""
               prefix = "⚠️" if conclusion != "success" else "✅"
