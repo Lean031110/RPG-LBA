@@ -28,7 +28,10 @@ jobs:
       - name: Send notification when Telegram credentials exist
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # Cadena compatible (auditoria 2026-11-18, docs/ops/SECRETS_AND_VARIABLES_AUDIT.md §6):
+          # respeta el nombre documentado (TELEGRAM_CHAT_ID), el secret real existente
+          # (TELEGRAM_ADMIN_CHAT_ID) y la variable si el propietario la volviera a crear.
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID || secrets.TELEGRAM_ADMIN_CHAT_ID || vars.TELEGRAM_CHAT_ID }}
           EVENT_NAME: ${{ github.event_name }}
           EVENT_PATH: ${{ github.event_path }}
           REPOSITORY: ${{ github.repository }}
