@@ -1,7 +1,6 @@
 # Documentación de RPG LBA — Las Cenizas de Lythara
 
-Índice general de la documentación del proyecto. Última verificación:
-2026-11-16. El estado real del proyecto vive en [STATUS.md](STATUS.md); el
+Índice general de la documentación del proyecto. Última verificación: 2026-11-18 (main @ e1d415b). El estado real del proyecto vive en [STATUS.md](STATUS.md); el
 plan canónico de fases en [ROADMAP.md](ROADMAP.md).
 
 ## Documentos de navegación (núcleo)
@@ -12,6 +11,10 @@ plan canónico de fases en [ROADMAP.md](ROADMAP.md).
 | [ROADMAP.md](ROADMAP.md) | Fases oficiales del Production Kit, correspondencia con iteraciones internas y criterios de cierre |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Mapa de la arquitectura REAL del código (autoloads, capas, sistemas, plantilla heredada) |
 | [QUALITY_GATES.md](QUALITY_GATES.md) | Puertas de aceptación: qué se exige para declarar terminada una tarea |
+| [PROJECT_MASTER_PLAN_2026.md](PROJECT_MASTER_PLAN_2026.md) | Organización de producción, auditoría y checklist completa de juego Android |
+| [PHASE_2_CLASS_COMPLETION.md](PHASE_2_CLASS_COMPLETION.md) | Estado 3/6, contrato técnico y criterios para terminar las seis clases |
+| [WORLD_PRODUCTION_PIPELINE.md](WORLD_PRODUCTION_PIPELINE.md) | Pipeline de zonas, capital, regiones y mazmorras |
+| [../prompts/11_RPG_LBA_AGENT_PLAYBOOK.md](../prompts/11_RPG_LBA_AGENT_PLAYBOOK.md) | Prompts de agentes: orquestación, clases, mundo, UX, QA y documentación |
 | [DECISIONS/](DECISIONS/) | Decisiones arquitectónicas nuevas (ADR-008..012); ADR-001..007 en `13_RIESGOS_Y_DECISIONES.md` |
 
 ## Diseño y canon del juego
