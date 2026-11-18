@@ -12,7 +12,7 @@ plan canónico de fases en [ROADMAP.md](ROADMAP.md).
 | [ROADMAP.md](ROADMAP.md) | Fases oficiales del Production Kit, correspondencia con iteraciones internas y criterios de cierre |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Mapa de la arquitectura REAL del código (autoloads, capas, sistemas, plantilla heredada) |
 | [QUALITY_GATES.md](QUALITY_GATES.md) | Puertas de aceptación: qué se exige para declarar terminada una tarea |
-| [DECISIONS/](DECISIONS/) | Decisiones arquitectónicas nuevas (ADR-008..012); ADR-001..007 en `13_RIESGOS_Y_DECISIONES.md` |
+| [DECISIONS/](DECISIONS/) | Decisiones arquitectónicas nuevas (ADR-008..013); ADR-001..007 en `13_RIESGOS_Y_DECISIONES.md` |
 
 ## Diseño y canon del juego
 
@@ -36,7 +36,8 @@ plan canónico de fases en [ROADMAP.md](ROADMAP.md).
 
 | Documento | Categoría |
 |---|---|
-| [04_MUNDO_DUNGEONS.md](04_MUNDO_DUNGEONS.md) | Mundo y mazmorras |
+| [04_MUNDO_DUNGEONS.md](04_MUNDO_DUNGEONS.md) | Mundo, región de Camagüey, localidad de Verdaluz y mazmorras |
+| [DECISIONS/ADR-013_jerarquia_mundo_camaguey_verdaluz.md](DECISIONS/ADR-013_jerarquia_mundo_camaguey_verdaluz.md) | Canon territorial: jerarquía mundo → Camagüey → Verdaluz y reglas de streaming |
 | [direccion-artistica/03_DIRECCION_ARTISTICA_Y_UX.md](direccion-artistica/03_DIRECCION_ARTISTICA_Y_UX.md) | Dirección artística y UX |
 | [direccion-artistica/VALDELUZ_WORLD_ART_BIBLE.md](direccion-artistica/VALDELUZ_WORLD_ART_BIBLE.md) | Biblia visual de Valdeluz (rama capital, PR #15) |
 | [environment/01_SISTEMA_AMBIENTAL.md](environment/01_SISTEMA_AMBIENTAL.md) | Sistema ambiental (ciclo día/noche, clima) |
