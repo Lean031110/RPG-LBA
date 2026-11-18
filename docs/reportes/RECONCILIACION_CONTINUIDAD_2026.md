@@ -178,9 +178,43 @@ se ejercitarán tras la fusión con un `workflow_dispatch` de Asset Validation
 (que dispara `asset-review-telegram` vía `workflow_run`) y se reportará el
 resultado real.
 
-## 10. Cierre (se completa al final de la intervención)
+## 11. Resultados reales (cierre, 2026-11-18)
 
-Resultados finales, SHA de `main` tras cada fusión, enlaces a corridas y
-estados finales: ver «Resultados reales» al final de este documento.
+### Integración ejecutada (cada paso con CI verde y sin push directo a main)
 
-<!-- RESULTADOS_REALES: anexo al finalizar -->
+| Paso | Acción | Resultado | SHA / evidencia |
+|---|---|---|---|
+| 1 | Rama `agent/docs-reorganizacion` actualizada con `main` (merge d30f94b), CI 7/7 checks verdes | PASS | push `8342c80..d30f94b`; checks en d30f94b |
+| 2 | **PR #17 fusionada** (merge commit) | PASS | `f2240aa` |
+| 3 | Rama `agent/asset-cloud-automation` actualizada con `main` dos veces (16345ab → 3eb283f; strict checks), CI 8/8 verde en 3eb283f | PASS | checks en 3eb283f |
+| 4 | PR #18 convertida de draft a ready (GraphQL `markPullRequestReadyForReview`) y **fusionada** | PASS | `4a020fb` |
+| 5 | **PR #19 cerrada como superseded** con comentario que cita `PR19_RECONCILIATION.md`; rama conservada intacta | PASS | comentario 6978636779 |
+| 6 | Rama `feature/valdeluz-capital-city` actualizada contra el `main` final (97e20ce → 622a5be); CI en verde; PR #15 se conserva ABIERTA como fase futura | PASS | 622a5be |
+| 7 | Variables creadas (`ASSET_WORK_BRANCH`, `ASSET_BATCH_LIMIT`) y 7 variables con credenciales en claro eliminadas | PASS | §5.4 del doc de auditoría |
+| 8 | Corrección de nomenclatura `asset-review-telegram.yml` (cadena `TELEGRAM_CHAT_ID ‖ TELEGRAM_ADMIN_CHAT_ID ‖ vars.TELEGRAM_CHAT_ID`) | PASS | esta PR |
+| 9 | Capturas reales 16:9 y 20:9 (12) regeneradas desde el árbol final y verificadas + revisión por modelo de visión | PASS | `ARTIFACTS/final/screenshots/` |
+
+### Estado final de ramas/PR
+
+- `main` = `4a020fb` (+ merge de esta PR). CI 4 workflows en verde en cada push.
+- Abiertas: solo #15 (fase futura, justificada en roadmap). Cerradas no
+  fusionadas: #19 (superseded). Todas las demás (1–18, 20, 21): fusionadas.
+- Ramas conservadas: las 21 (ninguna borrada; `delete_branch_on_merge` sigue desactivado).
+
+### Pruebas de autenticación (final)
+
+Ver §9 y `docs/ops/SECRETS_AND_VARIABLES_AUDIT.md`. Pendiente de propietario:
+rotar `HF_TOKEN` (FAIL 401), corregir chat id de Telegram (el bot @RpgLbaBot
+es válido; el valor probado dio «chat not found»), Smithsonian NOT TESTED
+(endpoint caído). Kaggle, 3DValley y GitHub: PASS.
+
+### Pendiente / no probado (honesto)
+
+- Instalación del APK ARM64 en hardware físico (S22 Ultra, Redmi 9C):
+  PENDIENTE DE HARDWARE (la CI valida emulador x86_64 API 35/36 con la
+  variante Universal y sanity ABI para ARM64).
+- LAN con dos clientes físicos, FPS sostenidos, temperatura: PENDIENTE.
+- Valores de los SECRETS (solo probables dentro de Actions): se ejercitan
+  con dispatch de Asset Validation tras esta fusión (dispara el workflow de
+  Telegram vía `workflow_run`).
+

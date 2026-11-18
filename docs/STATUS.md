@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Fecha de actualización | 2026-11-16 (UTC+8) |
-| Rama principal | `main` @ `83c1194` (merge PR #16) |
-| Último commit auditado en main | `83c1194` — CI completa verde (4 workflows, 2026-11-14) |
-| PR abierta | #15 (borrador): capital de Valdeluz, head `25bc199`, base `main` |
-| Fase oficial vigente | Fase 2 — Combate ARPG y seis clases (en curso; ver ROADMAP.md) |
+| Fecha de actualización | 2026-11-18 (UTC+8) — reconciliación y entrega |
+| Rama principal | `main` @ `4a020fb` (merge PR #18) |
+| Último commit auditado en main | `4a020fb` — CI completa verde (4 workflows) |
+| PR abiertas | #15 (fase futura, capital de Valdeluz): actualizada contra main, CI verde, sin fusión por decisión de roadmap |
+| Fase oficial vigente | Fase 2 — Combate ARPG y seis clases (en curso; 3/6 implementadas) |
 | Iteración interna actual | Post-Fase 5 interna (sistemas de combate) — correspondencia en ROADMAP.md |
-| Version del proyecto | 0.2.0 (`project.godot`) |
+| Version del proyecto | 0.2.0 (`project.godot`/presets) |
 
 ## Fases completadas (fase oficial del Production Kit)
 
@@ -25,6 +25,10 @@
   hitboxes con línea de visión, buffer de entrada, targeting.
 - Machetero COMPLETO (kit de 4 habilidades + definitiva + 2 pasivas +
   progresión + persistencia). Canon en `docs/diseno/02`.
+- **Bruja de la Manigua jugable** (PR #20): 2/6 — motor común de proyectiles
+  y zonas persistentes + kit completo con pruebas.
+- **Sepulturero de Guanabacoa jugable** (PR #21): 3/6 — sistema de
+  invocaciones + kit completo con pruebas.
 - Monstruario de 3 especies con IA diferenciada y FSM común.
 - HUD móvil completo con recargas radiales, minimapa y bloqueo en diálogos.
 - Menú principal, presentación, intro splash y tema visual propio.
@@ -40,9 +44,9 @@
 
 ## Sistemas parciales
 
-- **Fase 2 (combate):** solo 1 de 6 clases implementada. Bruja, Sepulturero,
-  Tirador, Cimarrón y Bardo están definidas en datos/documentación, sin kit
-  jugable. Es el siguiente bloque de trabajo.
+- **Fase 2 (combate):** 3 de 6 clases implementadas y probadas (Machetero,
+  Bruja, Sepulturero). Tirador, Cimarrón y Bardo están definidas en
+  datos/documentación, sin kit jugable. Es el siguiente bloque de trabajo.
 - **Fase 4 (misiones):** QuestSystem operativo con VS_P00; falta la campaña
   completa (28 principales + 12 cadenas según canon).
 - **Fase 5 (mundo):** slice de Valdeluz jugable; capital procedural en PR #15
@@ -66,26 +70,31 @@
   físico en el entorno (validación de dispositivo = NOT TESTED), el
   propietario debe aprobar fusiones (protección de `main` con checks).
 
-## Estado de CI (verificado 2026-11-14/16)
+## Estado de CI (verificado 2026-11-18)
 
-- `main` @ `83c1194`: Godot CI, Validate, Visual Captures y Android debug
-  APK en verde.
-- PR #15 @ `b4f7bcd` (14/11): Godot CI y Validate en ROJO por los 35
-  problemas de lint y el error de `allow_dynamic_shadows` — corregidos el
-  16/11 en `25bc199`; los 4 workflows re-disparados sobre ese commit.
+- `main` @ `4a020fb` tras fusionar PR #17 (docs canónicos) y PR #18 (fábrica
+  cloud consolidada); ambas con las 6 checks requeridas en verde en sus
+  HEAD reales tras actualizarlas contra `main` (modo strict).
+- PR #19 cerrada como superseded: su contenido útil vive en #18 (ver
+  `ART_DEPARTMENT/CLOUD_AUTOMATION/PR19_RECONCILIATION.md`); rama conservada.
+- PR #15 @ `622a5be`: actualizada contra el `main` final; CI en verde; se
+  conserva ABIERTA como fase futura (decisión de roadmap: la capital no se
+  fusiona antes de tiempo).
 - Checks requeridas para fusionar: project-import + game-smoke-test,
   multiplayer-smoke, asset-license-audit, gdunit-tests, GDScript lint and
-  format, Godot headless check.
+  format, Godot headless check (todas en verde en `main`).
 
 ## Próximos objetivos (orden)
 
-1. Esperar CI verde de PR #15 y conservarla como borrador (fase futura).
-2. Fase 2: implementar las 5 clases restantes (una por entrega, con pruebas
-   de daño/coste/cooldown/estados/cancelación), empezando por la Bruja.
-3. Fase 3: inventario/equipo/economía ARPG con instancias estables y
+1. Fase 2: implementar las 3 clases restantes (Tirador, Cimarrón, Bardo;
+   una por entrega, con pruebas de daño/coste/cooldown/estados/cancelación).
+2. Fase 3: inventario/equipo/economía ARPG con instancias estables y
    transacciones seguras.
-4. Fase 4: campaña inicial de misiones sobre QuestSystem.
-5. Fase 5: integrar capital (PR #15) cuando el gameplay lo exija.
+3. Fase 4: campaña inicial de misiones sobre QuestSystem.
+4. Fase 5: integrar capital (PR #15) cuando el gameplay lo exija.
+5. Proveedor/secretos pendientes del propietario: rotar `HF_TOKEN` (401 en
+   prueba real) y arreglar el chat id de Telegram (ver
+   `docs/ops/SECRETS_AND_VARIABLES_AUDIT.md` §7).
 
 ## Evidencias
 
