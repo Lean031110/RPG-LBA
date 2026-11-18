@@ -36,6 +36,7 @@ La campaña utiliza lugares reales como inspiración arquitectónica y geográfi
    - Región geográfica amplia dentro del mundo de RPG LBA, inspirada en Camagüey y adaptada a la ficción del juego.
    - Su mapa macro, límites, caminos y localidades secundarias todavía no están definidos. No inventar barrios, monumentos ni puntos de interés como si fueran canon.
    - **Verdaluz** es la localidad ficticia inicial dentro de esta región: hogar del prólogo y primer refugio seguro del protagonista. La localidad tendrá sectores, calles, interiores y puntos de interés que se diseñarán por separado.
+   - Verdaluz se sitúa entre lomas y un río de agua oscura. Sus elementos ya establecidos incluyen casas de madera, tejas, portal corrido, plaza, iglesia, estación de tren, bodega, barbería, cafetal cercano y cementerio. Su expansión urbana detallada se diseñará por separado.
 
 2. **La Habana de las Campanas**
    - Capital vertical de azoteas, callejones, portales, patios interiores, plazas, fortalezas, muelles, cafés, solares y edificios art déco.
@@ -43,12 +44,7 @@ La campaña utiliza lugares reales como inspiración arquitectónica y geográfi
    - Paleta: piedra mojada, azul petróleo, óxido, faroles ámbar, neón escaso y rojo de luna.
    - Amenaza: espectros de ahogados, perros de sombra y la procesión sin rostro.
 
-3. **Verdaluz**
-   - Localidad ficticia dentro de la región de Camagüey, entre lomas y un río de agua oscura. Es el hogar emocional del prólogo.
-   - Casas de madera, tejas, portal corrido, plaza, iglesia, estación de tren, bodega, barbería, cafetal cercano y cementerio.
-   - De día huele a café, tierra mojada y pan; de noche el campanario marca horas que no existen.
-
-4. **Los Mogotes de la Niebla**
+3. **Los Mogotes de la Niebla**
    - Región inspirada en el paisaje occidental: mogotes, cuevas, vegas de tabaco, palmas, caminos rojos, ríos subterráneos.
    - Criaturas: murciélagos de ceniza, jíbaros espectrales, raíces que estrangulan y guardianes de piedra.
    - La niebla cambia de dirección cuando el jugador miente.
