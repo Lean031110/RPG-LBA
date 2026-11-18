@@ -1,0 +1,79 @@
+# RPG-LBA — Dispatcher seguro de la fábrica de recursos.
+#
+# Mandato §8 del prompt maestro: la ejecución programada debe despachar el
+# trabajo a una rama agent/* explícita y NUNCA a main/release. Este workflow
+# valida la rama destino antes de despachar asset-factory.yml.
+#
+# Triggers:
+#  - workflow_dispatch (manual; introducir la rama destino).
+#  - schedule DESACTIVADO por defecto: activar el cron de abajo solo después
+#    de que el flujo completo (dispatcher -> fábrica -> validación ->
+#    publicación -> PR) haya superado una prueba manual de punta a punta
+#    aprobada por el propietario. El cron apunta SIEMPRE a la rama
+#    ASSET_WORK_BRANCH (nunca main).
+name: Asset Factory scheduler (safe dispatch)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: "Rama agent/* o feature/* que recibirá la producción (NUNCA main)"
+        required: true
+        default: "agent/asset-cloud-automation"
+      limit:
+        description: "Recursos a producir (1-5 recomendado)"
+        required: false
+        default: "3"
+      profile:
+        description: "Perfil de calidad"
+        type: choice
+        default: BALANCED
+        options: [MOBILE, BALANCED, HIGH]
+  # schedule:
+  #   - cron: "30 2 * * *"  # 02:30 UTC; despacha a ASSET_WORK_BRANCH solo tras prueba e2e manual aprobada
+
+permissions:
+  actions: write
+
+concurrency:
+  group: art-department-dispatch
+  cancel-in-progress: false
+
+jobs:
+  despachar:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validar la rama destino (rechaza main/release y patrones ajenos)
+        env:
+          TARGET_REF: ${{ github.event.inputs.target_ref || vars.ASSET_WORK_BRANCH || 'agent/asset-cloud-automation' }}
+        run: |
+          set -euo pipefail
+          REF="${TARGET_REF#refs/heads/}"
+          case "$REF" in
+            main|release*|gh-pages*|"" )
+              echo "::error::Ref '$REF' no está permitida como destino de producción."
+              exit 1 ;;
+          esac
+          case "$REF" in
+            agent/*|feature/*) echo "Destino válido: $REF" ;;
+            *)
+              echo "::error::Ref '$REF' debe seguir el patrón agent/* o feature/*."
+              exit 1 ;;
+          esac
+          echo "TARGET_REF=$REF" >> "$GITHUB_ENV"
+
+      - name: Despachar la fábrica a la rama validada
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LIMIT: ${{ github.event.inputs.limit || '3' }}
+          PROFILE: ${{ github.event.inputs.profile || 'BALANCED' }}
+        run: |
+          set -euo pipefail
+          echo "Despachando 'Asset Factory (produccion)' a ${TARGET_REF} (limit=${LIMIT}, profile=${PROFILE})..."
+          gh workflow run "Asset Factory (produccion)" \
+            --ref "${TARGET_REF}" \
+            -f limit="${LIMIT}" \
+            -f profile="${PROFILE}"
+          echo "PASS: fábrica despachada a ${TARGET_REF}."
+          echo "NOTA: la fábrica misma vuelve a validar la rama antes de escribir (guarda duplicada)."

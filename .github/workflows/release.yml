@@ -31,6 +31,8 @@ concurrency:
 jobs:
   validate:
     name: Validate project
+    # timeout-minutes is not valid on a reusable-workflow call (uses:);
+    # the called godot-ci.yml jobs already carry their own timeouts.
     permissions:
       contents: read
     uses: ./.github/workflows/godot-ci.yml
@@ -39,6 +41,7 @@ jobs:
 
   release:
     name: Draft GitHub release
+    timeout-minutes: 10
     needs: validate
     runs-on: ubuntu-latest
 

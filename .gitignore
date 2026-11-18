@@ -45,3 +45,6 @@ artifacts/
 
 # GdUnit4 local reports (publicados como artefactos por CI, no versionados)
 reports/
+
+# Kaggle dispatch scratch (idempotency staging, never commit)
+automation/kaggle/kernel_staging/

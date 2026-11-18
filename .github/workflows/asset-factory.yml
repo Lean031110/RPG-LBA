@@ -6,9 +6,11 @@
 # trabajos 'processing' caducados vuelven a pending automáticamente.
 #
 # Triggers:
-#  - workflow_dispatch (manual; elegir rama feature/ai-art-department)
-#  - schedule DESACTIVADO por defecto: crear la variable de repositorio
-#    FACTORY_CRON_ENABLED=true para activar el ciclo nocturno.
+#  - workflow_dispatch (manual; elegir una rama agent/* o feature/*)
+#  - La programación automática se mantiene desactivada: usar el dispatcher
+#    seguro asset-factory-scheduler.yml, que valida la rama destino y NUNCA
+#    despacha a main/release. Activar su cron solo tras una prueba manual
+#    de punta a punta aprobada por el propietario.
 name: Asset Factory (produccion)
 
 on:
@@ -32,8 +34,6 @@ on:
         description: "Solo una categoría (vacío = todas; p.ej. model:rock)"
         default: ""
         required: false
-  schedule:
-    - cron: "30 2 * * *"  # 02:30 UTC; guardado por FACTORY_CRON_ENABLED
 
 # Concurrencia controlada (mandato §9): una ejecución a la vez, sin cancelar
 # la anterior (la cola garantiza que no se repiten recursos completados).
@@ -51,10 +51,21 @@ permissions:
 jobs:
   producir:
     timeout-minutes: 25
-    # el ciclo programado solo corre con la variable activada
-    if: github.event_name != 'schedule' || vars.FACTORY_CRON_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
+      - name: Guarda de rama — la fábrica nunca escribe en main
+        run: |
+          REF="${GITHUB_REF_NAME}"
+          case "$REF" in
+            main|release*|refs/heads/main*)
+              echo "::error::Ref '$REF' está protegida. Despacha esta fábrica a una rama agent/* o feature/* (p. ej. agent/asset-cloud-automation)."
+              exit 1 ;;
+          esac
+          case "$REF" in
+            agent/*|feature/*) echo "Rama de escritura válida: $REF" ;;
+            *) echo "::warning::Ref '$REF' no sigue el patrón agent/*|feature/*; se permite porque no está protegida, pero documentar por qué." ;;
+          esac
+
       - name: Checkout (rama de la fábrica)
         uses: actions/checkout@v4
 
