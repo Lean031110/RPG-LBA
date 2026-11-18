@@ -175,7 +175,7 @@ El estado de producción y los enlaces deben actualizarse en cada PR de assets.
 ## Marca y licencias
 
 **Juego:** RPG LBA — Las Cenizas de Lythara.  
-**Campaña:** El Eco de Valdeluz.  
+**Campaña:** El Eco de Verdaluz.  
 **Estudio:** LBA Games.
 
 El código y los recursos pueden tener licencias distintas. Cada asset externo debe figurar en `assets/manifest.csv` con autor, URL, versión, licencia y atribución. No incorporar contenido sin licencia verificable. No copiar personajes, mapas, UI, música, iconos o textos de otros juegos.
