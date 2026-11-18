@@ -16,7 +16,7 @@ La identidad visual es gótico caribeño: arquitectura colonial y art déco, veg
 ## 2. Bucle principal
 
 1. Seleccionar personaje y clase.
-2. Aparecer en Valdeluz, La Habana o último punto seguro.
+2. Aparecer en Verdaluz, La Habana o el último punto seguro desbloqueado.
 3. Consultar diario, hablar con personajes y preparar equipo.
 4. Viajar a una región de exploración.
 5. Explorar, combatir, investigar, recolectar y descubrir eventos.
