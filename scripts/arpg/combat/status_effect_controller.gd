@@ -16,6 +16,7 @@ signal periodic_tick(id: String, payload: Dictionary)
 
 const MOVE_SLOW_IDS := ["slow", "resin"]
 const DAMAGE_OVER_TIME_IDS := ["bleed"]
+const ROOT_IDS := ["root"]
 
 var _effects := {}
 
@@ -116,7 +117,10 @@ func can_act() -> bool:
 
 
 func can_move() -> bool:
-	return not has("stun")
+	## Aturdido o enraizado no se mueve. El "root" (Raices del Juegey) deja
+	## ACTUAR (atacar, lanzar) pero no desplazarse: control sin anular al
+	## jugador/enemigo (identidad de la Bruja, Fase 2).
+	return not has("stun") and not has("root")
 
 
 func is_invulnerable() -> bool:

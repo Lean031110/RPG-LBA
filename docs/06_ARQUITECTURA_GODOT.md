@@ -71,6 +71,13 @@ No hacer un Autoload monolítico que conozca todos los sistemas.
 - `QuestDefinition`, `QuestProgress`.
 - `ZoneDefinition`, `DungeonSeed`, `DungeonRoomDefinition`.
 - `WorldInstance`, `PartyState`, `GuildState`.
+- `ArpgEcho` (Fase 2, Sepulturero): invocación aliada. Combatiente real del
+  motor (hereda `ArpgCombatant`): recibe golpes por el pipeline común y su
+  ataque se resuelve SIEMPRE por conducto del dueño (`resolve_strike` del
+  jugador), nunca con estadísticas propias. Ciclo de vida: tope compartido de
+  entidades activas (dato `summons.max_active`), duración por datos, fin por
+  expiración (onda de pasiva) o muerte en combate (sin onda), y disolución sin
+  restos. Ver `scripts/arpg/combat/arpg_echo.gd`.
 
 Separar definición de objeto (plantilla) y objeto concreto en inventario (instancia).
 

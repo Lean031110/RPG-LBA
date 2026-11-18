@@ -1,7 +1,7 @@
 # gdlint: ignore=max-public-methods
 # (La marioneta expone un método de animación por estado; son presentación pura.)
 class_name MacheteroPuppet
-extends Node3D
+extends ClassPuppet
 ## Marioneta procedural del Machetero de la Sierra (Fase 5): TODO el montaje
 ## visual y su animación viven aquí, separados de la lógica del jugador
 ## (requisito del prompt: sistemas de estado y presentación desacoplados).
