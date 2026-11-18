@@ -109,6 +109,25 @@ TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID || secrets.TELEGRAM_ADMIN_CHAT_ID
 No se duplican secrets; no se inventan valores; el workflow sigue
 terminando `SKIPPED` limpio si nada existe.
 
+**Resultado de la prueba end-to-end dentro de Actions (2026-11-18, tras la
+PR #22):** la cadena de fallback FUNCIONA — `TELEGRAM_BOT_TOKEN` y el chat id
+del secret se inyectaron correctamente (enmascarados `***` en el log). Dos
+hallazgos reales:
+
+1. Bug preexistente corregido en la PR #23: con disparo `workflow_run`,
+   `github.event_path` llega VACÍO y el script hacía `open('')` → crash
+   (run 44306896445). Tras el fix (campos vía `${{ github.event.workflow_run.* }}`
+   + lectura protegida), la regresión del run 44308521370 llegó hasta la llamada
+   real a la API de Telegram: **el workflow ya funciona; el fallo restante es
+   de CREDENCIAL, no de código**.
+2. El valor del secret `TELEGRAM_ADMIN_CHAT_ID` da **HTTP 400 Bad Request**
+   de la API de Telegram al enviar (mismo error que el valor de la variable
+   probada localmente: «chat not found»). El token del bot es VÁLIDO (getMe
+   200, @RpgLbaBot). Acción del propietario: abrir chat con @RpgLbaBot, enviar
+   `/start`, obtener el chat id real y actualizar el secret. Hasta entonces,
+   cada corrida de Asset Validation/Factory/Publication terminará con este
+   workflow en rojo y el error exacto visible (comportamiento deseado).
+
 ## 7. Acciones requeridas del propietario (no automatizables)
 
 1. **Rotar/regenerar `HF_TOKEN`** (el valor probado dio 401) si se desea usar
