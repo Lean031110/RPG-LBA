@@ -1,10 +1,20 @@
 # Plan Maestro de Iteraciones — RPG LBA
 
+> **Numeración canónica (ADR-008):** las fases OFICIALES del proyecto son
+> las del Production Kit (0–9) y su referencia única es
+> [`ROADMAP.md`](ROADMAP.md), que incluye la tabla de correspondencia con
+> estas iteraciones internas. Este documento se conserva como registro
+> operativo-histórico de las iteraciones de agentes. Las iteraciones
+> internas citadas aquí NO equivalen 1:1 a fases oficiales del mismo
+> número (p. ej. la "Fase 5 interna" de sistemas de combate alimenta la
+> Fase oficial 2).
+
 Documento vivo: refleja el estado REAL del proyecto y las prioridades de las
 próximas entregas. Se actualiza al cierre de cada iteración. La fecha de corte
 de esta edición es la **reconciliación integral** (2026-11-15): las PR #3 a
 #14 están fusionadas en `main` (fases 1–5 + documentación + departamento de
 arte); la PR #15 (capital de Valdeluz) queda como fase futura conservada.
+El estado actualizado al día está en [`STATUS.md`](STATUS.md).
 
 ## Estado actual (reconciliación integral)
 

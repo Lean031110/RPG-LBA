@@ -87,6 +87,8 @@ La identidad aprobada del proyecto es **RPG LBA — Las Cenizas de Lythara**, co
 
 Estos documentos amplían y concretan el GDD. Si un documento antiguo contradice esta identidad creativa, no improvisar: registrar la contradicción, proponer actualización y mantener la compatibilidad técnica. La historia de Cuba real no se reescribe como fantasía; señalar claramente qué pueblos, sucesos y personajes son ficticios.
 
+Punto de entrada documental para cualquier agente (ADR-008, 2026-11-16): `docs/README.md` (índice), `docs/STATUS.md` (estado real del proyecto), `docs/ROADMAP.md` (fases oficiales canónicas y correspondencia con iteraciones internas), `docs/ARCHITECTURE.md` (arquitectura real del código), `docs/QUALITY_GATES.md` (puertas de aceptación) y `docs/DECISIONS/` (ADR-008+).
+
 ## 10. Revisión visual obligatoria
 
 La UI y el entorno de la Fase 1 son una base funcional provisional, no una aprobación artística. El responsable ha pedido un Art Pass y UX Pass antes de ampliar el contenido. El siguiente trabajo visual debe incluir terreno con césped, tierra roja, piedra y materiales distinguibles; cielo/horizonte; ciclo día/noche; clima básico; HUD/menús legibles; capturas 16:9 y 20:9. Consultar la dirección artística y el briefing. No declarar aceptación visual sin revisión humana de capturas.
