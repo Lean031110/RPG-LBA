@@ -67,6 +67,10 @@ plan canónico de fases en [ROADMAP.md](ROADMAP.md).
 | [15_IMPORTAR_Y_PROBAR_LOCAL.md](15_IMPORTAR_Y_PROBAR_LOCAL.md) | Cómo importar y probar en local |
 | [09_ROADMAP_Y_PROMPTS.md](09_ROADMAP_Y_PROMPTS.md) | Roadmap histórico y prompts (superseded por ROADMAP.md) |
 
+## Informes y entregas documentales
+
+- [reportes/ACTUALIZACION_JERARQUIA_CAMAGUEY_VERDALUZ_2026-11-18.md](reportes/ACTUALIZACION_JERARQUIA_CAMAGUEY_VERDALUZ_2026-11-18.md) — alcance, archivos modificados, decisiones técnicas y verificación de la jerarquía Camagüey → Verdaluz.
+
 ## Informes históricos por fase
 
 - [auditoria/](auditoria/) — Fase 0 y Fase 1.
