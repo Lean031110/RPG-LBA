@@ -19,10 +19,11 @@ Identificadores:
 - `account_id`: cuenta abstracta si login está implementado.
 - `character_id`: personaje persistente.
 - `world_id`: realm/mundo elegido.
-- `zone_id`: región actual.
+- `region_id`: región geográfica macro actual (por ejemplo, `camaguey`).
+- `zone_id`: zona jugable/escena cargada actualmente (por ejemplo, la localidad de Verdaluz o una zona exterior). Una región macro puede contener varias zonas.
 - `instance_id`: instancia de mazmorra/evento.
 
-Primera versión: un proceso servidor, un `world_id`, zonas cargables y una instancia activa de mazmorra por grupo. Después, el manager de mundo puede lanzar procesos/containers separados para realms o zonas con alta demanda. No dividir en microservicios antes de tener mediciones.
+Primera versión: un proceso servidor, un `world_id`, regiones macro identificadas, zonas cargables independientemente y una instancia activa de mazmorra por grupo. La jerarquía territorial de contenido se mantiene separada de la unidad de streaming: Camagüey es una región macro y Verdaluz es una localidad/zona inicial dentro de ella. La región puede contener muchas zonas sin cargarlas todas simultáneamente. Ver ADR-013. Después, el manager de mundo puede lanzar procesos/containers separados para realms o zonas con alta demanda. No dividir en microservicios antes de tener mediciones.
 
 ## Capacidad
 
