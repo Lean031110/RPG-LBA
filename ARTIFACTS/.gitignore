@@ -2,3 +2,10 @@
 # Solo logs y staging temporales de la fábrica.
 *
 !.gitignore
+# Excepción (orden maestra de entrega 2026-11-18, §10): la evidencia visual
+# FINAL de la entrega sí es permanente y revisable. Son PNG de documentación,
+# no recursos del juego (ver final/.gdignore para que no entren en el APK).
+!final/
+!final/screenshots/
+!final/screenshots/**
+!final/.gdignore
