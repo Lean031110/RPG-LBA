@@ -6,7 +6,7 @@
 
 ## Visión
 
-**RPG LBA — Las Cenizas de Lythara** es un action RPG 3D para PC y Android, desarrollado con Godot 4.7.2 Standard y GDScript. Su primera campaña, **El Eco de Valdeluz**, reimagina una Cuba ficticia de 1953 como un mundo de fantasía oscura gótico-caribeña: pueblos de portal, La Habana, centrales azucareros, mogotes, ciénagas, fortalezas, trenes y una dimensión sobrenatural.
+**RPG LBA — Las Cenizas de Lythara** es un action RPG 3D para PC y Android, desarrollado con Godot 4.7.2 Standard y GDScript. Su primera campaña, **El Eco de Verdaluz**, cuya localidad inicial es Verdaluz dentro de la región macro de Camagüey, reimagina una Cuba ficticia de 1953 como un mundo de fantasía oscura gótico-caribeña: pueblos de portal, La Habana, centrales azucareros, mogotes, ciénagas, fortalezas, trenes y una dimensión sobrenatural.
 
 La cultura cubana define la geografía, arquitectura, música original, oficios, vida cotidiana, personajes y memoria del mundo. La ficción sobrenatural no pretende sustituir ni falsear la historia real de Cuba.
 
@@ -16,6 +16,7 @@ La cultura cubana define la geografía, arquitectura, música original, oficios,
 - Seis clases originales con roles, recursos y debilidades distintas.
 - Campaña cinematográfica por capítulos, misiones principales y cadenas secundarias.
 - Exploración, mazmorras, jefes por fases, equipo y progresión.
+- Mundo expansible por grandes regiones y zonas cargadas independientemente. Camagüey contiene la localidad inicial de Verdaluz; su mapa detallado sigue pendiente de diseño (ADR-013).
 - Mundo expansible: el primer arco concluye con una victoria parcial y deja nuevas puertas, regiones y misterios.
 - Estética oscura con vegetación tropical, tierra roja, piedra caliza, hierro envejecido, cielo, ciclo día/noche y clima.
 - Referencia de calidad: legibilidad y atmósfera de ARPG oscuros modernos; no se copia ninguna IP.
