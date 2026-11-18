@@ -104,6 +104,10 @@ Abre el proyecto en Godot y ejecuta F5. Consulta `AGENTS.md`, `scripts/ci/` y `.
 
 - `assets/branding/` — logos SVG.
 - `assets/` — recursos con licencias y manifest.
+- `ART_DEPARTMENT/` — fábrica de assets, catálogo, validación, previews y capa cloud (`CLOUD_AUTOMATION/`).
+- `automation/n8n/` — plantillas de workflow n8n saneadas e inactivas.
+- `automation/kaggle/` — carril GPU reanudable TripoSR-on-Kaggle (NOT TESTED).
+- `firebase/` — reglas Firestore deny-by-default y guía del plan Spark opcional.
 - `docs/narrativa/` — historia, regiones, personajes y misiones.
 - `docs/diseno/` — clases, estadísticas, habilidades y balance.
 - `docs/direccion-artistica/` — arte, iluminación, terreno y UX.
@@ -111,6 +115,61 @@ Abre el proyecto en Godot y ejecuta F5. Consulta `AGENTS.md`, `scripts/ci/` y `.
 - `prompts/` — prompts por fase.
 - `config/` — datos y perfiles.
 - `scenes/`, `scripts/`, `tests/` — proyecto Godot.
+
+## Producción de assets y automatización cloud — Asset Factory
+
+La biblioteca visual y las automatizaciones tienen una guía central en [ART_DEPARTMENT/CLOUD_AUTOMATION](ART_DEPARTMENT/CLOUD_AUTOMATION/README.md). El repositorio ya incluye una fábrica procedural, catálogo y validación; no se debe crear una segunda fábrica ni asumir que los modelos de entorno equivalen a personajes finales. GitHub Actions es el orquestador cloud principal; los workflows n8n se versionan como JSON saneado e inactivo en `automation/n8n/workflows/` y nunca se guardan credenciales, tokens, claves de cifrado, bases de datos ni backups privados en este repositorio público.
+
+### Inventario, catálogo y estado
+
+- [Auditoría del inventario y huecos visuales](ART_DEPARTMENT/CLOUD_AUTOMATION/PRODUCTION_AUDIT.md) — 93 entradas de fábrica + 64 archivos heredados indexados
+- [Índice enlazado de la biblioteca (schema 2.0.0, hashes y URLs)](ART_DEPARTMENT/CLOUD_AUTOMATION/ASSET_LIBRARY_INDEX.json) — 157 registros / 262 archivos
+- [Índice de archivos heredados con IDs LEGACY estables](ART_DEPARTMENT/CLOUD_AUTOMATION/LEGACY_ASSET_INDEX.json)
+- [Backlog de assets faltantes (clases, NPCs, enemigos, jefes, armas, kits)](ART_DEPARTMENT/CLOUD_AUTOMATION/ASSET_GAP_BACKLOG.json)
+- [Procedencia y licencias de archivos de terceros](assets/manifest.csv) — `close.svg` sigue en cuarentena hasta verificación
+- [Reconciliación PR #18/#19 (una sola fábrica, un solo catálogo)](ART_DEPARTMENT/CLOUD_AUTOMATION/PR19_RECONCILIATION.md)
+- [Estado de producción del primer lote](ART_DEPARTMENT/DOCUMENTATION/PRODUCTION_STATUS.md)
+
+### Convenciones y estructura
+
+- [Taxonomía, IDs estables, naming y dónde va cada clase/NPC/enemigo/jefe/arma/kit](ART_DEPARTMENT/CLOUD_AUTOMATION/ASSET_CONVENTIONS.md)
+- [Presupuestos móviles (triángulos, texturas, colisiones, LOD)](ART_DEPARTMENT/CLOUD_AUTOMATION/ASSET_CONVENTIONS.md#4-presupuestos-móviles-límites-de-revisión-no-aceptación)
+
+### Generación, validación y aprobación
+
+- [Guía de generación procedural de la fábrica](ART_DEPARTMENT/DOCUMENTATION/GENERATION_GUIDE.md)
+- [Flujo de aprobación (PR humano, sin auto-merge)](ART_DEPARTMENT/CLOUD_AUTOMATION/README.md#11-asset-approval-workflow)
+- [Validador consolidado de la fábrica (CI)](scripts/ci/validate_asset_factory.py) — se ejecuta en [asset-library-index.yml](.github/workflows/asset-library-index.yml)
+- [Compatibilidad Godot del arte](ART_DEPARTMENT/DOCUMENTATION/GODOT_COMPATIBILITY.md) e [integración en escenas](ART_DEPARTMENT/DOCUMENTATION/ASSET_INTEGRATION.md)
+- [Evidencia real: Blender headless y Godot 4.7.2 import](ART_DEPARTMENT/CLOUD_AUTOMATION/EVIDENCE)
+
+### Proveedores, coste cero y GPU
+
+- [Registro de proveedores, licencias y cuotas (27, esquema 1.1.0)](ART_DEPARTMENT/CLOUD_AUTOMATION/PROVIDER_REGISTRY.json)
+- [Prototipo GPU reanudable TripoSR-on-Kaggle](automation/kaggle/README.md) — estado NOT TESTED hasta que existan secrets Kaggle
+- [Reglas de Actions y seguridad de ramas](ART_DEPARTMENT/CLOUD_AUTOMATION/README.md#7-github-actions-safety)
+
+### Operación y configuración
+
+- [Secrets de GitHub (Telegram, Kaggle, Smithsonian, Firebase…)](ART_DEPARTMENT/CLOUD_AUTOMATION/SECRETS_SETUP.md) — el propietario introduce los valores en GitHub Settings, nunca por chat
+- [Bot de Telegram (aviso de revisión; sin secrets = SKIPPED)](ART_DEPARTMENT/CLOUD_AUTOMATION/SECRETS_SETUP.md#crear-el-bot-de-telegram-sin-exponer-el-token)
+- [Firebase opcional sin billing (reglas deny-by-default)](firebase/README.md) y [firestore.rules](firebase/firestore.rules)
+- [n8n: portabilidad, export/import y restauración](ART_DEPARTMENT/CLOUD_AUTOMATION/N8N_PORTABILITY.md)
+- [Troubleshooting del pipeline de arte](ART_DEPARTMENT/DOCUMENTATION/TROUBLESHOOTING.md)
+
+### Workflows disponibles (todos publican solo en `agent/*`; nunca `main`)
+
+| Workflow | Función |
+|---|---|
+| [asset-factory.yml](.github/workflows/asset-factory.yml) | Producción por lotes reanudable (guarda de rama incluida) |
+| [asset-factory-scheduler.yml](.github/workflows/asset-factory-scheduler.yml) | Dispatcher seguro: valida `^(agent|feature)/` antes de despachar; cron desactivado hasta prueba e2e |
+| [asset-validation.yml](.github/workflows/asset-validation.yml) | Validación de catálogo + humo Blender (bpy opcional, SKIPPED honesto) |
+| [asset-library-index.yml](.github/workflows/asset-library-index.yml) | Chequeo estricto del índice 2.0.0 + validador consolidado |
+| [asset-publication.yml](.github/workflows/asset-publication.yml) | Marca `published` y abre/actualiza PR (sin auto-merge) |
+| [asset-review-telegram.yml](.github/workflows/asset-review-telegram.yml) | Avisos Telegram de revisión (SKIPPED sin secrets) |
+| [asset-gpu-triposr.yml](.github/workflows/asset-gpu-triposr.yml) | Carril GPU Kaggle/TripoSR (idempotente, DEFERRED_QUOTA) |
+
+El estado de producción y los enlaces deben actualizarse en cada PR de assets.
 
 ## Marca y licencias
 
