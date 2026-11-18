@@ -96,13 +96,18 @@ Separar definición de objeto (plantilla) y objeto concreto en inventario (insta
 - Enemigos con estados idle, patrol, alert, chase, telegraph, attack, recover, return, dead.
 - El servidor calcula AI y eventos; cliente presenta animaciones.
 
-## Streaming de regiones
+## Streaming de regiones y zonas
 
-- Cada región como escena raíz independiente.
-- Puertas/caminos/portal disparan transición asíncrona y loading UI.
-- Mantener party/realm; transferir snapshot mínimo de personaje y estado.
+La geografía macro no debe confundirse con la unidad técnica que se carga en memoria. La región de Camagüey puede contener varias localidades, sectores y zonas; Verdaluz es la localidad inicial dentro de esa región. La jerarquía canónica se documenta en `docs/DECISIONS/ADR-013_jerarquia_mundo_camaguey_verdaluz.md`.
+
+- Cada **zona jugable** se implementa como escena raíz independiente; una región macro puede agrupar múltiples zonas.
+- Puertas, caminos, portales o límites de sector disparan transición asíncrona y una UI de carga.
+- Mantener party/realm; transferir snapshot mínimo de personaje y estado entre zonas.
 - Los assets no usados se descargan de memoria cuando sea seguro.
 - La generación procedural de dungeon toma una semilla del servidor, el cliente reconstruye módulos y el servidor conserva estado real.
+- Los datos deben separar `world_id`, `region_id`, `zone_id` e `instance_id`; no usar el nombre visible traducible como identificador persistente.
+- No cargar todas las zonas de Camagüey ni del mundo al entrar en Verdaluz.
+- El streaming sin interrupciones no se considera implementado hasta tener mediciones y pruebas de transición/descarga.
 
 ## Calidad gráfica
 
