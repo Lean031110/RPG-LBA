@@ -174,9 +174,17 @@ Hallazgos principales:
 
 Nota: los valores probados eran los de las VARIABLES (eliminadas después de
 probarlas). Los SECRETS homónimos solo son verificables dentro de Actions;
-se ejercitarán tras la fusión con un `workflow_dispatch` de Asset Validation
-(que dispara `asset-review-telegram` vía `workflow_run`) y se reportará el
-resultado real.
+se ejercitaron tras la fusión con un `workflow_dispatch` de Asset Validation
+(que dispara `asset-review-telegram` vía `workflow_run`):
+
+- La cadena de fallback de secrets FUNCIONA (ambos valores se inyectaron).
+- Se descubrió y corrigió un bug preexistente del workflow (EVENT_PATH vacío
+  en `workflow_run`, PR #23); la regresión posterior llegó a la API real.
+- **Telegram end-to-end: FAIL por credencial** (HTTP 400 al enviar; el bot
+  token es válido; el chat id del secret es incorrecto — acción del
+  propietario). El resto de secretos (Kaggle, HF, 3DValley, Smithsonian) no
+  está referenciado aún por ningún workflow de `main`; su verificación
+  seguirá las pruebas de la ETAPA B.
 
 ## 11. Resultados reales (cierre, 2026-11-18)
 
