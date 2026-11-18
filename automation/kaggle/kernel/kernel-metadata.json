@@ -1,0 +1,15 @@
+{
+  "id": "OWNER_KAGGLE_USERNAME/rpg-lba-triposr-batch",
+  "title": "RPG LBA TripoSR batch (private prototype)",
+  "code_file": "tripoSR_batch_kernel.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "accelerator": "nvidiaTeslaT4",
+  "enable_internet": true,
+  "dataset_sources": [],
+  "kernel_sources": [],
+  "competition_sources": [],
+  "collaborators": [],
+  "kernel_tags": []
+}

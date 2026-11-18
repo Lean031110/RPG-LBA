@@ -1,8 +1,8 @@
 # PRODUCTION_STATUS.md — Estado de producción del departamento de arte
 
-- **Fecha:** 2026-11-15
-- **Rama:** `feature/ai-art-department` (base: main @ 26fb66b)
-- **Pull Request:** https://github.com/Lean031110/RPG-LBA/pull/12 (abierto, sin merge automático)
+- **Fecha:** 2026-11-16
+- **Rama original:** `feature/ai-art-department` — **ya fusionada en `main` vía PR #12**
+- **Continuidad cloud:** rama de trabajo actual `agent/asset-cloud-automation` (PR #18); la capa de control vive en [`ART_DEPARTMENT/CLOUD_AUTOMATION/`](../CLOUD_AUTOMATION/README.md) (inventario, índice, proveedores, backlog, evidencia y automatización)
 - **Motor de la fábrica:** v1.0 (procedural CPU: NumPy/Pillow + trimesh/bpy)
 
 ## 1. Estado global

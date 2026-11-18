@@ -1,0 +1,65 @@
+name: Asset library index generator
+
+on:
+  pull_request:
+    paths:
+      - "assets/**"
+      - "ART_DEPARTMENT/AI_ASSET_FACTORY/catalog/assets_manifest.json"
+      - "ART_DEPARTMENT/CLOUD_AUTOMATION/**"
+      - "assets/manifest.csv"
+      - "automation/n8n/**"
+      - "firebase/**"
+      - "scripts/ci/build_asset_library_index.py"
+      - "scripts/ci/validate_asset_factory.py"
+      - ".github/workflows/asset-library-index.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asset-library-index-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Regenerate index and fail if the checked-in copy is stale
+        env:
+          TARGET_REF: ${{ github.head_ref || github.ref_name }}
+        run: |
+          set -euo pipefail
+          python3 scripts/ci/build_asset_library_index.py \
+            --repo "${GITHUB_REPOSITORY}" \
+            --ref "${TARGET_REF}" \
+            --output "${RUNNER_TEMP}/ASSET_LIBRARY_INDEX.generated.json"
+          python3 scripts/ci/build_asset_library_index.py \
+            --repo "${GITHUB_REPOSITORY}" \
+            --ref "${TARGET_REF}" \
+            --check
+          echo "PASS: checked-in ASSET_LIBRARY_INDEX.json matches the manifest + asset tree (schema 2.0.0)."
+
+      - name: Consolidated asset-factory validation (master prompt §15)
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet pyyaml
+          python3 scripts/ci/validate_asset_factory.py
+
+      - name: Upload generated candidate (for diffing on failure)
+        uses: actions/upload-artifact@v4
+        with:
+          name: asset-library-index-candidate
+          path: ${{ runner.temp }}/ASSET_LIBRARY_INDEX.generated.json
+          retention-days: 14

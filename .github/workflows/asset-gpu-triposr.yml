@@ -1,0 +1,67 @@
+# RPG-LBA — Prototipo GPU reanudable: TripoSR en Kaggle (mandato §9).
+#
+# Despacho manual únicamente. La ejecución programada solo se activará tras
+# una prueba manual de punta a punta registrada en gpu_task_queue.json.
+#
+# Estados honestos:
+#  - SKIPPED / KAGGLE_NOT_CONFIGURED cuando faltan los secrets.
+#  - SKIPPED / DEFERRED_QUOTA cuando Kaggle no ofrece GPU/cuota.
+#  - PASS solo si el kernel se despachó y se registró su job id.
+#
+# Los pesos de modelos y datasets grandes NUNCA se commitean (política §9):
+# el kernel clona la revisión fijada de TripoSR en runtime.
+name: Asset GPU TripoSR (Kaggle prototype)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asset-gpu-triposr
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Guarda de rama — nunca main
+        run: |
+          REF="${GITHUB_REF_NAME}"
+          case "$REF" in
+            main|release*|refs/heads/main*)
+              echo "::error::Ref '$REF' protegida; este prototipo solo corre en agent/*." ; exit 1 ;;
+          esac
+          echo "Rama válida: $REF"
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Kaggle CLI
+        run: python -m pip install --quiet kaggle
+
+      - name: Despachar lote TripoSR (idempotente)
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          KAGGLE_BATCH_LIMIT: "2"
+        run: python scripts/ci/kaggle_triposr_dispatch.py
+
+      - name: Resumen honesto del estado
+        run: |
+          echo "## TripoSR/Kaggle dispatch — resultado" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          q = json.load(open("automation/kaggle/gpu_task_queue.json"))
+          for t in q["tasks"]:
+              print(f"{t['task_id']}: {t['status']}")
+          print("policy:", q["policy"]["idempotency"])
+          PY
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "NOTA: si el estado es SKIPPED/DEFERRED_QUOTA, ningún recurso se generó ni se marcó PASS."

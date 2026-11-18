@@ -1,0 +1,55 @@
+{
+  "name": "RPG LBA - Poly Haven catalog discovery (template)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1f10d6a5-9c45-4c2e-a001-000000000001",
+      "name": "Manual start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.polyhaven.com/assets",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "RPG-LBA-AssetFactory/1.0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1f10d6a5-9c45-4c2e-a001-000000000002",
+      "name": "Fetch Poly Haven asset metadata",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    }
+  ],
+  "connections": {
+    "Manual start": {
+      "main": [
+        [
+          {
+            "node": "Fetch Poly Haven asset metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

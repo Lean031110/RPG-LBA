@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Secure default: no client access until an authenticated role model
+    // and tests are implemented and reviewed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
