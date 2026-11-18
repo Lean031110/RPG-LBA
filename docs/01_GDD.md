@@ -1,6 +1,6 @@
 # 01 — Game Design Document (GDD)
 
-> **Actualización de canon 2026-11-12:** La identidad creativa vigente es RPG LBA — Las Cenizas de Lythara; la primera campaña se titula *El Eco de Valdeluz* y ocurre en una Cuba ficticia de 1953, reinterpretada como fantasía oscura caribeña. Esta definición supersede la descripción genérica de fantasía medieval de versiones anteriores. La biblia narrativa, las misiones, las clases y la dirección artística enlazadas abajo son las fuentes específicas de contenido.
+> **Actualización de canon 2026-11-12:** La identidad creativa vigente es RPG LBA — Las Cenizas de Lythara; la primera campaña se titula *El Eco de Verdaluz* y ocurre en una Cuba ficticia de 1953, reinterpretada como fantasía oscura caribeña. Esta definición supersede la descripción genérica de fantasía medieval de versiones anteriores. La biblia narrativa, las misiones, las clases y la dirección artística enlazadas abajo son las fuentes específicas de contenido.
 >
 > - Narrativa: [Biblia del mundo](narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md) y [misiones](narrativa/01_MISIONES_Y_CADENAS.md).
 > - Clases: [atributos y habilidades](diseno/02_CLASES_ATRIBUTOS_HABILIDADES.md).
@@ -9,14 +9,14 @@
 
 ## 1. Visión general
 
-**RPG LBA: Las Cenizas de Lythara** es un action RPG 3D de fantasía oscura caribeña. Su primera campaña, **El Eco de Valdeluz**, transcurre en una Cuba ficticia de 1953: pueblos de interior, La Habana, fortalezas, centrales azucareros, mogotes, montañas, ciénagas y una dimensión sobrenatural llamada La Otra Orilla. El juego combina combate de acción isométrico, seis clases originales (Machetero, Bruja, Sepulturero, Tirador, Cimarrón y Bardo) con recursos, habilidades y debilidades propias, exploración por regiones, misiones cinematográficas y multijugador planificado con servidor dedicado autoritativo.
+**RPG LBA: Las Cenizas de Lythara** es un action RPG 3D de fantasía oscura caribeña. Su primera campaña, **El Eco de Verdaluz**, transcurre en una Cuba ficticia de 1953: pueblos de interior, La Habana, fortalezas, centrales azucareros, mogotes, montañas, ciénagas y una dimensión sobrenatural llamada La Otra Orilla. El juego combina combate de acción isométrico, seis clases originales (Machetero, Bruja, Sepulturero, Tirador, Cimarrón y Bardo) con recursos, habilidades y debilidades propias, exploración por regiones, misiones cinematográficas y multijugador planificado con servidor dedicado autoritativo.
 
 La identidad visual es gótico caribeño: arquitectura colonial y art déco, vegetación tropical, césped, tierra roja, piedra caliza, metal envejecido, faroles, radios, trenes y clima dramático. La interfaz debe ser oscura y sobria, pero de lectura inmediata en móvil. No copiar recursos ni UI de juegos existentes.
 
 ## 2. Bucle principal
 
 1. Seleccionar personaje y clase.
-2. Aparecer en Valdeluz, La Habana o último punto seguro.
+2. Aparecer en Verdaluz, La Habana o el último punto seguro desbloqueado.
 3. Consultar diario, hablar con personajes y preparar equipo.
 4. Viajar a una región de exploración.
 5. Explorar, combatir, investigar, recolectar y descubrir eventos.
@@ -38,12 +38,16 @@ Cada expedición debe tener duración útil de 10–25 minutos. Las misiones sec
 
 ## 4. Estructura del mundo
 
-El mundo se organiza por regiones cubanas ficticias o inspiradas en geografía real, con sectores de streaming y puntos de interés. No cargar el mundo completo al mismo tiempo. La región inicial es Valdeluz; las zonas principales se detallan en la biblia narrativa.
+El mundo se organiza por regiones cubanas ficticias o inspiradas en geografía real, con sectores de streaming y puntos de interés. No cargar el mundo completo al mismo tiempo. La localidad inicial es Verdaluz, situada dentro de la región de Camagüey. Camagüey es una región macro del mundo, no el mapa completo; su cartografía detallada y sus subzonas siguen pendientes de diseño. Las demás regiones y escenarios se detallan en la biblia narrativa.
 
 - Ciudad/refugio: servicios, comerciantes, herrero, médico, almacén y tablón.
 - Regiones exteriores: combate, exploración, eventos y recolección.
 - Mazmorras: instancias de grupo o solitario con semilla determinista.
 - Jefes: arenas con fases, telegráficos y condiciones de victoria.
+
+### Jerarquía territorial y carga del mundo
+
+El mundo se organiza como un conjunto de grandes regiones. La región de **Camagüey** contiene la localidad inicial de **Verdaluz**, donde comienza el prólogo. Verdaluz no es una región independiente ni Camagüey es todo el mundo. Los barrios, calles, interiores y demás subzonas de Camagüey no se consideran definidos hasta que exista un diseño aprobado. Cada zona jugable se carga de forma independiente; no se mantiene todo el mundo en memoria. La jerarquía y los identificadores se especifican en [ADR-013](DECISIONS/ADR-013_jerarquia_mundo_camaguey_verdaluz.md).
 
 ## 5. Modos de juego
 

@@ -22,6 +22,8 @@ Los documentos de narrativa y arte pasan a ser la fuente de verdad creativa. La 
 
 ## Estado de partida
 
+La jerarquía territorial vigente es mundo RPG LBA → región de Camagüey → localidad de Verdaluz. Camagüey aún no tiene cartografía detallada; no inventar barrios, caminos ni POI. Ver [ADR-013](DECISIONS/ADR-013_jerarquia_mundo_camaguey_verdaluz.md). Mantener nombres de archivo/rutas internas históricas hasta una migración técnica con pruebas.
+
 La Fase 1 local reporta 48/48 tests, 10 capturas, 11 criterios declarados PASS; no hay prueba real de APK, dispositivo Android ni FPS. La rama de Fase 1 no se debe considerar integrada en `main` hasta verificar el PR y su CI. El README debe describir la rama real y no fingir que el contenido está en main.
 
 ## Objetivo inmediato: Art Pass + UX Pass
@@ -30,7 +32,7 @@ El responsable no aprueba la presentación actual. No continuar añadiendo conte
 
 ### Entregables visuales
 
-- Nuevo bosque de Valdeluz con césped texturizado, tierra roja, caminos con huellas, piedra caliza, raíces, vegetación tropical variada y materiales distinguibles.
+- Nuevo entorno de Verdaluz con césped texturizado, tierra roja, caminos con huellas, piedra caliza, raíces, vegetación tropical variada y materiales distinguibles.
 - Cielo/horizonte visible.
 - Ciclo de día y noche continuo, con amanecer, día, atardecer y noche.
 - Clima básico: despejado, nublado, lluvia y niebla; tormenta después.
@@ -60,7 +62,7 @@ El responsable no aprueba la presentación actual. No continuar añadiendo conte
 6. Producir escena de benchmark con 4 materiales y cielo antes de rehacer toda la zona.
 7. Implementar ciclo día/noche y capturar 4 horarios.
 8. Rediseñar HUD y menú.
-9. Rehacer el bosque de Valdeluz con assets licenciados.
+9. Rehacer el entorno de Verdaluz con assets licenciados.
 10. Ejecutar import×2, lint, GdUnit, smoke, visual evidence y CI.
 11. Abrir PR; no hacer push directo a main.
 12. Esperar revisión humana de capturas antes de ampliar el contenido.

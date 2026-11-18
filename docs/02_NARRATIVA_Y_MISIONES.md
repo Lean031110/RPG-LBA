@@ -1,3 +1,5 @@
+> **Documento histórico/superseded:** este resumen pertenece a una versión anterior de fantasía medieval genérica. No es canon vigente. Para historia, personajes, regiones y misiones, usar `docs/narrativa/00_BIBLIA_DEL_MUNDO_Y_HISTORIA.md`, `docs/narrativa/01_MISIONES_Y_CADENAS.md` y ADR-013. No recuperar nombres o premisas de este archivo sin reconciliarlos con el canon actual.
+
 # 02 — Historia, mundo y misiones
 
 ## Premisa

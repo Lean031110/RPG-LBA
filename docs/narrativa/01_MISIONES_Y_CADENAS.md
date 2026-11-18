@@ -1,4 +1,4 @@
-# Misiones de campaña — El Eco de Valdeluz
+# Misiones de campaña — El Eco de Verdaluz
 ## Guía de producción narrativa, objetivos y escenas
 
 Este documento convierte la biblia narrativa en contenido implementable. Los nombres de misión y los objetivos son canon de diseño; los diálogos completos, recompensas y cantidades deben localizarse en recursos de datos separados cuando se implementen.
@@ -14,7 +14,7 @@ Cada misión incluye: premisa, escena de apertura, objetivos jugables, giro narr
 ## Prólogo: La noche que sonó el río
 
 ### P00 — Un día cualquiera
-**Inicio:** Valdeluz, mañana.  
+**Inicio:** Verdaluz, mañana.  
 **Objetivo:** recorrer el pueblo, saludar a tres vecinos, ayudar a Cheo a recuperar una caja de herramientas y llevar café a Maela.  
 **Escena:** la cámara muestra un pueblo vivo. En un portal, dos ancianos juegan dominó; una radio suena dentro de una bodega; un tren silba a lo lejos. El jugador descubre que el mundo tiene vida antes de convertirse en amenaza.  
 **Tutorial:** movimiento, interacción, inventario y diálogo.  
@@ -177,7 +177,7 @@ Cada misión incluye: premisa, escena de apertura, objetivos jugables, giro narr
 **Resultado:** victoria parcial. Las decisiones y cadenas completadas cambian aliados, rutas y escenas posteriores, sin cerrar la saga.
 
 ### P27 — El día después
-**Objetivo:** epílogo interactivo y abierto. Volver a Valdeluz, hablar con aliados, revisar consecuencias, ayudar a reconstruir y decidir qué hacer temporalmente con el cascabel.  
+**Objetivo:** epílogo interactivo y abierto. Volver a Verdaluz, hablar con aliados, revisar consecuencias, ayudar a reconstruir y decidir qué hacer temporalmente con el cascabel.  
 **Última escena:** una radio apagada se enciende y una voz pregunta cuántas puertas quedan. Se revelan señales hacia La Habana, el mar y una región aún no cartografiada. El jugador queda libre para continuar jugando y aceptar nuevo contenido.  
 **Recompensa:** acceso al modo de aventura posterior, cosmético “Ceniza y Amanecer” y nuevas historias desbloqueables. No mostrar créditos como final definitivo de la franquicia.
 
@@ -195,7 +195,7 @@ Las cadenas secundarias son historias completas de la gente de la isla. No deben
 **Cierre:** el Malecón aporta fareros al asalto de la Fortaleza.
 
 ## Cadena B — El tesoro de la abuela
-1. **La libreta de recetas:** encuentra un cuaderno escondido en una cocina de Valdeluz.
+1. **La libreta de recetas:** encuentra un cuaderno escondido en una cocina de Verdaluz.
 2. **El ingrediente imposible:** busca hierbas, miel y una sal que solo aparece tras tormentas.
 3. **La olla que no se enfría:** defiende una comida comunitaria de criaturas atraídas por el recuerdo.
 4. **El sabor de casa:** prepara el plato con la abuela y escucha la historia de su familia.  

@@ -1,6 +1,6 @@
 # RPG LBA — Las Cenizas de Lythara
 ## Biblia narrativa y dirección cinematográfica
-**Título de campaña:** *El Eco de Valdeluz*  
+**Título de campaña:** *El Eco de Verdaluz*  
 **Ambientación:** Cuba, 1953 — historia alternativa de fantasía oscura  
 **Productora ficticia dentro del proyecto:** LBA Games  
 **Género:** action RPG isométrico 3D, fantasía gótica caribeña, aventura y misterio
@@ -28,47 +28,48 @@ La experiencia debe sentirse como recorrer una leyenda cubana que alguien cuenta
 
 ## 3. La Cuba de 1953: mapa emocional
 
-La campaña utiliza lugares reales como inspiración arquitectónica y geográfica, pero el pueblo de Valdeluz, varios nombres, linajes, cuevas y sucesos sobrenaturales son ficción. No se debe presentar la historia fantástica como un hecho histórico real.
+La campaña utiliza lugares reales como inspiración arquitectónica y geográfica, pero el pueblo de Verdaluz, varios nombres, linajes, cuevas y sucesos sobrenaturales son ficción. No se debe presentar la historia fantástica como un hecho histórico real.
 
 ### Regiones principales
 
-1. **La Habana de las Campanas**
+1. **Región de Camagüey**
+   - Región geográfica amplia dentro del mundo de RPG LBA, inspirada en Camagüey y adaptada a la ficción del juego.
+   - Su mapa macro, límites, caminos y localidades secundarias todavía no están definidos. No inventar barrios, monumentos ni puntos de interés como si fueran canon.
+   - **Verdaluz** es la localidad ficticia inicial dentro de esta región: hogar del prólogo y primer refugio seguro del protagonista. La localidad tendrá sectores, calles, interiores y puntos de interés que se diseñarán por separado.
+   - Verdaluz se sitúa entre lomas y un río de agua oscura. Sus elementos ya establecidos incluyen casas de madera, tejas, portal corrido, plaza, iglesia, estación de tren, bodega, barbería, cafetal cercano y cementerio. Su expansión urbana detallada se diseñará por separado.
+
+2. **La Habana de las Campanas**
    - Capital vertical de azoteas, callejones, portales, patios interiores, plazas, fortalezas, muelles, cafés, solares y edificios art déco.
    - Zonas: Centro de la ciudad, barrio de San Telmo (ficticio), Malecón, puerto, cementerio y túneles bajo la ciudad.
    - Paleta: piedra mojada, azul petróleo, óxido, faroles ámbar, neón escaso y rojo de luna.
    - Amenaza: espectros de ahogados, perros de sombra y la procesión sin rostro.
-
-2. **Valdeluz**
-   - Pueblo ficticio del interior, entre lomas y un río de agua oscura. Es el hogar emocional del prólogo.
-   - Casas de madera, tejas, portal corrido, plaza, iglesia, estación de tren, bodega, barbería, cafetal cercano y cementerio.
-   - De día huele a café, tierra mojada y pan; de noche el campanario marca horas que no existen.
 
 3. **Los Mogotes de la Niebla**
    - Región inspirada en el paisaje occidental: mogotes, cuevas, vegas de tabaco, palmas, caminos rojos, ríos subterráneos.
    - Criaturas: murciélagos de ceniza, jíbaros espectrales, raíces que estrangulan y guardianes de piedra.
    - La niebla cambia de dirección cuando el jugador miente.
 
-4. **El Central de las Ánimas**
+5. **El Central de las Ánimas**
    - Complejo azucarero ficticio: cañaverales, locomotora, batey, chimeneas, talleres, almacenes y una máquina que sigue moliendo sin electricidad.
    - El azúcar se cristaliza como vidrio negro. Los trabajadores desaparecidos dejaron sus herramientas ordenadas.
    - Mazmorra industrial con vapor, engranajes, calderas y un corazón mecánico.
 
-5. **La Sierra del Juramento**
+6. **La Sierra del Juramento**
    - Montaña, cafetales, pinares, precipicios, ríos fríos, bohíos y caminos de arrieros.
    - Región de resistencia, refugios y memoria. Las tormentas revelan senderos invisibles.
    - El jugador descubre que el primer pacto no fue firmado por reyes, sino por gente común que protegía a sus comunidades.
 
-6. **La Ciénaga del Silencio**
+7. **La Ciénaga del Silencio**
    - Humedal, canales, manglares, agua negra, mosquitos, aves y poblados sobre pilotes.
    - Barcas, faroles, campanas sumergidas y ruinas cubiertas de raíces.
    - El sonido se vuelve mecánica: ciertos monstruos solo pueden localizarse por vibración y eco.
 
-7. **La Fortaleza del Morro Negro**
+8. **La Fortaleza del Morro Negro**
    - Fortaleza ficticia inspirada en la arquitectura defensiva colonial de Cuba.
    - Baluartes, cañones, aljibes, túneles, patios de piedra y una cámara bajo el nivel del mar.
-   - Aquí se descubre el verdadero propósito de las campanas de Valdeluz.
+   - Aquí se descubre el verdadero propósito de las campanas de Verdaluz.
 
-8. **La Otra Orilla**
+9. **La Otra Orilla**
    - Dimensión final, espejo roto de la isla: palmas de ceniza, mar suspendido en el cielo, ciudades invertidas, trenes que atraviesan recuerdos y estrellas bajo el suelo.
    - No es un infierno religioso: es una geografía nacida de memorias arrancadas.
 
@@ -87,7 +88,7 @@ El ritual falla. La grieta despierta. La ceniza comienza a caer sobre la isla.
 ## 5. Personajes principales
 
 ### El protagonista — el nombre que el jugador elige
-No es un elegido por sangre real. Es una persona corriente nacida en Valdeluz, con un pasado que el jugador define mediante tres decisiones:
+No es un elegido por sangre real. Es una persona corriente nacida en Verdaluz, con un pasado que el jugador define mediante tres decisiones:
 - ¿A quién perdiste? (madre, hermano, amigo o nadie: desaparecido).
 - ¿Qué juraste proteger? (tu pueblo, tu familia, una persona, la verdad).
 - ¿Qué recuerdo no quieres perder? (una voz, una canción, un rostro, un lugar).
@@ -95,13 +96,13 @@ No es un elegido por sangre real. Es una persona corriente nacida en Valdeluz, c
 Estas elecciones cambian diálogos, recuerdos visibles y algunas soluciones de misiones; nunca bloquean una clase.
 
 ### Maela Valdés — la campanera
-Mujer de 29 años, restauradora de instrumentos y campanas, criada entre La Habana y Valdeluz. Observadora, valiente, irónica y reservada. Puede oír vibraciones que nadie más percibe. No es una simple acompañante: investiga, discute, se equivoca y tiene objetivos propios. Su arco trata sobre la culpa heredada y el derecho a elegir qué recordar.
+Mujer de 29 años, restauradora de instrumentos y campanas, criada entre La Habana y Verdaluz. Observadora, valiente, irónica y reservada. Puede oír vibraciones que nadie más percibe. No es una simple acompañante: investiga, discute, se equivoca y tiene objetivos propios. Su arco trata sobre la culpa heredada y el derecho a elegir qué recordar.
 
 ### Eusebio “Cheo” Marrero — el viejo del portal
 Campesino y antiguo ferroviario de 67 años. Conoce caminos, nombres viejos y refranes. Cuenta historias con humor seco, pero oculta que ayudó a transportar una de las campanas décadas atrás. Su machete está mellado; su memoria, no.
 
 ### Inés Armenteros — la médica del barrio
-Médica de 34 años que trabaja en una clínica pequeña de Valdeluz. Práctica, incrédula al principio, valiente cuando la evidencia la obliga. Representa la ciencia, la compasión y la tensión entre explicar el horror y sobrevivirlo.
+Médica de 34 años que trabaja en una clínica pequeña de Verdaluz. Práctica, incrédula al principio, valiente cuando la evidencia la obliga. Representa la ciencia, la compasión y la tensión entre explicar el horror y sobrevivirlo.
 
 ### Padre Tomás de la Cruz — el guardián cansado
 Sacerdote de 58 años, estudioso de archivos coloniales y protector de documentos que nadie quiere leer. No tiene todas las respuestas y desconfía de cualquier poder que prometa salvación inmediata.
@@ -117,7 +118,7 @@ No aparece completamente hasta el último acto. Primero se manifiesta como una v
 ### Prólogo — La noche que sonó el río
 Duración narrativa objetivo: 30–45 minutos.
 
-**Secuencia 1: La mañana de Valdeluz.** Plano general de un pueblo despertando: gallos, una guagua vieja, humo de cocina, un radio con son cubano suave, una barbería abriendo, niños corriendo detrás de una pelota y una mujer tendiendo ropa. El protagonista vuelve a casa. El jugador conoce el movimiento, la interacción y la vida cotidiana antes del horror.
+**Secuencia 1: La mañana de Verdaluz.** Plano general de un pueblo despertando: gallos, una guagua vieja, humo de cocina, un radio con son cubano suave, una barbería abriendo, niños corriendo detrás de una pelota y una mujer tendiendo ropa. El protagonista vuelve a casa. El jugador conoce el movimiento, la interacción y la vida cotidiana antes del horror.
 
 **Secuencia 2: La campana fuera de hora.** A las 11:53 de la mañana, el campanario suena siete veces. Los perros se esconden. El río fluye hacia arriba durante unos segundos. Maela encuentra una grieta en el bronce y una palabra grabada por dentro: “Recuerda”.
 
@@ -183,7 +184,7 @@ La última misión no consiste en reunir objetos, sino en devolver a cada campan
 Jefe final: **El Rey de la Ceniza, Señor del Recuerdo Vacío**. Fases:
 1. Silueta distante que altera la arena y oculta telegráficos.
 2. Copias de personas queridas que imitan habilidades del jugador.
-3. La corona se rompe; el jugador pelea en una plaza de Valdeluz reconstruida con recuerdos.
+3. La corona se rompe; el jugador pelea en una plaza de Verdaluz reconstruida con recuerdos.
 4. El golpe final solo es posible cuando los aliados pronuncian los nombres que el jugador ayudó a recuperar.
 
 ### Epílogo — La isla recuerda
@@ -199,7 +200,7 @@ La confrontación con el Rey de la Ceniza **no es el final definitivo de Las Cen
 
 ### Clímax: La plaza que recuerda
 
-El jugador llega a una plaza de Valdeluz reconstruida dentro de La Otra Orilla. El suelo parece adoquín mojado, pero bajo cada piedra se mueve un recuerdo. Las casas están completas y vacías; desde las ventanas se escuchan conversaciones que nunca ocurrieron.
+El jugador llega a una plaza de Verdaluz reconstruida dentro de La Otra Orilla. El suelo parece adoquín mojado, pero bajo cada piedra se mueve un recuerdo. Las casas están completas y vacías; desde las ventanas se escuchan conversaciones que nunca ocurrieron.
 
 El Rey aparece con una corona incompleta. Ofrece devolverle al protagonista algo que perdió, aunque todavía no sepa qué es. La batalla tiene tres movimientos:
 
@@ -211,11 +212,11 @@ La victoria es real, pero parcial. La isla deja de sufrir la expansión inmediat
 
 ### Epílogo abierto: El día después
 
-Amanece en Valdeluz. El río vuelve a correr, pero en su orilla aparece una escalera de piedra que no estaba allí. Maela conserva su cascabel y escucha una voz que pronuncia un nombre desconocido. Cheo reabre la barbería; Inés convierte la clínica en refugio; los vecinos reconstruyen la plaza.
+Amanece en Verdaluz. El río vuelve a correr, pero en su orilla aparece una escalera de piedra que no estaba allí. Maela conserva su cascabel y escucha una voz que pronuncia un nombre desconocido. Cheo reabre la barbería; Inés convierte la clínica en refugio; los vecinos reconstruyen la plaza.
 
 El protagonista puede recorrer el pueblo, hablar con aliados, revisar el diario y aceptar nuevos encargos. Una radio apagada se enciende sola. Una voz desde otra región dice: **«La primera puerta ya sabe tu nombre. ¿Cuántas quedan?»**
 
-La cámara se eleva sobre Valdeluz. Más allá de las lomas se ven tres luces: una en La Habana, otra en el mar y otra en una región que todavía no aparece en el mapa.
+La cámara se eleva sobre Verdaluz. Más allá de las lomas se ven tres luces: una en La Habana, otra en el mar y otra en una región que todavía no aparece en el mapa.
 
 ### Misterios que quedan abiertos
 
