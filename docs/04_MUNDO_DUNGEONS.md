@@ -2,33 +2,33 @@
 
 ## 1. Mapa macro de Lythara
 
-El mundo se percibe grande mediante regiones conectadas, rutas, portales y puntos de interés. No es un único mapa infinito cargado simultáneamente.
+El mundo se percibe grande mediante grandes regiones conectadas por rutas, portales y puntos de interés. No es un único mapa infinito cargado simultáneamente. La jerarquía territorial vigente se define en [ADR-013](DECISIONS/ADR-013_jerarquia_mundo_camaguey_verdaluz.md): el mundo contiene la región macro de Camagüey y, dentro de ella, la localidad inicial de Verdaluz. Camagüey todavía no tiene cartografía detallada ni subzonas aprobadas.
 
-### Región 0 — Valdeluz (ciudad segura)
+### Localidad inicial — Verdaluz (dentro de la región de Camagüey)
 
-Servicios: alcalde/capitana, herrero, alquimista, comerciante general, almacén, tablón de misiones, entrenador, portal, posada, estación de grupo y tablón de guild. No aparecen enemigos en ciudad. Aquí se enseña economía y preparación.
+Verdaluz es la localidad segura donde comienza la campaña. Sus servicios definidos son: alcalde/capitana, herrero, alquimista, comerciante general, almacén, tablón de misiones, entrenador, portal, posada, estación de grupo y tablón de guild. No aparecen enemigos en ciudad. Aquí se enseña economía y preparación.
 
-### Región 1 — Bosque de Brumaclara (niveles 1–7)
+### Zona de exploración — Bosque de Brumaclara (niveles 1–7)
 
 Bosque luminoso con niebla suave, ruinas y caminos. Enemigos: lobos cenicientos, bandidos, brotes corrompidos, tiradores cultistas. Recursos: madera, hierbas, cuero. POI: torre caída, santuario de raíces y guarida de Fenris.
 
-### Región 2 — Minas de Ghar (niveles 8–12)
+### Zona de exploración — Minas de Ghar (niveles 8–12)
 
 Complejo minero conectado a una entrada exterior y a mazmorra. Enemigos: mineros poseídos, autómatas, murciélagos de polvo, guardias del culto. Recursos: hierro, cobre, fragmentos de cristal. POI: elevador, forja vieja, galerías colapsadas.
 
-### Región 3 — Marjal Cenizal (niveles 10–16)
+### Zona de exploración — Marjal Cenizal (niveles 10–16)
 
 Pantano de agua baja, árboles torcidos, setas luminosas. Enemigos: sapos tóxicos, ahogados, brujas del fango. Recursos: plantas, resina y veneno. POI: altar sumergido y cabaña del herbolario.
 
-### Región 4 — Costa Quebrada (niveles 13–18)
+### Zona de exploración — Costa Quebrada (niveles 13–18)
 
 Acantilados, playas, barcos varados y cuevas marinas. Enemigos: saqueadores, cangrejos de sal, sirvientes de marea. Recursos: sal, coral y restos navales. POI: faro apagado y entrada al Archivo Sumergido.
 
-### Región 5 — Sierra de los Colosos (niveles 18–24)
+### Zona de exploración — Sierra de los Colosos (niveles 18–24)
 
 Montañas, puentes antiguos, nieve ligera y canteras. Enemigos: gólems menores, cultistas, bestias de roca. Recursos: mineral raro y piedra estelar. POI: observatorio y santuario de campana.
 
-### Región 6 — Bastión del Umbral (niveles 24–30)
+### Zona de campaña — Bastión del Umbral (niveles 24–30)
 
 Fortaleza exterior del culto, patios, catacumbas y brecha. Región de campaña final y jefe. Enemigos de alto riesgo. Entrada controlada por progreso de historia.
 
