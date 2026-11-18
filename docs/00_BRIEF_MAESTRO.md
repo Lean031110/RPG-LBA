@@ -4,7 +4,7 @@
 
 - **Nombre:** RPG LBA
 - **Subtítulo de campaña:** Las Cenizas de Lythara
-- **Género:** action RPG 3D, fantasía medieval, cámara elevada/isométrica, exploración por zonas, botín, misiones y cooperación online.
+- **Género:** action RPG 3D, fantasía oscura caribeña inspirada en una Cuba ficticia de 1953, cámara elevada/isométrica, exploración por zonas, botín, misiones y cooperación online.
 - **Plataforma inicial:** Android ARM64.
 - **Idioma inicial:** español; sistema preparado para inglés.
 - **Modelo comercial:** no definir monetización durante el MVP. No pay-to-win.
@@ -46,6 +46,14 @@
 ## Decisión de multijugador
 
 Se elige **servidor dedicado autoritativo**, no P2P/player-host. Ventajas: inventarios, daño, moneda y drops no dependen del teléfono del anfitrión; desconectar al anfitrión no destruye el mundo; se puede ejecutar headless en una PC; permite varias instancias/mundos y evolucionar a PostgreSQL. Coste: requiere una máquina servidor y diseño de persistencia. Para LAN, esa máquina puede ser la PC del usuario. Para jugar por Internet se necesitará alojamiento y disponibilidad pública.
+
+## Jerarquía del mundo
+
+- El mundo completo se compone de grandes regiones; no es un único mapa cargado simultáneamente.
+- Camagüey es una de esas regiones amplias dentro del mundo de RPG LBA.
+- Verdaluz es una localidad ficticia situada dentro de Camagüey y es el punto de partida de la campaña.
+- La región de Camagüey aún no tiene mapa detallado ni subzonas aprobadas. No inventar barrios, calles, pueblos o POI hasta diseñarlos.
+- Las localidades y zonas jugables se cargan independientemente; ver ADR-013 y `docs/06_ARQUITECTURA_GODOT.md`.
 
 ## Reglas de diseño
 
