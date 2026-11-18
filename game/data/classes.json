@@ -273,7 +273,8 @@
         "id": "esencia",
         "name_key": "resource.esencia",
         "base": 125,
-        "per_level": 6
+        "per_level": 6,
+        "regen_per_second": 2.5
       },
       "base_stats": {
         "hp": 85,
@@ -296,15 +297,235 @@
       },
       "basic_attack": {
         "name_key": "skill.bruja.basic",
+        "description_key": "skill.bruja.basic.desc",
+        "kind": "projectile",
+        "damage_coeff": 0.85,
+        "potency": 6.5,
         "damage_type": "arcane",
         "attribute": "intelecto",
-        "implemented": false
+        "cooldown": 0.65,
+        "windup": 0.16,
+        "active_until": 0.26,
+        "total_time": 0.5,
+        "cancel_after": 0.1,
+        "range": 0.0,
+        "arc_deg": 0.0,
+        "projectile": {
+          "speed": 20.0,
+          "lifetime": 1.1,
+          "radius": 0.4,
+          "pierce": 0,
+          "color": [
+            0.42,
+            0.85,
+            0.55
+          ]
+        },
+        "implemented": true
       },
-      "skills": [],
+      "skills": [
+        {
+          "id": "espina_de_jucaro",
+          "name_key": "skill.bruja.espina",
+          "description_key": "skill.bruja.espina.desc",
+          "unlock_level": 1,
+          "kind": "projectile",
+          "damage_coeff": 1.7,
+          "potency": 8.0,
+          "damage_type": "arcane",
+          "attribute": "intelecto",
+          "resource_cost": 15,
+          "cooldown": 4.0,
+          "windup": 0.2,
+          "active_until": 0.32,
+          "total_time": 0.6,
+          "cancel_after": 0.15,
+          "range": 0.0,
+          "arc_deg": 0.0,
+          "projectile": {
+            "speed": 24.0,
+            "lifetime": 1.4,
+            "radius": 0.5,
+            "pierce": 3,
+            "color": [
+              0.3,
+              0.7,
+              0.4
+            ]
+          },
+          "implemented": true
+        },
+        {
+          "id": "niebla_de_yagruma",
+          "name_key": "skill.bruja.niebla",
+          "description_key": "skill.bruja.niebla.desc",
+          "unlock_level": 2,
+          "kind": "zone",
+          "damage_coeff": 0.0,
+          "potency": 0.0,
+          "damage_type": "arcane",
+          "attribute": "intelecto",
+          "resource_cost": 25,
+          "cooldown": 9.0,
+          "windup": 0.3,
+          "active_until": 0.45,
+          "total_time": 0.8,
+          "cancel_after": 0.2,
+          "range": 0.0,
+          "arc_deg": 0.0,
+          "zone": {
+            "radius": 3.5,
+            "duration": 5.0,
+            "tick_interval": 0.5,
+            "cast_distance": 5.5,
+            "color": [
+              0.35,
+              0.55,
+              0.45
+            ],
+            "alpha": 0.4
+          },
+          "zone_status": {
+            "id": "slow",
+            "duration": 0.9,
+            "params": {
+              "slow_fraction": 0.4
+            }
+          },
+          "implemented": true
+        },
+        {
+          "id": "raices_del_jueyey",
+          "name_key": "skill.bruja.raices",
+          "description_key": "skill.bruja.raices.desc",
+          "unlock_level": 3,
+          "kind": "zone",
+          "damage_coeff": 0.0,
+          "potency": 0.0,
+          "damage_type": "arcane",
+          "attribute": "intelecto",
+          "resource_cost": 30,
+          "cooldown": 12.0,
+          "windup": 0.35,
+          "active_until": 0.5,
+          "total_time": 0.85,
+          "cancel_after": 0.25,
+          "range": 0.0,
+          "arc_deg": 0.0,
+          "zone": {
+            "radius": 3.0,
+            "duration": 2.2,
+            "tick_interval": 1.0,
+            "cast_distance": 4.0,
+            "color": [
+              0.4,
+              0.3,
+              0.2
+            ],
+            "alpha": 0.45
+          },
+          "zone_tick": {
+            "id": "raices_del_jueyey_tick",
+            "name_key": "skill.bruja.raices",
+            "damage_coeff": 0.6,
+            "potency": 6.0,
+            "damage_type": "arcane",
+            "attribute": "intelecto"
+          },
+          "zone_status": {
+            "id": "root",
+            "duration": 1.6,
+            "params": {}
+          },
+          "implemented": true
+        },
+        {
+          "id": "mariposa_de_ceniza",
+          "name_key": "skill.bruja.mariposa",
+          "description_key": "skill.bruja.mariposa.desc",
+          "unlock_level": 4,
+          "kind": "familiar",
+          "damage_coeff": 0.0,
+          "potency": 0.0,
+          "damage_type": "arcane",
+          "attribute": "intelecto",
+          "resource_cost": 35,
+          "cooldown": 14.0,
+          "windup": 0.25,
+          "active_until": 0.4,
+          "total_time": 0.7,
+          "cancel_after": 0.2,
+          "range": 0.0,
+          "arc_deg": 0.0,
+          "projectile": {
+            "speed": 9.0,
+            "lifetime": 6.0,
+            "radius": 0.5,
+            "pierce": 64,
+            "homing_turn_rate": 3.0,
+            "tick_interval": 1.0,
+            "color": [
+              0.85,
+              0.6,
+              0.3
+            ]
+          },
+          "projectile_tick": {
+            "id": "mariposa_de_ceniza_tick",
+            "name_key": "skill.bruja.mariposa",
+            "damage_coeff": 0.45,
+            "potency": 5.0,
+            "damage_type": "arcane",
+            "attribute": "intelecto"
+          },
+          "implemented": true
+        }
+      ],
       "ultimate": {
         "id": "manigua_despierta",
         "name_key": "skill.bruja.ultimate",
-        "implemented": false
+        "description_key": "skill.bruja.ultimate.desc",
+        "unlock_level": 3,
+        "kind": "storm",
+        "damage_coeff": 0.0,
+        "potency": 0.0,
+        "damage_type": "arcane",
+        "attribute": "intelecto",
+        "resource_cost": 0,
+        "cooldown": 1.0,
+        "windup": 0.45,
+        "active_until": 0.65,
+        "total_time": 1.0,
+        "cancel_after": 0.9,
+        "range": 0.0,
+        "arc_deg": 0.0,
+        "zone": {
+          "radius": 6.0,
+          "duration": 6.0,
+          "tick_interval": 0.5,
+          "color": [
+            0.25,
+            0.5,
+            0.35
+          ],
+          "alpha": 0.42
+        },
+        "zone_tick": {
+          "id": "manigua_despierta_tick",
+          "name_key": "skill.bruja.ultimate",
+          "damage_coeff": 0.45,
+          "potency": 7.0,
+          "damage_type": "arcane",
+          "attribute": "intelecto"
+        },
+        "zone_status": {
+          "id": "slow",
+          "duration": 0.8,
+          "params": {
+            "slow_fraction": 0.3
+          }
+        },
+        "implemented": true
       },
       "specializations": [
         {
@@ -316,7 +537,24 @@
           "name_key": "spec.bruja.tormenta"
         }
       ],
-      "playable_in_slice": false
+      "playable_in_slice": false,
+      "passives": {
+        "oido_manigua": {
+          "name_key": "passive.bruja.oido",
+          "still_time": 1.5,
+          "regen_multiplier": 2.0
+        },
+        "raiz_persistente": {
+          "name_key": "passive.bruja.raiz",
+          "control_duration_multiplier": 1.5,
+          "boss_control_duration_multiplier": 1.15
+        }
+      },
+      "ultimate_charge": {
+        "max": 100,
+        "per_hit_dealt": 8,
+        "per_hit_taken": 5
+      }
     },
     {
       "id": "sepulturero",
@@ -326,7 +564,8 @@
         "id": "ceniza",
         "name_key": "resource.ceniza",
         "base": 115,
-        "per_level": 6
+        "per_level": 6,
+        "regen_per_second": 2.0
       },
       "base_stats": {
         "hp": 95,
@@ -349,15 +588,207 @@
       },
       "basic_attack": {
         "name_key": "skill.sepulturero.basic",
+        "description_key": "skill.sepulturero.basic.desc",
+        "kind": "strike",
+        "damage_coeff": 0.8,
+        "potency": 5.5,
         "damage_type": "arcane",
         "attribute": "intelecto",
-        "implemented": false
+        "cooldown": 0.55,
+        "windup": 0.14,
+        "active_until": 0.32,
+        "total_time": 0.52,
+        "cancel_after": 0.12,
+        "range": 2.0,
+        "arc_deg": 72.0,
+        "implemented": true
       },
-      "skills": [],
+      "skills": [
+        {
+          "id": "llamada_del_osario",
+          "name_key": "skill.sepulturero.osario",
+          "description_key": "skill.sepulturero.osario.desc",
+          "unlock_level": 1,
+          "kind": "summon",
+          "summon_kind": "guardian",
+          "damage_coeff": 0.0,
+          "potency": 0.0,
+          "damage_type": "arcane",
+          "attribute": "intelecto",
+          "resource_cost": 30,
+          "cooldown": 10.0,
+          "windup": 0.4,
+          "active_until": 0.55,
+          "total_time": 0.8,
+          "cancel_after": 0.25,
+          "range": 0.0,
+          "arc_deg": 0.0,
+          "implemented": true
+        },
+        {
+          "id": "marca_del_ultimo_nombre",
+          "name_key": "skill.sepulturero.marca",
+          "description_key": "skill.sepulturero.marca.desc",
+          "unlock_level": 2,
+          "kind": "mark",
+          "damage_coeff": 0.0,
+          "potency": 0.0,
+          "damage_type": "arcane",
+          "attribute": "intelecto",
+          "resource_cost": 20,
+          "cooldown": 8.0,
+          "windup": 0.25,
+          "active_until": 0.4,
+          "total_time": 0.65,
+          "cancel_after": 0.15,
+          "range": 0.0,
+          "arc_deg": 0.0,
+          "mark": {
+            "range": 12.0,
+            "arc_deg": 55.0,
+            "duration": 6.0,
+            "vulnerability_multiplier": 1.3
+          },
+          "implemented": true
+        },
+        {
+          "id": "procesion_hueso_bronce",
+          "name_key": "skill.sepulturero.procesion",
+          "description_key": "skill.sepulturero.procesion.desc",
+          "unlock_level": 3,
+          "kind": "procession",
+          "damage_coeff": 0.0,
+          "potency": 0.0,
+          "damage_type": "arcane",
+          "attribute": "intelecto",
+          "resource_cost": 15,
+          "cooldown": 9.0,
+          "windup": 0.3,
+          "active_until": 0.45,
+          "total_time": 0.7,
+          "cancel_after": 0.2,
+          "range": 0.0,
+          "arc_deg": 0.0,
+          "charge": {
+            "speed": 9.0,
+            "duration": 0.8,
+            "knockback": 4.5,
+            "damage_coeff": 0.9,
+            "potency": 8.0,
+            "hit_width": 2.4
+          },
+          "implemented": true
+        },
+        {
+          "id": "vela_de_ausentes",
+          "name_key": "skill.sepulturero.vela",
+          "description_key": "skill.sepulturero.vela.desc",
+          "unlock_level": 4,
+          "kind": "veil",
+          "damage_coeff": 0.0,
+          "potency": 0.0,
+          "damage_type": "arcane",
+          "attribute": "intelecto",
+          "resource_cost": 0,
+          "cooldown": 12.0,
+          "windup": 0.35,
+          "active_until": 0.5,
+          "total_time": 0.75,
+          "cancel_after": 0.2,
+          "range": 0.0,
+          "arc_deg": 0.0,
+          "veil": {
+            "duration_sacrifice_fraction": 0.5,
+            "heal_fraction": 0.15,
+            "resource_restore": 25.0
+          },
+          "implemented": true
+        }
+      ],
       "ultimate": {
         "id": "patio_vuelven",
         "name_key": "skill.sepulturero.ultimate",
-        "implemented": false
+        "description_key": "skill.sepulturero.ultimate.desc",
+        "unlock_level": 3,
+        "kind": "patio",
+        "damage_coeff": 0.0,
+        "potency": 0.0,
+        "damage_type": "arcane",
+        "attribute": "intelecto",
+        "resource_cost": 0,
+        "cooldown": 1.0,
+        "windup": 0.5,
+        "active_until": 0.7,
+        "total_time": 1.05,
+        "cancel_after": 0.9,
+        "range": 0.0,
+        "arc_deg": 0.0,
+        "implemented": true
+      },
+      "ultimate_charge": {
+        "max": 100,
+        "per_hit_dealt": 8,
+        "per_hit_taken": 5
+      },
+      "passives": {
+        "nombre_prestado": {
+          "name_key": "passive.sepulturero.prestado",
+          "fragment_gain": 25.0
+        },
+        "ultimo_encargo": {
+          "name_key": "passive.sepulturero.encargo",
+          "wave_radius": 2.5,
+          "wave_duration": 0.45,
+          "wave_slow_duration": 1.2,
+          "wave_slow_fraction": 0.35,
+          "wave_damage_coeff": 0.4,
+          "wave_potency": 5.0
+        }
+      },
+      "summons": {
+        "max_active": 3,
+        "sight_radius": 10.0,
+        "retarget_interval": 0.35,
+        "guardian": {
+          "hp": 55,
+          "duration": 14.0,
+          "move_speed": 3.4,
+          "follow_distance": 2.2,
+          "leash_radius": 18.0,
+          "armor": 2.0,
+          "resistance": 2.0,
+          "attack": {
+            "range": 1.7,
+            "windup": 0.5,
+            "window": 0.22,
+            "recover": 0.9,
+            "arc_deg": 70.0,
+            "damage_coeff": 0.6,
+            "potency": 6.0,
+            "damage_type": "arcane",
+            "attribute": "intelecto"
+          }
+        },
+        "patio": {
+          "hp": 40,
+          "duration": 8.0,
+          "move_speed": 4.2,
+          "follow_distance": 2.6,
+          "leash_radius": 20.0,
+          "armor": 2.0,
+          "resistance": 2.0,
+          "attack": {
+            "range": 1.8,
+            "windup": 0.4,
+            "window": 0.2,
+            "recover": 0.7,
+            "arc_deg": 70.0,
+            "damage_coeff": 0.5,
+            "potency": 7.0,
+            "damage_type": "arcane",
+            "attribute": "intelecto"
+          }
+        }
       },
       "specializations": [
         {
@@ -580,7 +1011,37 @@
       "spec.cimarron.cuchilla": "Cuchilla Silente",
       "spec.cimarron.rastreador": "Rastreador Libre",
       "spec.bardo.voz": "Voz del Solar",
-      "spec.bardo.tambor": "Tambor de Guerra"
+      "spec.bardo.tambor": "Tambor de Guerra",
+      "skill.bruja.basic": "Espina menor",
+      "skill.bruja.basic.desc": "Lanza una espina arcana rapida desde el orbe.",
+      "skill.bruja.espina": "Espina de Jucaro",
+      "skill.bruja.espina.desc": "Proyectil penetrante que atraviesa hasta 3 enemigos.",
+      "skill.bruja.niebla": "Niebla de Yagruma",
+      "skill.bruja.niebla.desc": "Nube que ralentiza a los enemigos atrapados en ella.",
+      "skill.bruja.raices": "Raices del Juegey",
+      "skill.bruja.raices.desc": "Raices que broten del suelo inmovilizando y estrujando el area.",
+      "skill.bruja.mariposa": "Mariposa de Ceniza",
+      "skill.bruja.mariposa.desc": "Familiar ardiente que persigue y hostiga al objetivo marcado.",
+      "passive.bruja.oido": "Oido de la Manigua",
+      "passive.bruja.raiz": "Raiz Persistente",
+      "skill.bruja.ultimate.desc": "La manigua despierta: tormenta de raices y viento alrededor de la Bruja.",
+      "skill.sepulturero.basic": "Barrido de Farol",
+      "skill.sepulturero.basic.desc": "Golpe corto de arcano con el farol de ceniza. Alcance menor que el machete: el Sepulturero pega de cerca, no a distancia.",
+      "skill.sepulturero.osario": "Llamada del Osario",
+      "skill.sepulturero.osario.desc": "Invoca un guardián espectral temporal que combate junto al Sepulturero hasta que su eco se apaga.",
+      "skill.sepulturero.marca": "Marca del Último Nombre",
+      "skill.sepulturero.marca.desc": "Debilita y marca a un enemigo: recibe más daño y, al caer marcado, entrega fragmentos de ceniza.",
+      "skill.sepulturero.procesion": "Procesión de Hueso y Bronce",
+      "skill.sepulturero.procesion.desc": "Los ecos activos avanzan en línea al frente del Sepulturero, empujando a los enemigos que encuentran.",
+      "skill.sepulturero.vela": "Vela de los Ausentes",
+      "skill.sepulturero.vela.desc": "Sacrifica parte de la duración de una invocación para curar al Sepulturero y recuperar ceniza.",
+      "skill.sepulturero.ultimate.desc": "El Patio de los que Vuelven: convoca una procesión de ecos con vida propia durante una ventana limitada.",
+      "passive.sepulturero.prestado": "Nombre prestado",
+      "passive.sepulturero.encargo": "Último encargo",
+      "summon.sepulturero.guardian": "Guardián del Osario",
+      "summon.sepulturero.guardian.desc": "Eco de un antiguo combatiente. Ataca cuerpo a cuerpo y vela por su invocador.",
+      "summon.sepulturero.patio": "Eco del Patio",
+      "summon.sepulturero.patio.desc": "Miembro de la procesión invocada por la definitiva. Breve, veloz y persistente."
     }
   }
 }
