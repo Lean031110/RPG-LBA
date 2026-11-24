@@ -3,13 +3,14 @@
 **Fecha:** 2026-11-24
 **Rama:** `agent/art-pass-terrain-benchmark-2026-11-24`
 **Base:** `e1d415b`
+**PR:** [#27 — borrador, sin fusionar](https://github.com/Lean031110/RPG-LBA/pull/27)
 **Estado:** diagnóstico y banco técnico preparados; **revisión artística humana pendiente**. No se declara aprobada la dirección visual.
 
 ## Objetivo y límites
 
 Aislar la causa del panel oscuro central visible en Valdeluz y dejar un benchmark independiente de materiales de terreno que reutilice los recursos actuales, sin reiniciar el proyecto ni ampliar la slice antes de la revisión artística.
 
-La escena jugable, el constructor de Valdeluz, el rig de cámara, el controlador ambiental global y los presets Android no se modificaron. Los cambios de runtime están confinados a `scenes/dev/art_benchmark/` y `scripts/dev/art_benchmark/`; también se añadió un smoke test y se endureció el wrapper de capturas visuales. No se generó APK/AAB ni se publicó Release.
+La escena jugable, el constructor de Valdeluz, el rig de cámara, el controlador ambiental global y los presets Android no se modificaron. Los cambios de runtime están confinados a `scenes/dev/art_benchmark/` y `scripts/dev/art_benchmark/`; también se añadió un smoke test y se endureció el wrapper de capturas visuales. Tras abrir el PR, GitHub Actions generó APK de depuración como artefactos. No se generó AAB ni se publicó Release.
 
 ## Diagnóstico visual confirmado
 
@@ -55,12 +56,14 @@ Se añadieron `tests/unit/test_terrain_art_benchmark.gd`, que comprueba carga de
 | Wrapper, éxito simulado | **PASS** | Motor ficticio generó los 11 PNG y 11 logs configurados; prueba de contrato, no reemplaza la captura real. |
 | Capturas reales del banco | **PASS** | Godot 4.7.2 con OpenGL3 y `scripts/local/capture_hud.gd`; PNG reales en 1280×720 y 1600×720, inspeccionados visualmente. |
 | Revisión artística humana | **NOT TESTED** | Pendiente del responsable; el banco y las capturas no constituyen aprobación visual. |
-| Export Android ARM64/APK/AAB y dispositivo físico | **NOT TESTED** | No se hizo export ni prueba en teléfono. El importador informó que falta el directorio Android build-tools. |
-| GitHub Actions de esta rama | **NOT TESTED** | Pendientes de la apertura del PR. |
+| GitHub Actions de PR #27, commit `6dec225` | **PASS** | 15 checks exitosos, 1 omitido, 0 fallidos y 0 pendientes. Ejecuciones: [Validate #45393804241](https://github.com/Lean031110/RPG-LBA/actions/runs/45393804241), [Godot CI #45393804431](https://github.com/Lean031110/RPG-LBA/actions/runs/45393804431), [Visual Captures #45393804224](https://github.com/Lean031110/RPG-LBA/actions/runs/45393804224) y [Android debug APK #45393795253](https://github.com/Lean031110/RPG-LBA/actions/runs/45393795253), todas sobre el commit indicado. El único omitido fue `Publicar release con APK (solo tags v*)`, esperado porque la rama no es un tag de versión. |
+| Export Android de depuración en Actions | **PASS** | Exportó ARM64 y Universal, verificó estáticamente ambos APK y pasó emuladores x86_64 API 35/36 más sanity ARM64 API 35/36. Artefactos en la [ejecución Android](https://github.com/Lean031110/RPG-LBA/actions/runs/45393795253): `RPG-LBA-Android-ARM64-debug` (56,959,539 bytes) y `RPG-LBA-Android-Universal-debug` (114,577,075 bytes), además de evidencia de emulador. Son builds debug, no un AAB de Play Store ni una prueba en teléfono físico. |
+| AAB/release listo para Google Play | **NOT TESTED** | No se produjo AAB ni se publicó Release; el paso de publicar se omite salvo tags `v*`. |
+| Teléfono Android físico | **NOT TESTED** | No se probó en hardware físico. La importación local avisó que no está disponible el directorio Android build-tools; Actions sí completó exportación/emuladores. |
 
 ## Riesgo de exportación Android
 
-Ambos presets actuales usan `export_filter="all_resources"` y `exclude_filter=""`. Por tanto, la escena y los scripts de desarrollo del benchmark también podrían incluirse en las exportaciones Android actuales. No se tocó esa política en esta tarea: queda registrada para una decisión explícita sobre exclusiones y posterior verificación de exportación. La escena no se configura como escena principal.
+Ambos presets actuales usan `export_filter="all_resources"` y `exclude_filter=""`. Por tanto, la escena y los scripts de desarrollo del benchmark también podrían incluirse en las exportaciones Android actuales, incluidos los APK debug producidos por Actions. No se tocó esa política en esta tarea: queda registrada para una decisión explícita sobre exclusiones y posterior verificación de exportación. La escena no se configura como escena principal.
 
 ## Pendientes para la siguiente revisión
 
@@ -68,4 +71,4 @@ Ambos presets actuales usan `export_filter="all_resources"` y `exclude_filter=""
 2. Acordar y probar una corrección deliberada de composición/material/anchura del camino en Valdeluz; no ampliar contenido ni implementar otra clase antes de esta puerta.
 3. Investigar aparte la orientación solar global con capturas comparables de amanecer, mediodía, atardecer y noche antes de modificar `EnvironmentController`.
 4. Decidir si se excluyen `scenes/dev/` y `scripts/dev/` de los presets Android, y validar el resultado en un export real cuando el toolchain esté disponible.
-5. Esperar los checks del PR antes de declarar CI verificada; no fusionar ni publicar Release automáticamente.
+5. Los enlaces de Actions arriba corresponden al commit `6dec225`; revisar de nuevo los checks más recientes del PR #27 tras cada commit. No fusionar ni publicar Release automáticamente.
