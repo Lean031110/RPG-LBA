@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/dev/art_benchmark/terrain_path_alternatives.gd" id="1_alternatives"]
+
+[node name="TerrainPathAlternatives" type="Node3D"]
+script = ExtResource("1_alternatives")

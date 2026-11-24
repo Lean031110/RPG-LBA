@@ -19,6 +19,8 @@ declare -a SCENES=(
   "inventario_valdeluz|scenes/arpg/valdeluz/valdeluz_slice.tscn|inventory|1280x720"
   "artpass_terrain_benchmark_169|scenes/dev/art_benchmark/terrain_benchmark.tscn||1280x720"
   "artpass_terrain_benchmark_209|scenes/dev/art_benchmark/terrain_benchmark.tscn||1600x720"
+  "artpass_path_alternatives_169|scenes/dev/art_benchmark/terrain_path_alternatives.tscn||1280x720"
+  "artpass_path_alternatives_209|scenes/dev/art_benchmark/terrain_path_alternatives.tscn||1600x720"
 )
 
 failed=0

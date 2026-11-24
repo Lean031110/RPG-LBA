@@ -35,29 +35,38 @@ La primera revisión de las capturas mostró que el parche de césped se confund
 - [Benchmark v3 — 20:9, 1600×720](../../screenshots/arpg/terrain_material_benchmark_20_9_v3.png)
 - Iteración previa conservada: [16:9 v2](../../screenshots/arpg/terrain_material_benchmark_16_9_v2.png), [20:9 v2](../../screenshots/arpg/terrain_material_benchmark_20_9_v2.png).
 
-No se añadieron assets externos; el banco usa geometría procedural y materiales ya existentes. No se requieren entradas nuevas en `assets/manifest.csv`.
+### Tercer benchmark: alternativas de camino A/B/C
+
+A petición del responsable, se preparó una comparación aislada en `scenes/dev/art_benchmark/terrain_path_alternatives.tscn`, con lógica en `scripts/dev/art_benchmark/terrain_path_alternatives.gd`. A muestra una franja recta ancha con roderas; B omite el camino; C presenta un sendero sinuoso de tierra roja, roderas, piedras calizas y vegetación de borde. Cada panel conserva una referencia procedural del Machetero para comparar escala y legibilidad. El material procede de la paleta existente de Valdeluz; la malla es procedural y duplica localmente los materiales para desactivar el culling sin modificar los recursos compartidos.
+
+Esta alternativa C es solo un benchmark de decisión: no cambia la escena jugable ni selecciona una solución artística final. Las capturas fueron regeneradas tras ampliar los rótulos; la iteración de desarrollo defectuosa sin el camino visible no se conserva en el repositorio.
+
+- [Alternativas A/B/C — 16:9, 1280×720](../../screenshots/arpg/terrain_path_alternatives_16_9_v1.png)
+- [Alternativas A/B/C — 20:9, 1600×720](../../screenshots/arpg/terrain_path_alternatives_20_9_v1.png)
+
+No se añadieron assets externos; ambos bancos usan geometría procedural y materiales ya existentes. No se requieren entradas nuevas en `assets/manifest.csv`.
 
 ## Cambios de automatización
 
-`scripts/ci/capture_visual_suite.sh` ahora incorpora capturas del benchmark en 16:9 y 20:9, conserva el código de salida de Godot, guarda logs, evita sobrescribir resultados existentes y marca error si la captura falla o no produce PNG. El wrapper mantiene las capturas anteriores del juego.
+`scripts/ci/capture_visual_suite.sh` incorpora los benchmarks de materiales y caminos en 16:9 y 20:9, conserva el código de salida de Godot, guarda logs, evita sobrescribir resultados existentes y marca error si la captura falla o no produce PNG. Mantiene las capturas anteriores del juego.
 
-Se añadieron `tests/unit/test_terrain_art_benchmark.gd`, que comprueba carga de la escena, identidad de materiales reutilizados, fondo neutro, niebla desactivada en el benchmark, controlador ambiental y cámara. No modifica ni sustituye pruebas existentes.
+`tests/unit/test_terrain_art_benchmark.gd` comprueba carga del benchmark de materiales y la comparación A/B/C, materiales regionales reutilizados, construcción de la malla sinuosa y roderas, panel sin camino, referencias de jugador y cámaras. No modifica ni sustituye pruebas existentes.
 
 ## Pruebas y resultados
 
 | Prueba | Estado | Resultado / limitación |
 |---|---|---|
-| Importación con Godot 4.7.2 Standard | **PASS** | Importación de proyecto reportada como correcta; se observó el aviso de que no está disponible el directorio Android build-tools. |
-| GdUnit4 — suite completa | **PASS con avisos** | 343/343 casos, 47/47 suites. Comando: `GODOT_SILENCE_ROOT_WARNING=1 godot --headless --path . -s addons/gdUnit4/bin/GdUnitCmdTool.gd --path . -a tests`. Esa ejecución antecedió al refinamiento local de fondo/niebla; el smoke test focal sí se volvió a ejecutar después. No se declara log limpio: aparecen mensajes de capturas lambda liberadas, ausencia de peer/errores ENet en pruebas negativas y errores deliberados de parseo/guardado corrupto; al cierre se reportaron 3 asignaciones RID, 193 instancias ObjectDB, 128 recursos y páginas de allocator todavía en uso. |
-| GdUnit4 — benchmark focal, tras el refinamiento v3 | **PASS** | 1/1 caso; carga y aserciones del benchmark correctas. Comando: `GODOT_SILENCE_ROOT_WARNING=1 godot --headless --path . -s addons/gdUnit4/bin/GdUnitCmdTool.gd --path . -a tests/unit/test_terrain_art_benchmark.gd`. |
+| Importación con Godot 4.7.2 Standard | **PASS** | `GODOT_SILENCE_ROOT_WARNING=1 godot --headless --editor --path . --quit` terminó con código 0 tras importar los recursos. No se observó error de importación en el log. |
+| GdUnit4 — suite completa | **PASS con avisos al cerrar** | 344/344 casos, 47/47 suites; 0 errores, 0 fallos, 0 flaky, 0 omitidos y 0 huérfanos. Comando: `GODOT_SILENCE_ROOT_WARNING=1 godot --headless --path . -s addons/gdUnit4/bin/GdUnitCmdTool.gd --path . -a tests`. Al salir Godot reportó 193 instancias ObjectDB, 128 recursos, páginas de allocator y 3 RID de shaders todavía en uso; el comando terminó con código 0. |
+| GdUnit4 — benchmark focal | **PASS** | 2/2 casos; comprueba el benchmark de materiales y A/B/C. Incluido en la suite completa anterior. Comando focal: `GODOT_SILENCE_ROOT_WARNING=1 godot --headless --path . -s addons/gdUnit4/bin/GdUnitCmdTool.gd --path . -a tests/unit/test_terrain_art_benchmark.gd`. |
 | Lint GDScript | **PASS** | `gdlint scripts tests` — sin problemas. |
-| Formato GDScript | **PASS** | `gdformat --check scripts tests` — 141 archivos sin cambios. |
-| Wrapper, fallo simulado | **PASS** | Motor ficticio salió con código 23; el wrapper reflejó el fallo con salida 1, guardó el log bruto e informó el código del motor. |
-| Wrapper, éxito simulado | **PASS** | Motor ficticio generó los 11 PNG y 11 logs configurados; prueba de contrato, no reemplaza la captura real. |
-| Capturas reales del banco | **PASS** | Godot 4.7.2 con OpenGL3 y `scripts/local/capture_hud.gd`; PNG reales en 1280×720 y 1600×720, inspeccionados visualmente. |
-| Revisión artística humana | **NOT TESTED** | Pendiente del responsable; el banco y las capturas no constituyen aprobación visual. |
-| GitHub Actions de PR #27, commit `6dec225` | **PASS** | 15 checks exitosos, 1 omitido, 0 fallidos y 0 pendientes. Ejecuciones: [Validate #45393804241](https://github.com/Lean031110/RPG-LBA/actions/runs/45393804241), [Godot CI #45393804431](https://github.com/Lean031110/RPG-LBA/actions/runs/45393804431), [Visual Captures #45393804224](https://github.com/Lean031110/RPG-LBA/actions/runs/45393804224) y [Android debug APK #45393795253](https://github.com/Lean031110/RPG-LBA/actions/runs/45393795253), todas sobre el commit indicado. El único omitido fue `Publicar release con APK (solo tags v*)`, esperado porque la rama no es un tag de versión. |
-| Export Android de depuración en Actions | **PASS** | Exportó ARM64 y Universal, verificó estáticamente ambos APK y pasó emuladores x86_64 API 35/36 más sanity ARM64 API 35/36. Artefactos en la [ejecución Android](https://github.com/Lean031110/RPG-LBA/actions/runs/45393795253): `RPG-LBA-Android-ARM64-debug` (56,959,539 bytes) y `RPG-LBA-Android-Universal-debug` (114,577,075 bytes), además de evidencia de emulador. Son builds debug, no un AAB de Play Store ni una prueba en teléfono físico. |
+| Formato GDScript | **PASS** | `gdformat --check scripts tests` — 142 archivos sin cambios. |
+| Wrapper, fallo simulado | **PASS** | Motor ficticio salió con código 23; el wrapper devolvió 1 y guardó logs para las 13 entradas. |
+| Wrapper, éxito simulado | **PASS** | Motor ficticio produjo 13 archivos PNG de prueba y 13 logs; comprobación de contrato, no sustituye capturas reales. `bash -n scripts/ci/capture_visual_suite.sh` también pasó. |
+| Capturas reales del benchmark A/B/C | **PASS** | Godot 4.7.2 con OpenGL3 y `scripts/local/capture_hud.gd`; capturas 1280×720 y 1600×720 regeneradas e inspeccionadas. C visible y rótulos legibles en ambos formatos. |
+| Revisión artística humana | **NOT TESTED** | Pendiente de decisión del responsable; el benchmark y sus capturas no constituyen aprobación estética ni autorización para integrar el camino en Valdeluz. |
+| GitHub Actions de PR #27, commit `6dec225` (base previa) | **PASS en ese commit; cambios locales aún sin CI** | 15 checks exitosos, 1 omitido, 0 fallidos y 0 pendientes. Ejecuciones: [Validate #45393804241](https://github.com/Lean031110/RPG-LBA/actions/runs/45393804241), [Godot CI #45393804431](https://github.com/Lean031110/RPG-LBA/actions/runs/45393804431), [Visual Captures #45393804224](https://github.com/Lean031110/RPG-LBA/actions/runs/45393804224) y [Android debug APK #45393795253](https://github.com/Lean031110/RPG-LBA/actions/runs/45393795253). Deben revisarse de nuevo tras publicar el commit actualizado. |
+| Export Android de depuración en Actions (commit previo) | **PASS en ese commit; cambios locales aún sin exportar** | Exportó ARM64 y Universal, verificó estáticamente ambos APK y pasó emuladores x86_64 API 35/36 más sanity ARM64 API 35/36. Artefactos en la [ejecución Android](https://github.com/Lean031110/RPG-LBA/actions/runs/45393795253): `RPG-LBA-Android-ARM64-debug` (56,959,539 bytes) y `RPG-LBA-Android-Universal-debug` (114,577,075 bytes), además de evidencia de emulador. Son builds debug, no un AAB ni prueba en teléfono físico. |
 | AAB/release listo para Google Play | **NOT TESTED** | No se produjo AAB ni se publicó Release; el paso de publicar se omite salvo tags `v*`. |
 | Teléfono Android físico | **NOT TESTED** | No se probó en hardware físico. La importación local avisó que no está disponible el directorio Android build-tools; Actions sí completó exportación/emuladores. |
 
@@ -67,8 +76,8 @@ Ambos presets actuales usan `export_filter="all_resources"` y `exclude_filter=""
 
 ## Pendientes para la siguiente revisión
 
-1. Revisión humana de las capturas, especialmente legibilidad del jugador frente al camino, franja superior de perímetro y separación entre barro/charco húmedo.
-2. Acordar y probar una corrección deliberada de composición/material/anchura del camino en Valdeluz; no ampliar contenido ni implementar otra clase antes de esta puerta.
+1. Revisión humana de A/B/C y decisión explícita sobre si integrar C o modificarla; no se ha cambiado el mapa jugable.
+2. Tras esa decisión, validar composición, anchura, contraste y lectura del jugador en la slice real de Valdeluz antes de dar por cerrada la puerta visual.
 3. Investigar aparte la orientación solar global con capturas comparables de amanecer, mediodía, atardecer y noche antes de modificar `EnvironmentController`.
 4. Decidir si se excluyen `scenes/dev/` y `scripts/dev/` de los presets Android, y validar el resultado en un export real cuando el toolchain esté disponible.
 5. Los enlaces de Actions arriba corresponden al commit `6dec225`; revisar de nuevo los checks más recientes del PR #27 tras cada commit. No fusionar ni publicar Release automáticamente.
