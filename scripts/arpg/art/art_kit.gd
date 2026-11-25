@@ -132,9 +132,7 @@ static func _burst(
 	var tree := parent.get_tree() if parent != null else null
 	if tree != null:
 		var timer := tree.create_timer(lifetime + 0.6)
-		timer.timeout.connect(
-			func() -> void:
-				if is_instance_valid(particles):
-					particles.queue_free()
-		)
+		# La conexión a un método de instancia se desconecta al liberar el receptor;
+		# evita capturar `particles` en una lambda que sobreviva al VFX.
+		timer.timeout.connect(particles.queue_free)
 	return particles
