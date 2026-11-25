@@ -5,6 +5,11 @@ extends GdUnitTestSuite
 ## verificar (los intentos de descarga externa se documentan en el informe).
 
 
+func _frames(count: int) -> void:
+	for index: int in count:
+		await get_tree().process_frame
+
+
 func test_wind_material_parameters() -> void:
 	var material := ArpgArtKit.wind_material(Color(0.1, 0.2, 0.12), 0.07, 1.9)
 	assert_object(material).is_instanceof(ShaderMaterial)
@@ -43,3 +48,7 @@ func test_vfx_spawn_and_autodestroy() -> void:
 	for child in host.get_children():
 		names.append(child.name)
 	assert_array(names).contains(["VFXBurst", "SlashTrail"])
+	# Supera el timeout de respaldo de las partículas y el tween de la estela.
+	# La señal finished suele liberar las partículas antes de ese timeout.
+	await _frames(80)
+	assert_int(host.get_child_count()).is_equal(0)
