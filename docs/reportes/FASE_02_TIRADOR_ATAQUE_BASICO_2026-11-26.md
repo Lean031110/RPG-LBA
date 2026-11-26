@@ -53,11 +53,13 @@ La exportación y firma ARM64/Universal, las comprobaciones estáticas, la insta
 
 Como comparación, el job API 35 equivalente pasó en el run de la [PR #28](https://github.com/Lean031110/RPG-LBA/actions/runs/45633198750), cuya captura sí llegó a Valdeluz. Esto hace plausible un fallo intermitente de navegación automatizada, pero no demuestra esa causa ni descarta una regresión; el síntoma queda **sin aislar**. El job no justifica por sí solo atribuir el fallo al kit/proyectil, y no se modificó código a ciegas. La PR permanece en borrador a la espera de revisión/resolución de este check.
 
+Tras añadir únicamente documentación de CI (sin cambios al código del juego), el head `89de38322bfbd96c0541233d4016dfcc9cee33f4` obtuvo un [run Android completo PASS](https://github.com/Lean031110/RPG-LBA/actions/runs/45844102472): el resumen de PR quedó en **15 PASS, 1 SKIPPED, 0 FAIL y 0 pendientes**; en particular, el [mismo job de emulador API 35](https://github.com/Lean031110/RPG-LBA/actions/runs/45844102472/job/139994091022) pasó. Así, el fallo inicial no se reprodujo en la siguiente ejecución sobre el mismo código de juego y es consistente con una intermitencia del smoke/navegación automatizada, aunque su causa exacta sigue sin aislarse. La PR se mantiene como borrador para revisión del propietario; el resultado PASS no equivale a merge ni a prueba en hardware físico.
+
 ## Pendientes
 
 1. Revisar manualmente el balance provisional del ataque.
 2. Completar el kit canónico del Tirador antes de habilitar su selección.
 3. Probar input, colisión, legibilidad visual, rendimiento y estabilidad en hardware Android real.
 4. Investigar la diferencia de un objeto/recurso retenido en el proceso de la suite completa.
-5. Aislar por qué el smoke API 35 termina en la pantalla de multijugador y no en Valdeluz; mantener la PR en borrador hasta revisar el fallo.
+5. Si el smoke API 35 vuelve a fallar, aislar por qué los toques automatizados terminan en la pantalla de multijugador; el fallo inicial no se reprodujo en el run completo posterior.
 6. Dejar la decisión de merge al propietario; no fusionar automáticamente.
