@@ -100,10 +100,14 @@ Entorno: Godot `4.7.2.stable.official.ed1daf0bf`, Linux sandbox, ejecución head
 | `GODOT_BIN="$(command -v godot)" timeout 120s ./addons/gdUnit4/runtest.sh --headless --audio-driver Dummy --continue --add res://tests/integration/test_tirador_kit.gd` | **PASS** — 7/7, 0 errores, fallos, flaky, omitidos u huérfanos. |
 | `GODOT_BIN="$(command -v godot)" timeout 420s ./addons/gdUnit4/runtest.sh --headless --audio-driver Dummy --continue --add res://tests` | **PASS** — 349/349 casos, 47/47 suites, exit code 0. |
 | Hardware físico Android ARM64, rendimiento y controles táctiles | **NOT TESTED** — no se ejecutó en dispositivo físico. |
-| CI para el nuevo commit | **PENDING** — se disparará al subir el commit a la PR #29. El último head remoto anterior, `6d7a33c`, tenía 15 checks PASS y 1 SKIPPED. |
+| CI del commit funcional `0641a52` | **PASS** — 15 checks successful, 1 SKIPPED, 0 FAIL y 0 pendientes: [Godot CI #46014871539](https://github.com/Lean031110/RPG-LBA/actions/runs/46014871539), [Validate #46014871508](https://github.com/Lean031110/RPG-LBA/actions/runs/46014871508), [Android #46014862936](https://github.com/Lean031110/RPG-LBA/actions/runs/46014862936), [Visual Captures #46014871440](https://github.com/Lean031110/RPG-LBA/actions/runs/46014871440). |
 
 ### Diagnósticos y pendientes
 
 La suite completa sigue imprimiendo durante tests de Bruja/IA el aviso `Lambda capture at index 0 was freed`; los casos afectados terminan PASSED y el total es 0 errores/fallos. Al cerrar, el proceso también reporta 3 RID del renderer dummy, 194 instancias ObjectDB y 129 recursos retenidos, además de páginas VariantPool. Estos avisos se observaron antes en la rama y no se aislaron como consecuencia de Doble Fogonazo; quedan como deuda técnica global, no como PASS de limpieza de recursos. El runner de GdUnit también intenta conectarse a `127.0.0.1:0`, pero ejecuta y concluye los casos con código 0.
 
 Pendiente: revisión de balance, prueba humana de legibilidad/controles y rendimiento en hardware Android ARM64, y CI del nuevo head. La clase sigue deliberadamente incompleta y no seleccionable.
+
+### Actualización de pendientes tras el push (2026-11-27)
+
+La referencia a «CI del nuevo head» como pendiente, escrita antes del push, queda resuelta para el commit funcional `0641a52`: los cuatro workflows vinculados en la tabla concluyeron con 15 checks PASS, 1 SKIPPED, 0 FAIL y 0 pendientes. Permanecen pendientes la revisión de balance y las pruebas humanas/físicas Android indicadas arriba; la clase sigue sin estar completa ni habilitada.
