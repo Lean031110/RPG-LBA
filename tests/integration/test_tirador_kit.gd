@@ -1,6 +1,6 @@
 class_name TestTiradorKit
 extends GdUnitTestSuite
-## Primer incremento del Tirador: ataque básico físico mediante proyectil real.
+## Ataque básico y Doble Fogonazo del Tirador, comprobados mediante proyectiles reales.
 
 
 class DummyTarget:
@@ -77,7 +77,10 @@ func test_setup_uses_tirador_kit_and_canonical_baseline() -> void:
 	assert_str(player.get_resource_name()).is_equal("Concentración")
 	assert_bool(player.kit.can_block()).is_false()
 	assert_bool(bool(player.class_data["basic_attack"]["implemented"])).is_true()
-	assert_bool(bool(player.class_data["skills"].is_empty())).is_true()
+	assert_int(player.get_skill_count()).is_equal(1)
+	assert_str(String(player.get_skill_def(0)["id"])).is_equal("doble_fogonazo")
+	assert_str(RpgDB.get_text("skill.tirador.doble_fogonazo")).is_equal("Doble Fogonazo")
+	assert_bool(player.is_skill_unlocked(0)).is_true()
 	assert_bool(bool(player.class_data["ultimate"]["implemented"])).is_false()
 	assert_bool(bool(player.class_data["playable_in_slice"])).is_false()
 
@@ -100,6 +103,40 @@ func test_basic_attack_respects_cooldown() -> void:
 	assert_bool(player.try_attack()).is_true()
 	assert_bool(player.try_attack()).is_false()
 	assert_float(player.cooldowns.left("attack")).is_greater(0.0)
+
+
+func test_doble_fogonazo_spends_resource_once_and_lands_two_sequential_hits() -> void:
+	var player := _make_tirador()
+	var target := _make_target(Vector3(0.0, 0.5, 6.0))
+	_face_target(player, target)
+	var resource_before := player.vigor
+
+	assert_bool(player.try_skill_index(0)).is_true()
+	assert_float(player.vigor).is_equal(resource_before - 20.0)
+	assert_float(player.cooldowns.left("doble_fogonazo")).is_greater(0.0)
+	assert_bool(player.try_skill_index(0)).is_false()
+	await _wait(0.8)
+	assert_int(target.hits).is_equal(2)
+	assert_float(target.hp).is_less(100.0)
+
+
+func test_doble_fogonazo_requires_enough_concentracion() -> void:
+	var player := _make_tirador()
+	player.vigor = 19.0
+	assert_bool(player.try_skill_index(0)).is_false()
+	assert_float(player.vigor).is_equal(19.0)
+	assert_float(player.cooldowns.left("doble_fogonazo")).is_equal(0.0)
+
+
+func test_interruption_cancels_unfired_followup_shot() -> void:
+	var player := _make_tirador()
+	var target := _make_target(Vector3(0.0, 0.5, 4.0))
+	_face_target(player, target)
+	assert_bool(player.try_skill_index(0)).is_true()
+	await _wait(0.16)
+	player.skills.interrupt("test_interrupt")
+	await _wait(0.55)
+	assert_int(target.hits).is_equal(1)
 
 
 func test_basic_projectile_does_not_damage_through_world_geometry() -> void:

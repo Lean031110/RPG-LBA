@@ -68,3 +68,42 @@ La API de Actions reportó el run Validate como exitoso, aunque al momento de ce
 5. Si el smoke API 35 vuelve a fallar, aislar por qué los toques automatizados terminan en la pantalla de multijugador; el fallo inicial no se reprodujo en runs posteriores.
 6. Confirmar que GitHub refresque a PASS el job de auditoría del manifiesto que sigue figurando pendiente en el resumen de checks pese a que el run Validate concluyó exitosamente.
 7. Dejar la decisión de merge al propietario; no fusionar automáticamente.
+
+## Incremento diario — Doble Fogonazo (2026-11-27)
+
+### Funcionalidad
+
+Se implementa la primera habilidad canónica del Tirador, **Doble Fogonazo**, como dos disparos de proyectil secuenciales durante la ventana activa. El casteo utiliza el flujo compartido de desbloqueo, coste, cooldown y buffer; consume Concentración una sola vez. El segundo disparo se cancela si termina o se interrumpe la acción, o si el jugador muere. Los datos de la habilidad y su nombre/descripción están externalizados en `game/data/classes.json` y localizados en español.
+
+Los valores de esta primera implementación son provisionales y no constituyen balance aprobado: coste 20 de Concentración, cooldown de 5 s, coeficiente de daño 0.6 por proyectil, intervalo 0.12 s y dispersión de 2°. Se conserva `playable_in_slice: false`; la definitiva continúa sin implementar y no se habilita la clase completa.
+
+### Archivos del incremento
+
+- `scripts/arpg/player/tirador_kit.gd`: casteo y emisión secuencial con limpieza al completar, interrumpir o morir.
+- `game/data/classes.json`: definición de la habilidad y textos españoles.
+- `tests/integration/test_tirador_kit.gd`: casos de dos impactos, coste único, cooldown, recurso insuficiente e interrupción; conserva los tests del ataque básico y su obstrucción por muro.
+
+No se incorporaron assets. Un revisor interno independiente, limitado a lectura, corroboró el alcance y las condiciones de secuenciación/cancelación; no delegué implementación.
+
+### Validación local sobre el árbol final
+
+Entorno: Godot `4.7.2.stable.official.ed1daf0bf`, Linux sandbox, ejecución headless. Resultados:
+
+| Comprobación | Resultado |
+|---|---|
+| `gdlint scripts tests` | **PASS** — sin problemas. |
+| `gdformat --check scripts tests` | **PASS** — 141 archivos sin cambios de formato requeridos. |
+| `git diff --check` | **PASS** — sin errores de whitespace. |
+| Parseo/validación de `game/data/classes.json` y claves españolas | **PASS** — estructura, coste, cooldown, dos tiros y cadenas verificadas. |
+| `godot --headless --path . --editor --quit` | **PASS** — importación headless. |
+| `godot --headless --path . --quit-after 180` | **PASS** — smoke headless de proyecto/escena de arranque; no es prueba de dispositivo. |
+| `GODOT_BIN="$(command -v godot)" timeout 120s ./addons/gdUnit4/runtest.sh --headless --audio-driver Dummy --continue --add res://tests/integration/test_tirador_kit.gd` | **PASS** — 7/7, 0 errores, fallos, flaky, omitidos u huérfanos. |
+| `GODOT_BIN="$(command -v godot)" timeout 420s ./addons/gdUnit4/runtest.sh --headless --audio-driver Dummy --continue --add res://tests` | **PASS** — 349/349 casos, 47/47 suites, exit code 0. |
+| Hardware físico Android ARM64, rendimiento y controles táctiles | **NOT TESTED** — no se ejecutó en dispositivo físico. |
+| CI para el nuevo commit | **PENDING** — se disparará al subir el commit a la PR #29. El último head remoto anterior, `6d7a33c`, tenía 15 checks PASS y 1 SKIPPED. |
+
+### Diagnósticos y pendientes
+
+La suite completa sigue imprimiendo durante tests de Bruja/IA el aviso `Lambda capture at index 0 was freed`; los casos afectados terminan PASSED y el total es 0 errores/fallos. Al cerrar, el proceso también reporta 3 RID del renderer dummy, 194 instancias ObjectDB y 129 recursos retenidos, además de páginas VariantPool. Estos avisos se observaron antes en la rama y no se aislaron como consecuencia de Doble Fogonazo; quedan como deuda técnica global, no como PASS de limpieza de recursos. El runner de GdUnit también intenta conectarse a `127.0.0.1:0`, pero ejecuta y concluye los casos con código 0.
+
+Pendiente: revisión de balance, prueba humana de legibilidad/controles y rendimiento en hardware Android ARM64, y CI del nuevo head. La clase sigue deliberadamente incompleta y no seleccionable.
