@@ -123,7 +123,11 @@ func _physics_process(delta: float) -> void:
 		return
 	if _homing_target != null and is_instance_valid(_homing_target):
 		_steer_toward(_homing_target.global_position + Vector3(0, BODY_Y, 0), delta)
-	translate(_velocity * delta)
+	var next_position := global_position + _velocity * delta
+	if _world_blocks_segment(global_position, next_position):
+		_expire()
+		return
+	global_position = next_position
 	if _tick_interval > 0.0 and not _tick_def.is_empty():
 		_tick_timer += delta
 		if _tick_timer >= _tick_interval:
@@ -159,6 +163,9 @@ func _resolve_hits() -> void:
 			return
 		_hit_bodies.append(body)
 		_shooter.resolve_strike(body, _def)
+		if _hit_bodies.size() >= _max_targets:
+			_expire()
+			return
 
 
 func _resolve_area_tick() -> void:
@@ -191,6 +198,17 @@ func _has_line_of_sight(target: Node3D) -> bool:
 	if collider == null:
 		return true
 	return collider == target or collider.is_ancestor_of(target) or target.is_ancestor_of(collider)
+
+
+func _world_blocks_segment(from: Vector3, to: Vector3) -> bool:
+	## La prueba de LOS al objetivo se ejecuta cuando el proyectil ya se solapa
+	## con él; sin barrido del tramo recorrido, un proyectil rápido puede haber
+	## cruzado un muro y terminar al otro lado antes de esa comprobación.
+	if _los_mask == 0 or from.is_equal_approx(to):
+		return false
+	var query := PhysicsRayQueryParameters3D.create(from, to, _los_mask)
+	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
+	return not hit.is_empty()
 
 
 func _expire() -> void:

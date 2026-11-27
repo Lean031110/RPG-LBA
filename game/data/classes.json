@@ -833,11 +833,60 @@
       },
       "basic_attack": {
         "name_key": "skill.tirador.basic",
+        "description_key": "skill.tirador.basic.desc",
+        "kind": "projectile",
+        "damage_coeff": 0.85,
+        "potency": 4.0,
         "damage_type": "physical",
         "attribute": "destreza",
-        "implemented": false
+        "cooldown": 0.75,
+        "windup": 0.18,
+        "active_until": 0.26,
+        "total_time": 0.5,
+        "cancel_after": 0.1,
+        "range": 0.0,
+        "arc_deg": 0.0,
+        "projectile": {
+          "speed": 26.0,
+          "lifetime": 1.25,
+          "radius": 0.2,
+          "pierce": 1,
+          "color": [0.82, 0.68, 0.48]
+        },
+        "implemented": true
       },
-      "skills": [],
+      "skills": [
+        {
+          "id": "doble_fogonazo",
+          "name_key": "skill.tirador.doble_fogonazo",
+          "description_key": "skill.tirador.doble_fogonazo.desc",
+          "unlock_level": 1,
+          "kind": "projectile",
+          "damage_coeff": 0.6,
+          "potency": 4.0,
+          "damage_type": "physical",
+          "attribute": "destreza",
+          "resource_cost": 20.0,
+          "cooldown": 5.0,
+          "windup": 0.12,
+          "active_until": 0.32,
+          "total_time": 0.52,
+          "cancel_after": 0.1,
+          "range": 0.0,
+          "arc_deg": 0.0,
+          "projectile": {
+            "speed": 26.0,
+            "lifetime": 1.25,
+            "radius": 0.18,
+            "pierce": 1,
+            "shot_count": 2,
+            "shot_interval": 0.12,
+            "spread_deg": 2.0,
+            "color": [0.82, 0.68, 0.48]
+          },
+          "implemented": true
+        }
+      ],
       "ultimate": {
         "id": "ultima_luz",
         "name_key": "skill.tirador.ultimate",
@@ -998,6 +1047,10 @@
       "skill.bruja.ultimate": "Manigua Despierta",
       "skill.sepulturero.ultimate": "El Patio de los que Vuelven",
       "skill.tirador.ultimate": "Última Luz del Malecón",
+      "skill.tirador.basic": "Disparo de pistola",
+      "skill.tirador.basic.desc": "Tiro físico a distancia con una cadencia controlada.",
+      "skill.tirador.doble_fogonazo": "Doble Fogonazo",
+      "skill.tirador.doble_fogonazo.desc": "Dos disparos rápidos de pistola, con una ligera dispersión y consumo de Concentración.",
       "skill.cimarron.ultimate": "Noche sin Testigos",
       "skill.bardo.ultimate": "El Solar Entero",
       "spec.machetero.guardian": "Guardián del Batey",

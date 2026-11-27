@@ -783,6 +783,8 @@ func _build_kit() -> ClassKit:
 			return BrujaKit.new()
 		"sepulturero":
 			return SepultureroKit.new()
+		"tirador":
+			return TiradorKit.new()
 		_:
 			return MacheteroKit.new()
 
